@@ -1,0 +1,35 @@
+body { 
+		/*linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),*/
+		background-image: url("../../img/Skyline.jpg");
+		background-size: cover;
+		/*background-color: rgba(0, 0, 0, 0.2);  	*/
+			  /*background: -webkit-linear-gradient(right, rgba(0,0,0,0), rgba(0,0,0,1));
+			  background: -o-linear-gradient(right, rgba(0,0,0,0), rgba(0,0,0,1));
+			  background: linear-gradient(to left, rgba(0,0,0,0), rgba(0,0,0,1));*/
+
+			}
+			.darken {
+				background-color: rgba(0, 0, 0, 0.2);  	
+			}
+			.whiten {
+				background-color: rgba(255, 255, 255, 0.4);
+				padding: 15px;
+			}
+			.header-font {
+				font-family: 'Comfortaa', cursive;
+			}
+			.text-font {
+				font-family: 'Raleway', sans-serif;
+			}
+			.footer {
+				width: 100%;
+				height: 20px;
+				bottom: 0px;
+				left: 0;
+				position: fixed;
+				background-color: rgba(255, 255, 255, 0.5);
+			}
+			.whiten-more {
+				background-color: rgba(240,248,255,0.6);
+				padding: 30px;
+			}

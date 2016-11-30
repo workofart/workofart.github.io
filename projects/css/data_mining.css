@@ -1,0 +1,7 @@
+.block{
+		margin-top: 100px;
+		-webkit-box-shadow: 4px 4px 32px -1px rgba(0,0,0,0.71);
+		-moz-box-shadow: 4px 4px 32px -1px rgba(0,0,0,0.71);
+		box-shadow: 4px 4px 32px -1px rgba(0,0,0,0.71);
+		margin-left: 40px;
+	}
