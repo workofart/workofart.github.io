@@ -1,24 +1,17 @@
-workofart.github.io
+workofart.github.io (Personal Page)
 ===================
 
-Contributions
-----------------------
-CSS - Twitter Bootstrap
-HTML - coded by hand
-Javascript - coded by hand
+This repo contains the build version of my personal page, for source code please check [here](https://github.com/workofart/personal-page)
 
-Structure
---------------
-Personal Page
-- img
-- js
-- css
-- fonts
-- projects
+[My page](http://www.henrypan.com)
+
+Languages & Frameworks:
+- Javascript
+- Node.js
+- React.js
+- Semantic UI
+- HTML/CSS
 
 
-index.html
-about.html
-project.html
-current.html
-todolist.html
+
+ 
