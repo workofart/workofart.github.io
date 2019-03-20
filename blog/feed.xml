@@ -1,4 +1,276 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://henrypan.com/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="http://henrypan.com/blog/" rel="alternate" type="text/html" /><updated>2019-03-17T17:54:32-04:00</updated><id>http://henrypan.com/blog/feed.xml</id><title type="html">Henry’s Blog</title><subtitle>My learning notes, research, projects and musings.</subtitle><entry><title type="html">Asynchronous Advantage Actor Critic (A3C)-Reinforcement Learning -Laymens Explanation</title><link href="http://henrypan.com/blog/reinforcement-learning/2019/02/27/a3c-rl-layments-explanation.html" rel="alternate" type="text/html" title="Asynchronous Advantage Actor Critic (A3C)-Reinforcement Learning -Laymens Explanation" /><published>2019-02-27T12:00:00-05:00</published><updated>2019-02-27T12:00:00-05:00</updated><id>http://henrypan.com/blog/reinforcement-learning/2019/02/27/a3c-rl-layments-explanation</id><content type="html" xml:base="http://henrypan.com/blog/reinforcement-learning/2019/02/27/a3c-rl-layments-explanation.html">&lt;p&gt;The A3C method in Reinforcement Learning (RL) combines both a &lt;em&gt;critic’s value function&lt;/em&gt; (how good a state is) and an &lt;em&gt;actor’s policy&lt;/em&gt; (a set of action probability for a given state). &lt;strong&gt;I promise this explanation doesn’t not contain greek letters or calculus. It only contains English alphabets and subtraction in math.&lt;/strong&gt;&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://henrypan.com/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="http://henrypan.com/blog/" rel="alternate" type="text/html" /><updated>2019-03-20T10:55:37-04:00</updated><id>http://henrypan.com/blog/feed.xml</id><title type="html">Henry’s Blog</title><subtitle>My learning notes, research, projects and musings.</subtitle><entry><title type="html">Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future</title><link href="http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction.html" rel="alternate" type="text/html" title="Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future" /><published>2019-03-20T11:50:00-04:00</published><updated>2019-03-20T11:50:00-04:00</updated><id>http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction</id><content type="html" xml:base="http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction.html">&lt;h2 id=&quot;previous-knowledge-required&quot;&gt;Previous Knowledge Required&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Understand what is a neural network (NN) and how it works conceptually.&lt;/li&gt;
+  &lt;li&gt;Python&lt;/li&gt;
+  &lt;li&gt;Basic understanding of what derivatives/gradients are&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;goals&quot;&gt;Goals&lt;/h2&gt;
+&lt;p&gt;In this tutorial, I will go over 3 different approaches of creating a NN that can predict the prices of a particular cryptocurrency pair (ETHBTC). This include using (very-low-level) Numpy/raw Python, (low-level) Tensorflow and (high-level) Keras.&lt;/p&gt;
+
+&lt;p&gt;Since it’s similar to predicting any price/number given a sequence of historical prices/numbers, I will describe this process as general as possible. The purpose of this tutorial is more about how to create NNs from scratch and to understand how high level frameworks like Keras work underneath the hood. It’s less about the correctness of predicting the future.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Personal goal:&lt;/strong&gt; When I was studying machine learning, I thought it would be good for me to implement things at the low level first, and then slowly move up the abstraction to improve productivity. I made sure that the 3 approaches all achieved the same outcome.&lt;/p&gt;
+
+&lt;h2 id=&quot;showcase&quot;&gt;Showcase&lt;/h2&gt;
+
+&lt;p&gt;Since the outcome of the 3 approaches are the same, I’ll just show one set of the training and testing result. All three sets are in the &lt;a href=&quot;https://github.com/workofart/work-trader&quot;&gt;repo&lt;/a&gt;, and you can regenerate them if you’d like.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Note: The prices in the graph are normalized, but the accuracy is the same if denormalized. Again, this is just an illustration of how NN works and by no means a correct way to predict prices.&lt;/em&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;training-set&quot;&gt;Training Set&lt;/h4&gt;
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/ml/trainingset.png&quot; width=&quot;600&quot; /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;test-set&quot;&gt;Test Set&lt;/h4&gt;
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/ml/testset.png&quot; width=&quot;600&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;input-data&quot;&gt;Input Data&lt;/h2&gt;
+&lt;p&gt;82 Hours worth of BTCETH data in 10-second increments covering the following dimensions:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Closing price&lt;/li&gt;
+  &lt;li&gt;high&lt;/li&gt;
+  &lt;li&gt;low&lt;/li&gt;
+  &lt;li&gt;volume&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Source: Binance&lt;/p&gt;
+
+&lt;h2 id=&quot;neural-network-architecture-all-3-versions&quot;&gt;Neural Network Architecture (All 3 Versions)&lt;/h2&gt;
+&lt;p&gt;&lt;a name=&quot;nn-architecture&quot;&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;3 Layers, &lt;strong&gt;Relu Activation Function&lt;/strong&gt; for first (n-1) layers, with last layer being a &lt;strong&gt;linear output&lt;/strong&gt;. The 1st hidden layer contains 16 neurons, the 2nd hidden layer contains 6 neurons. The &lt;code class=&quot;highlighter-rouge&quot;&gt;N&lt;/code&gt; denotes the number of samples.&lt;/p&gt;
+
+&lt;p&gt;Note that when counting layers, we usually don’t count the layer without tunable parameters. In this case, the input layer doesn’t have tunable parameters, which results in a 3-layer NN, as opposed to a 4-layer NN.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/ml/NN_architecture.png&quot; alt=&quot;NN&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;version-1&quot;&gt;Version 1&lt;/h2&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;(Hand-coded Neural Network (without using any 3rd party framework)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/workofart/work-trader/tree/master/v1&quot;&gt;Code&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;In this version, we need to understand the innerworkings of NNs. In other words, how propagation of neuron computations take place and how to compute gradients from a programmatic perspective. I’ve borrowed and adapted some of the homework code from &lt;a href=&quot;https://www.coursera.org/learn/neural-networks-deep-learning&quot;&gt;Andrew Ng’s Coursera Course&lt;/a&gt; on Deep Learning and Neural Networks to fit our context.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;1. Initialize parameters&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Neuron Weights (W)&lt;/li&gt;
+  &lt;li&gt;Bias Weights (B)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;2. Define hyperparameters&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Learning Rate - how much each step of gradient descent should move&lt;/li&gt;
+  &lt;li&gt;Number of training iterations&lt;/li&gt;
+  &lt;li&gt;Number of hidden layers (Layers excluding input layer)&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Activation function for each layer&lt;/p&gt;
+
+    &lt;p&gt;The dimensions of the NN is defined on this line: &lt;code class=&quot;highlighter-rouge&quot;&gt;layers_dims = [X_train.shape[0], 16, 6, Y_train.shape[0]]&lt;/code&gt;&lt;/p&gt;
+
+    &lt;p&gt;It means the &lt;strong&gt;first input layer&lt;/strong&gt; takes in a size of &lt;code class=&quot;highlighter-rouge&quot;&gt;X_train.shape[0]&lt;/code&gt;. In our example, that would be equal to &lt;code class=&quot;highlighter-rouge&quot;&gt;4&lt;/code&gt; since there are 4 dimensions (Price, High, Low, Volume) for every data point. The &lt;strong&gt;first hidden layer&lt;/strong&gt; (2nd element in the array) contains 16 neurons, &lt;strong&gt;second hidden layer&lt;/strong&gt; contains 6 neurons, and the &lt;strong&gt;output layer&lt;/strong&gt; contains &lt;code class=&quot;highlighter-rouge&quot;&gt;Y_train.shape[0]&lt;/code&gt;, in our example that is equal to &lt;code class=&quot;highlighter-rouge&quot;&gt;1&lt;/code&gt; since we’re predicting one price at a time.&lt;/p&gt;
+
+    &lt;p&gt;To summarize, the NN looks like &lt;a href=&quot;#nn-architecture&quot;&gt;this&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;3. Define and perform training - loop for &lt;code class=&quot;highlighter-rouge&quot;&gt;num_iterations&lt;/code&gt;:&lt;/strong&gt;
+&lt;a name=&quot;nn-forward-def&quot;&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Forward propagation&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  Usually one forward pass goes like this:
+
+  Input -&amp;gt; Matrix Multiplication (Linear) -&amp;gt; Activation Function (Non-Linear)-&amp;gt; 
+  |_____________________ Repeat this N times (N Layers) ______________________|
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+
+    &lt;p&gt;In our price prediction example (we use a linear output since we’re predicting values not classifying categories):
+  [LINEAR-&amp;gt;RELU]*(N-1)-&amp;gt;LINEAR&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  Matrix Multiplication (Linear) = Input X * Weights + Bias
+  Activation Function (Non-Linear) = Relu(Matrix Multiplication Result) = max(0, result)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Compute cost function&lt;/p&gt;
+
+    &lt;p&gt;After we have performed one pass of our forward propagation, we will have obtained the predictions (from the last layer’s activation function output) and we can compare it with the ground truth to compute the cost. Note that I’m using MSE (Mean-squared Error), that’s a common cost function for value prediction. I’ll keep the notations consistent with the code so you can refer to it if necessary.&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  AL -- predicted &quot;values&quot; vector, shape (1, number of examples)
+  Y -- true &quot;values&quot; vector, shape (1, number of examples)
+
+  cost = (np.square(AL - Y)).mean(axis=1)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Backward propagation&lt;/p&gt;
+
+    &lt;p&gt;After computing the cost, or how far off our predictions are from our true values, we can use that cost to adjust our weights in our NN. But first, we need to get the gradients of 3 things with respect to our cost: (1) Gradient of predicted Y value, (2) gradient of weights of each hidden unit, and (3) gradient of weights of the bias unit. With these gradients under our belt, we can know how to adjust our weights to minimize the cost.&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  One backward pass goes like this, the 3 gradients will be computed for each layer
+
+  Cost -&amp;gt;  Activation Function (Non-Linear)-&amp;gt; Matrix Multiplication (Linear) -&amp;gt;
+  |_____________________ Repeat this N times (N Layers) ______________________|
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Update parameters (using parameters, and grads from backprop)&lt;/p&gt;
+
+    &lt;p&gt;At this stage, we have finished one back propagation and obtained all 3 types of gradients for all of our weights needed to adjust our NN.&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  parameters[&quot;W&quot; + str(l + 1)] = parameters[&quot;W&quot; + str(l + 1)] - learning_rate * grads[&quot;dW&quot; + str(l + 1)]
+  parameters[&quot;b&quot; + str(l + 1)] = parameters[&quot;b&quot; + str(l + 1)] - learning_rate * grads[&quot;db&quot; + str(l + 1)]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+
+    &lt;p&gt;We’re simply doing:&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;parameter = parameter - learning rate * gradient of that parameter&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;4. Use trained parameters to predict prices&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;We just perform a forward pass just like in training. It will produce the predicted values based on the current NN weights.&lt;/p&gt;
+
+&lt;h2 id=&quot;version-2&quot;&gt;Version 2&lt;/h2&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;Keras-based Neural Network&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/workofart/work-trader/tree/master/v2&quot;&gt;Code&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;In this version, since we’re dealing with high-level Keras framework, we only need to have good idea of the architecture of the NN and how to construct it using the building blocks provided by Keras (just like lego). We don’t need to implement matrix multiplication or activation functions. We &lt;strong&gt;should&lt;/strong&gt;, however, understand &lt;em&gt;how we initialize our weights, which activation functions to choose and how to structure our NN&lt;/em&gt;. If you have time, you might even want to tweak the “icing on the cake” to prevent overfitting by applying regularization and dropout techniques. The reason I mention the “icing” here in version 2 and not in version 1 is because all of these components are lego pieces that you don’t need to implement yourself. This is why high-level frameworks provide a productivity boost over hand-coded solutions. But it’s always good to understand what’s going on under the hood to debug potential issues.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;In our example:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;Instantiate a sequential model. This is like a container that holds the NN and its layers. Read more about &lt;a href=&quot;https://keras.io/models/sequential/&quot;&gt;Keras Sequential Models&lt;/a&gt;&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;&lt;span class=&quot;k&quot;&gt;model&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Sequential&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Add a Layer to the NN, note that we don’t need separate functions for forward/backward propagation, we just think in terms of layers in the NN. Read more about &lt;a href=&quot;https://keras.io/layers/core/&quot;&gt;Keras Layers&lt;/a&gt;. The &lt;code class=&quot;highlighter-rouge&quot;&gt;16&lt;/code&gt; is the number of neurons in this layer, and we’re using &lt;code class=&quot;highlighter-rouge&quot;&gt;relu&lt;/code&gt; as the activation function. Remember the building block argument I said before, in a high-level framework, we only need to &lt;em&gt;determine&lt;/em&gt; what pieces we need to build the NN, as opposed to &lt;em&gt;implementing&lt;/em&gt; them.&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;model.add(Dense(16, input_dim=X_train.shape[1], activation='relu'))&lt;/code&gt;&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;Note that this is equivalent to our &lt;code class=&quot;highlighter-rouge&quot;&gt;L_model_forward()&lt;/code&gt; function and &lt;code class=&quot;highlighter-rouge&quot;&gt;L_model_backward()&lt;/code&gt; combined in &lt;strong&gt;Version 1&lt;/strong&gt; since we think in terms of &lt;em&gt;operations&lt;/em&gt; in &lt;strong&gt;Version 1&lt;/strong&gt;, and &lt;em&gt;layers&lt;/em&gt; in &lt;strong&gt;Version 2&lt;/strong&gt;&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Similarly, we add another layer to the NN. The output space is N by 6 dimenions, where N is the number of samples, and the 6 is the number of neurons in this layer.&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;model.add(Dense(6, activation='relu'))&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Finally, we add our output layer to the NN. The output space (&lt;code class=&quot;highlighter-rouge&quot;&gt;Y_train.shape[1]&lt;/code&gt;) in our example is 1, since we’re only predicting one price at a time.
+    &lt;blockquote&gt;
+      &lt;p&gt;The difference in using &lt;code class=&quot;highlighter-rouge&quot;&gt;.shape[1]&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;shape[0]&lt;/code&gt; in the two versions is because in version 1, to follow Andrew Ng’s course notation, the samples are placed along columns &lt;code class=&quot;highlighter-rouge&quot;&gt;shape[1]&lt;/code&gt; and the features (input/output dimension) are rows &lt;code class=&quot;highlighter-rouge&quot;&gt;shape[0]&lt;/code&gt;. But in version 2, it’s the opposite, thus &lt;code class=&quot;highlighter-rouge&quot;&gt;Y_train.shape[1]&lt;/code&gt; here denotes the output dimension.&lt;/p&gt;
+    &lt;/blockquote&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;model.add(Dense(Y_train.shape[1]))&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;After the network is fully constructed, we have to tell it how to train the NN. This involves specifying the &lt;a href=&quot;https://keras.io/optimizers/&quot;&gt;optimizer&lt;/a&gt; for the NN as well as the &lt;a href=&quot;https://keras.io/losses/&quot;&gt;loss&lt;/a&gt; function&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;model.compile(optimizer=SGD(lr=0.03), loss='mse') # SGD = Stochastic Gradient Descent&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;version-3&quot;&gt;Version 3&lt;/h2&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;Tensorflow-based Neural Network&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/workofart/work-trader/tree/master/v3&quot;&gt;Code&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;So we’ve seen creating operations from scratch in our &lt;strong&gt;Version 1&lt;/strong&gt;, and using a high-level framework to create a “model” of our NN and just “fitting” it in &lt;strong&gt;Version 2&lt;/strong&gt;. In &lt;strong&gt;Version 3&lt;/strong&gt;, we have to switch our conceptual model of a NN a little bit again, because I have to introduce you to the concept of a &lt;a href=&quot;https://en.wikipedia.org/wiki/Tensor&quot;&gt;Tensor&lt;/a&gt;. In my definition, it’s a wrapper or a building block that can encompasses a variable, a constant, an operation, or any series of operations. We can connect tensors together by referencing them.&lt;/p&gt;
+
+&lt;p&gt;Let’s quickly go through our example and I’ll explain line by line with respect to how they relate to our &lt;strong&gt;Version 1&lt;/strong&gt; and &lt;strong&gt;Version 2&lt;/strong&gt; conceptual models.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;We will start by defining our input variables:
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; input_x = tf.placeholder('float', [None, X_train_orig.shape[1]], name='input_x')
+ input_y = tf.placeholder('float', [None, Y_train_orig.shape[1]], name='input_y')
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+
+    &lt;p&gt;Note that this is a “placeholder”, which means before we feed in the actual input data, this tensor will be empty. The dimensions for this placeholder is None by &lt;code class=&quot;highlighter-rouge&quot;&gt;X/Y_train_orig.shape[1]&lt;/code&gt;, this means it’s “&lt;strong&gt;any number&lt;/strong&gt; of samples by &lt;code class=&quot;highlighter-rouge&quot;&gt;shape[1]&lt;/code&gt; of features per sample”. The &lt;code class=&quot;highlighter-rouge&quot;&gt;name&lt;/code&gt; is optional, but it helps later when we need to debug.&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;The row/column vs samples/features notations are consistent with Version 2, where &lt;code class=&quot;highlighter-rouge&quot;&gt;shape[1]&lt;/code&gt;(columns) are the features, and &lt;code class=&quot;highlighter-rouge&quot;&gt;shape[0]&lt;/code&gt;(rows) are the samples&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Next, we will define some of the weights of our NN, namely our hidden unit weights and bias unit weights.&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; W1 = tf.Variable(tf.random_normal([X_train_orig.shape[1], 16]))
+ B1 = tf.Variable(tf.zeros([16]))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;Note that these tensor types are “Variable”, which means they will “vary” during our training process. These are, by default, &lt;a href=&quot;https://www.tensorflow.org/guide/variables&quot;&gt;trainable variables&lt;/a&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;We will define our linear function and activation function together in one line:&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;layer1 = tf.nn.relu(tf.add(tf.matmul(input_x, W1), B1))&lt;/code&gt;&lt;/p&gt;
+
+    &lt;p&gt;I will leave out the definition for &lt;code class=&quot;highlighter-rouge&quot;&gt;layer2&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;output&lt;/code&gt; layer since they are similar in nature.&lt;/p&gt;
+
+    &lt;p&gt;If we break this down and see each computation clearly, it’s equivalent to:&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; # Matrix Multiplication to get the linear result first
+
+ mat_result = tf.matmul(input_x, W1)
+	
+ # Add the result to the bias units using Numpy broadcasting
+
+ linear_result = tf.add(mat_result, B1)
+
+ # Apply rectified linear unit activation to the linear function result
+
+ layer1 = tf.nn.relu(linear_result)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+
+    &lt;p&gt;This is similar to our Version 1 definition, &lt;a href=&quot;#nn-forward-def&quot;&gt;here&lt;/a&gt;.
+ Note that we’re refering &lt;code class=&quot;highlighter-rouge&quot;&gt;W1&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;B1&lt;/code&gt; varibles from our second step. This establishes the connection between tensors.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Before we can train the network, we still need to define the loss functions and define how to optimize (train) it.&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; cost = tf.reduce_mean(tf.square(output - input_y))
+ optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+
+    &lt;p&gt;Note that we’re still reference other tensors &lt;code class=&quot;highlighter-rouge&quot;&gt;output&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;input_y&lt;/code&gt;, and &lt;code class=&quot;highlighter-rouge&quot;&gt;cost&lt;/code&gt;. We can use the &lt;code class=&quot;highlighter-rouge&quot;&gt;tf.reduce_mean()&lt;/code&gt; function to compute the MSE loss. And since Tensorflow has a built-in &lt;code class=&quot;highlighter-rouge&quot;&gt;AdamOptimizer&lt;/code&gt;, we can just call it. This is similar to &lt;strong&gt;Version 2’s&lt;/strong&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;optimizer=SGD()&lt;/code&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Now we have finished defining all the tensors. It’s time to actually feed in the input data and see how the data flow through all the connected tensors.&lt;/p&gt;
+
+    &lt;p&gt;Initialize all the variables that are &lt;strong&gt;not&lt;/strong&gt; placeholders, such as weights and biases&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;init = tf.global_variables_initializer()&lt;/code&gt;&lt;/p&gt;
+
+    &lt;p&gt;Feed in our &lt;code class=&quot;highlighter-rouge&quot;&gt;batch_x&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;batch_y&lt;/code&gt; inputs to the &lt;strong&gt;placeholders&lt;/strong&gt;. Note that the names (keys) must match the variable names &lt;code class=&quot;highlighter-rouge&quot;&gt;input_x/y&lt;/code&gt; and specify what we want to be returned: &lt;code class=&quot;highlighter-rouge&quot;&gt;optimizer&lt;/code&gt;, and &lt;code class=&quot;highlighter-rouge&quot;&gt;cost&lt;/code&gt; from step (4).&lt;/p&gt;
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; _, c = sess.run([optimizer, cost], feed_dict={
+         input_x: batch_x, 
+         input_y: batch_y, 
+     })
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/ml/tensorflow.png&quot; /&gt;&lt;/p&gt;
+&lt;h6 id=&quot;image-from-httpsplaygroundtensorfloworg&quot;&gt;Image from https://playground.tensorflow.org/&lt;/h6&gt;
+
+&lt;p&gt;As you can see now, after we feed in the input data into the NN, all the connected tensors will subsequently receive the input from the previous output and perform their computations accordingly, thus the name &lt;strong&gt;“TensorFlow”&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;I will be posting another note for applying reinforcement learning to trading. Since even with predicted prices, the agent will still not know when to buy or sell (i.e. after a 1% price drop? 2%?). We don’t want to hard-code those conditions, rather we want the agent to learn them as the “policy”. Until next time…Thanks!&lt;/p&gt;</content><author><name></name></author><summary type="html">Previous Knowledge Required</summary></entry><entry><title type="html">Asynchronous Advantage Actor Critic (A3C)-Reinforcement Learning -Laymens Explanation</title><link href="http://henrypan.com/blog/reinforcement-learning/2019/02/27/a3c-rl-layments-explanation.html" rel="alternate" type="text/html" title="Asynchronous Advantage Actor Critic (A3C)-Reinforcement Learning -Laymens Explanation" /><published>2019-02-27T12:00:00-05:00</published><updated>2019-02-27T12:00:00-05:00</updated><id>http://henrypan.com/blog/reinforcement-learning/2019/02/27/a3c-rl-layments-explanation</id><content type="html" xml:base="http://henrypan.com/blog/reinforcement-learning/2019/02/27/a3c-rl-layments-explanation.html">&lt;p&gt;The A3C method in Reinforcement Learning (RL) combines both a &lt;em&gt;critic’s value function&lt;/em&gt; (how good a state is) and an &lt;em&gt;actor’s policy&lt;/em&gt; (a set of action probability for a given state). &lt;strong&gt;I promise this explanation doesn’t not contain greek letters or calculus. It only contains English alphabets and subtraction in math.&lt;/strong&gt;&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/a3c_architecture.png&quot; alt=&quot;Diagram&quot; /&gt;&lt;/p&gt;
 
