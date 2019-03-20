@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://henrypan.com/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="http://henrypan.com/blog/" rel="alternate" type="text/html" /><updated>2019-03-20T10:55:37-04:00</updated><id>http://henrypan.com/blog/feed.xml</id><title type="html">Henry’s Blog</title><subtitle>My learning notes, research, projects and musings.</subtitle><entry><title type="html">Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future</title><link href="http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction.html" rel="alternate" type="text/html" title="Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future" /><published>2019-03-20T11:50:00-04:00</published><updated>2019-03-20T11:50:00-04:00</updated><id>http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction</id><content type="html" xml:base="http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction.html">&lt;h2 id=&quot;previous-knowledge-required&quot;&gt;Previous Knowledge Required&lt;/h2&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://henrypan.com/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="http://henrypan.com/blog/" rel="alternate" type="text/html" /><updated>2019-03-20T11:17:27-04:00</updated><id>http://henrypan.com/blog/feed.xml</id><title type="html">Henry’s Blog</title><subtitle>My learning notes, research, projects and musings.</subtitle><entry><title type="html">Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future</title><link href="http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction.html" rel="alternate" type="text/html" title="Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future" /><published>2019-03-20T11:50:00-04:00</published><updated>2019-03-20T11:50:00-04:00</updated><id>http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction</id><content type="html" xml:base="http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction.html">&lt;h2 id=&quot;previous-knowledge-required&quot;&gt;Previous Knowledge Required&lt;/h2&gt;
 
 &lt;ul&gt;
   &lt;li&gt;Understand what is a neural network (NN) and how it works conceptually.&lt;/li&gt;
@@ -45,6 +45,7 @@
 
 &lt;p&gt;&lt;img src=&quot;/blog/assets/images/ml/NN_architecture.png&quot; alt=&quot;NN&quot; /&gt;&lt;/p&gt;
 
+&lt;p&gt;&lt;a name=&quot;v1&quot;&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&quot;version-1&quot;&gt;Version 1&lt;/h2&gt;
 &lt;blockquote&gt;
   &lt;p&gt;(Hand-coded Neural Network (without using any 3rd party framework)&lt;/p&gt;
@@ -137,6 +138,7 @@
 
 &lt;p&gt;We just perform a forward pass just like in training. It will produce the predicted values based on the current NN weights.&lt;/p&gt;
 
+&lt;p&gt;&lt;a name=&quot;v2&quot;&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&quot;version-2&quot;&gt;Version 2&lt;/h2&gt;
 &lt;blockquote&gt;
   &lt;p&gt;Keras-based Neural Network&lt;/p&gt;
@@ -182,6 +184,7 @@
   &lt;/li&gt;
 &lt;/ol&gt;
 
+&lt;p&gt;&lt;a name=&quot;v3&quot;&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&quot;version-3&quot;&gt;Version 3&lt;/h2&gt;
 &lt;blockquote&gt;
   &lt;p&gt;Tensorflow-based Neural Network&lt;/p&gt;
