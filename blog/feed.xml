@@ -1,4 +1,112 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://henrypan.com/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="http://henrypan.com/blog/" rel="alternate" type="text/html" /><updated>2019-03-20T11:17:27-04:00</updated><id>http://henrypan.com/blog/feed.xml</id><title type="html">Henry’s Blog</title><subtitle>My learning notes, research, projects and musings.</subtitle><entry><title type="html">Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future</title><link href="http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction.html" rel="alternate" type="text/html" title="Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future" /><published>2019-03-20T11:50:00-04:00</published><updated>2019-03-20T11:50:00-04:00</updated><id>http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction</id><content type="html" xml:base="http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction.html">&lt;h2 id=&quot;previous-knowledge-required&quot;&gt;Previous Knowledge Required&lt;/h2&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://henrypan.com/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="http://henrypan.com/blog/" rel="alternate" type="text/html" /><updated>2019-04-04T00:59:36-04:00</updated><id>http://henrypan.com/blog/feed.xml</id><title type="html">Henry’s Blog</title><subtitle>My learning notes, research, projects and musings.</subtitle><entry><title type="html">Creating a Policy Gradient (PG) Agent to Trade</title><link href="http://henrypan.com/blog/reinforcement-learning/2019/04/04/pg-trading.html" rel="alternate" type="text/html" title="Creating a Policy Gradient (PG) Agent to Trade" /><published>2019-04-04T01:55:00-04:00</published><updated>2019-04-04T01:55:00-04:00</updated><id>http://henrypan.com/blog/reinforcement-learning/2019/04/04/pg-trading</id><content type="html" xml:base="http://henrypan.com/blog/reinforcement-learning/2019/04/04/pg-trading.html">&lt;p&gt;This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share some findings along the way. The goal of the series is to learn RL by applying it on an actual problem that I can relate to.&lt;/p&gt;
+
+&lt;h2 id=&quot;policy-gradient&quot;&gt;Policy Gradient&lt;/h2&gt;
+
+&lt;p&gt;Policy gradient is a policy-based approach, where the goal of the training process is to develop a policy that maximizes the reward the agent receives overtime. The other approach is value-based, which basically tries to develop a value function that outputs the value (goodness) of choosing a particular action in given a state.&lt;/p&gt;
+
+&lt;h2 id=&quot;problem-setting&quot;&gt;Problem Setting&lt;/h2&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;High-level overview&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;agent&quot;&gt;Agent&lt;/h3&gt;
+&lt;p&gt;At the start of each time step in each episode, the agent is presented with a state (see environment section for details on the state). The agent initially randomly selects different actions (buy, sell, hold) and observes its outcomes to determine which actions it should choose or avoid later. At the end of each episode, the agent is trained on the entire dataset to improve its policy.&lt;/p&gt;
+
+&lt;h3 id=&quot;environment&quot;&gt;Environment&lt;/h3&gt;
+&lt;p&gt;The environment consists of &lt;em&gt;states&lt;/em&gt; and &lt;em&gt;actions&lt;/em&gt;. Each &lt;em&gt;state&lt;/em&gt; is a set of prices (high/low/current) at any given point in time. There’s an option to use 10-second raw data or 1-minute data. I’ll be sticking to 1-minute intervals as there’s less noise compared to the 10-second data which looks like ping-pong and we’re not going for high-frequency trading (HFT) here. There are three possible &lt;em&gt;actions&lt;/em&gt;: buy, sell or hold.&lt;/p&gt;
+
+&lt;h3 id=&quot;reward&quot;&gt;Reward&lt;/h3&gt;
+&lt;p&gt;This is the hardest to design. Naively, I used the unrealized profit/loss (market value) of the entire portfolio (including cash) as the reward. Note that there’s no point in scaling up/down the reward as the significance gets taken into account by the market value anyways. In the later part of the series, I will go into details on the different reward functions that I’ve designed for trading.&lt;/p&gt;
+
+&lt;h2 id=&quot;technical-details&quot;&gt;Technical Details&lt;/h2&gt;
+
+&lt;h3 id=&quot;policy-network-design&quot;&gt;Policy Network Design&lt;/h3&gt;
+&lt;p&gt;In policy gradient, we are trying to approximate a good policy using a neural network. As a result, I implemented a simple 3-layer neural network.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/pg_architecture.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;training&quot;&gt;Training&lt;/h3&gt;
+
+&lt;p&gt;Note that in policy gradient, there is no traditional loss for a given sample. We use our reward to help us come up with a loss for a particular sample, and help update our neural network weights.&lt;/p&gt;
+
+&lt;p&gt;E.g. If we chose action 1 in our forward propagation pass, the update rule will update the weights of the neural network so that action 1 can be more/less likely to be chosen in the next iteration. This is dependent on our reward. If reward (V&lt;sub&gt;t&lt;/sub&gt;) is high, the update value (∇) will increase, and vice versa. See the formal update rule below:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/reinforce_pseudocode.png&quot; width=&quot;400&quot; /&gt;&lt;/p&gt;
+&lt;h5 id=&quot;reference-httpwww0csuclacukstaffdsilverwebteaching_filespgpdf&quot;&gt;Reference: http://www0.cs.ucl.ac.uk/staff/d.silver/web/Teaching_files/pg.pdf&lt;/h5&gt;
+
+&lt;h3 id=&quot;key-considerations&quot;&gt;Key Considerations&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;em&gt;How many neurons per hidden layer.&lt;/em&gt; I’ve noticed that using very small number of neurons in the second-last layer will result in nothing being learned, regardless of which activation function we use in between. Once I’ve increased the number of neurons in the second-last layer to 16, the loss started to decrease.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Activation function for each layer of the NN.&lt;/em&gt; Since the policy is trying to decide between 3 different actions. We can treat this problem as a multi-classification problem. As a result, I used the expotential linear unit for intermediary hidden layers, and the softmax function in the output layer.&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;em&gt;Discount factor for future rewards.&lt;/em&gt; The intuitive thought would be to think of this from a investment/time perspective, in other words, the time value of money. Since we’re dealing with 1-minute increments of rewards, the risk-free interest rate (treasury rate) for 1 year is around 2.4%, the 1-minute rate would calculated to be:&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  0.024 / 365 / 24 / 60 = .000000046 = 4.6e-8
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;Therefore, the discount factor should be 1 - 4.6e-8 = 0.999999954.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Learning rate.&lt;/em&gt; This is a hyperparameter that we should tune. However, for the purpose of this short tutorial on PG, I will use a learning rate of &lt;code class=&quot;highlighter-rouge&quot;&gt;4e-5&lt;/code&gt; that I found to be good without going into the details.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;key-challenges&quot;&gt;Key Challenges&lt;/h3&gt;
+
+&lt;h4 id=&quot;challenge-1&quot;&gt;Challenge 1&lt;/h4&gt;
+
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/dead_relu_loss.png&quot; width=&quot;300&quot; /&gt;
+&lt;img src=&quot;/blog/assets/images/rl/dead_relu_reward.png&quot; width=&quot;300&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;During training, I’ve noticed that the training loss is stuck at 0 for many episodes. After some investigation, I realized that it was because the activation function I chose to be ReLU behaved in a interesting way when the learning rate was too high. In other words, some of the neurons were “permanently dead” after passing through the ReLU activation function. This meant that learning stopped for those neurons, and thus the entire training session was useless. Formally, this is called the “Dying ReLU” problem, and I can’t believe I personally encoutered it. I overcame the challenge by using expotential linear unit (ELU) instead.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/elu_graph.png&quot; width=&quot;300&quot; /&gt;&lt;/p&gt;
+
+&lt;h6 id=&quot;source-httpsmediumcomtinyminda-practical-guide-to-relu-b83ca804f1f7&quot;&gt;Source: https://medium.com/tinymind/a-practical-guide-to-relu-b83ca804f1f7&lt;/h6&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;A “dead” ReLU always outputs the same value (zero as it happens, but that is not important) for any input. Probably this is arrived at by learning a large negative bias term for its weights.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;In turn, that means that it takes no role in discriminating between inputs. For classification, you could visualise this as a decision plane outside of all possible input data.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Once a ReLU ends up in this state, it is unlikely to recover, because the function gradient at 0 is also 0, so gradient descent learning will not alter the weights. “Leaky” ReLUs with a small positive gradient for negative inputs (y=0.01x when x &amp;lt; 0 say) are one attempt to address this issue and give a chance to recover.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h6 id=&quot;reference-httpsdatasciencestackexchangecomquestions5706what-is-the-dying-relu-problem-in-neural-networks&quot;&gt;Reference: https://datascience.stackexchange.com/questions/5706/what-is-the-dying-relu-problem-in-neural-networks&lt;/h6&gt;
+
+&lt;h4 id=&quot;challenge-2&quot;&gt;Challenge 2&lt;/h4&gt;
+
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/fluctuate_loss.png&quot; width=&quot;300&quot; /&gt;
+&lt;img src=&quot;/blog/assets/images/rl/fluctuate_reward.png&quot; width=&quot;300&quot; /&gt;
+&lt;img src=&quot;/blog/assets/images/rl/fluctuate_test_reward.png&quot; width=&quot;300&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;To measure the effectiveness of the agent, I constantly monitor the loss of the training as well as the “mean_reward” per episode to see if there’s a upward trend. However, the loss seem to fluctuate with (high variance) with no clear upward or downward trend.&lt;/p&gt;
+
+&lt;p&gt;To understand why this is &lt;em&gt;inherently&lt;/em&gt; a challenge for our problem let’s revisit two things:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;em&gt;How policy gradient learns the policy.&lt;/em&gt; The agent initially randomly chooses actions, and based on the reward that this action yielded at this state, the agent encourages/discourages the action chosen so it will be more/less likely to be chosen next time the agent sees the same state.&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;em&gt;The state definition in our problem statement.&lt;/em&gt; We are defining each state to be a set of prices at &lt;strong&gt;one point in time&lt;/strong&gt;. Combining this fact with (1) that the agent learns by observing the reward at a given state, we can easily see that a state doesn’t tell the agent that the price is in a downward trend or a upward trend.&lt;/p&gt;
+
+    &lt;p&gt;E.g. A price of 70 can either be part of a upward trend from 65 to 75, or a downward trend from 80 to 60. The agent initially bought at 70 (by random). Since this is in a upward trend from 65 to 75, buying at 70 yielded a reward of 5. This positive reward reinforced the agent to take the “buy” action whenever it sees state containing the price 70. However, the next time the agent encounters the same state 70, it utilizes the knowledge learned from last time and still buys, resulting in a reward of -15. This time the state 70 is part of a downward trend from 80 to 60.&lt;/p&gt;
+
+    &lt;p&gt;Perhaps if we utilize a recurrent neural network or long short-term memory network, we could incorporate the sequence information that could potentially help the agent make better decisions. But that’s for another time.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;I can’t believe I spent 5 days on this last challenge, because I thought there was a bug in the algorithm. But I eventually revisited the fundamentals and came to this realization.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;results&quot;&gt;Results&lt;/h3&gt;
+&lt;p&gt;Due to the inherent nature of vanilla policy gradient, this problem setting wasn’t “solved” so there are no fancy profit curves accomplished by the agent. However, the learning was invaluable to me. Feel free to check out the code &lt;a href=&quot;https://github.com/workofart/work-trader/tree/master/playground/pg&quot;&gt;here&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;next-steps&quot;&gt;Next Steps&lt;/h3&gt;
+
+&lt;p&gt;I’ll be continuing on my journey with applying RL towards trading. The next step is to try out Q-learning. Stay tuned…&lt;/p&gt;</content><author><name></name></author><summary type="html">This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share some findings along the way. The goal of the series is to learn RL by applying it on an actual problem that I can relate to.</summary></entry><entry><title type="html">Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future</title><link href="http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction.html" rel="alternate" type="text/html" title="Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future" /><published>2019-03-20T11:50:00-04:00</published><updated>2019-03-20T11:50:00-04:00</updated><id>http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction</id><content type="html" xml:base="http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction.html">&lt;h2 id=&quot;previous-knowledge-required&quot;&gt;Previous Knowledge Required&lt;/h2&gt;
 
 &lt;ul&gt;
   &lt;li&gt;Understand what is a neural network (NN) and how it works conceptually.&lt;/li&gt;
@@ -45,7 +153,6 @@
 
 &lt;p&gt;&lt;img src=&quot;/blog/assets/images/ml/NN_architecture.png&quot; alt=&quot;NN&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;a name=&quot;v1&quot;&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&quot;version-1&quot;&gt;Version 1&lt;/h2&gt;
 &lt;blockquote&gt;
   &lt;p&gt;(Hand-coded Neural Network (without using any 3rd party framework)&lt;/p&gt;
@@ -138,7 +245,6 @@
 
 &lt;p&gt;We just perform a forward pass just like in training. It will produce the predicted values based on the current NN weights.&lt;/p&gt;
 
-&lt;p&gt;&lt;a name=&quot;v2&quot;&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&quot;version-2&quot;&gt;Version 2&lt;/h2&gt;
 &lt;blockquote&gt;
   &lt;p&gt;Keras-based Neural Network&lt;/p&gt;
@@ -184,7 +290,6 @@
   &lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;&lt;a name=&quot;v3&quot;&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&quot;version-3&quot;&gt;Version 3&lt;/h2&gt;
 &lt;blockquote&gt;
   &lt;p&gt;Tensorflow-based Neural Network&lt;/p&gt;
