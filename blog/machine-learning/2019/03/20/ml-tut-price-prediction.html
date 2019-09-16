@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future | Henry’s Blog</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Previous Knowledge Required" />
+<meta property="og:description" content="Previous Knowledge Required" />
+<link rel="canonical" href="http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction.html" />
+<meta property="og:url" content="http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction.html" />
+<meta property="og:site_name" content="Henry’s Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-03-20T11:50:00-04:00" />
+<script type="application/ld+json">
+{"url":"http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction.html","description":"Previous Knowledge Required","dateModified":"2019-03-20T11:50:00-04:00","datePublished":"2019-03-20T11:50:00-04:00","headline":"Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction.html"},"@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/blog/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://henrypan.com/blog/feed.xml" title="Henry's Blog" /><script>
+if(!(window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNotTrack === "yes" || navigator.msDoNotTrack === "1")) {
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-103622213-1', 'auto');
+  ga('send', 'pageview');
+}
+</script>
+  
+</head>
+<body><header class="site-header" role="banner">
+    <div class="wrapper"><a class="site-title" rel="author" href="/blog/">Henry&#39;s Blog</a><nav class="site-nav">
+          <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+          <label for="nav-trigger">
+            <span class="menu-icon">
+              <svg viewBox="0 0 18 15" width="18px" height="15px">
+                <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+              </svg>
+            </span>
+          </label>
+  
+          <div class="trigger">
+            <a class="page-link" href="http://henrypan.com">Homepage</a>
+            <!---->
+          </div>
+        </nav></div>
+  </header>
+  <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2019-03-20T11:50:00-04:00" itemprop="datePublished">Mar 20, 2019
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <h2 id="previous-knowledge-required">Previous Knowledge Required</h2>
+
+<ul>
+  <li>Understand what is a neural network (NN) and how it works conceptually.</li>
+  <li>Python</li>
+  <li>Basic understanding of what derivatives/gradients are</li>
+</ul>
+
+<h2 id="goals">Goals</h2>
+<p>In this tutorial, I will go over 3 different approaches of creating a NN that can predict the prices of a particular cryptocurrency pair (ETHBTC). This include using (very-low-level) Numpy/raw Python, (low-level) Tensorflow and (high-level) Keras.</p>
+
+<p>Since it’s similar to predicting any price/number given a sequence of historical prices/numbers, I will describe this process as general as possible. The purpose of this tutorial is more about how to create NNs from scratch and to understand how high level frameworks like Keras work underneath the hood. It’s less about the correctness of predicting the future.</p>
+
+<p><strong>Personal goal:</strong> When I was studying machine learning, I thought it would be good for me to implement things at the low level first, and then slowly move up the abstraction to improve productivity. I made sure that the 3 approaches all achieved the same outcome.</p>
+
+<h2 id="showcase">Showcase</h2>
+
+<p>Since the outcome of the 3 approaches are the same, I’ll just show one set of the training and testing result. All three sets are in the <a href="https://github.com/workofart/work-trader">repo</a>, and you can regenerate them if you’d like.</p>
+
+<p><em>Note: The prices in the graph are normalized, but the accuracy is the same if denormalized. Again, this is just an illustration of how NN works and by no means a correct way to predict prices.</em></p>
+
+<h4 id="training-set">Training Set</h4>
+<p><img src="/blog/assets/images/ml/trainingset.png" width="600" /></p>
+
+<h4 id="test-set">Test Set</h4>
+<p><img src="/blog/assets/images/ml/testset.png" width="600" /></p>
+
+<h2 id="input-data">Input Data</h2>
+<p>82 Hours worth of BTCETH data in 10-second increments covering the following dimensions:</p>
+<ul>
+  <li>Closing price</li>
+  <li>high</li>
+  <li>low</li>
+  <li>volume</li>
+</ul>
+
+<p>Source: Binance</p>
+
+<h2 id="neural-network-architecture-all-3-versions">Neural Network Architecture (All 3 Versions)</h2>
+<p><a name="nn-architecture"></a></p>
+
+<p>3 Layers, <strong>Relu Activation Function</strong> for first (n-1) layers, with last layer being a <strong>linear output</strong>. The 1st hidden layer contains 16 neurons, the 2nd hidden layer contains 6 neurons. The <code class="highlighter-rouge">N</code> denotes the number of samples.</p>
+
+<p>Note that when counting layers, we usually don’t count the layer without tunable parameters. In this case, the input layer doesn’t have tunable parameters, which results in a 3-layer NN, as opposed to a 4-layer NN.</p>
+
+<p><img src="/blog/assets/images/ml/NN_architecture.png" alt="NN" /></p>
+
+<h2 id="version-1">Version 1</h2>
+<blockquote>
+  <p>(Hand-coded Neural Network (without using any 3rd party framework)</p>
+</blockquote>
+
+<p><a href="https://github.com/workofart/work-trader/tree/master/v1">Code</a></p>
+
+<p>In this version, we need to understand the innerworkings of NNs. In other words, how propagation of neuron computations take place and how to compute gradients from a programmatic perspective. I’ve borrowed and adapted some of the homework code from <a href="https://www.coursera.org/learn/neural-networks-deep-learning">Andrew Ng’s Coursera Course</a> on Deep Learning and Neural Networks to fit our context.</p>
+
+<p><strong>1. Initialize parameters</strong></p>
+<ul>
+  <li>Neuron Weights (W)</li>
+  <li>Bias Weights (B)</li>
+</ul>
+
+<p><strong>2. Define hyperparameters</strong></p>
+
+<ul>
+  <li>Learning Rate - how much each step of gradient descent should move</li>
+  <li>Number of training iterations</li>
+  <li>Number of hidden layers (Layers excluding input layer)</li>
+  <li>
+    <p>Activation function for each layer</p>
+
+    <p>The dimensions of the NN is defined on this line: <code class="highlighter-rouge">layers_dims = [X_train.shape[0], 16, 6, Y_train.shape[0]]</code></p>
+
+    <p>It means the <strong>first input layer</strong> takes in a size of <code class="highlighter-rouge">X_train.shape[0]</code>. In our example, that would be equal to <code class="highlighter-rouge">4</code> since there are 4 dimensions (Price, High, Low, Volume) for every data point. The <strong>first hidden layer</strong> (2nd element in the array) contains 16 neurons, <strong>second hidden layer</strong> contains 6 neurons, and the <strong>output layer</strong> contains <code class="highlighter-rouge">Y_train.shape[0]</code>, in our example that is equal to <code class="highlighter-rouge">1</code> since we’re predicting one price at a time.</p>
+
+    <p>To summarize, the NN looks like <a href="#nn-architecture">this</a></p>
+  </li>
+</ul>
+
+<p><strong>3. Define and perform training - loop for <code class="highlighter-rouge">num_iterations</code>:</strong>
+<a name="nn-forward-def"></a></p>
+<ul>
+  <li>
+    <p>Forward propagation</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  Usually one forward pass goes like this:
+
+  Input -&gt; Matrix Multiplication (Linear) -&gt; Activation Function (Non-Linear)-&gt; 
+  |_____________________ Repeat this N times (N Layers) ______________________|
+</code></pre></div>    </div>
+
+    <p>In our price prediction example (we use a linear output since we’re predicting values not classifying categories):
+  [LINEAR-&gt;RELU]*(N-1)-&gt;LINEAR</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  Matrix Multiplication (Linear) = Input X * Weights + Bias
+  Activation Function (Non-Linear) = Relu(Matrix Multiplication Result) = max(0, result)
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Compute cost function</p>
+
+    <p>After we have performed one pass of our forward propagation, we will have obtained the predictions (from the last layer’s activation function output) and we can compare it with the ground truth to compute the cost. Note that I’m using MSE (Mean-squared Error), that’s a common cost function for value prediction. I’ll keep the notations consistent with the code so you can refer to it if necessary.</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  AL -- predicted "values" vector, shape (1, number of examples)
+  Y -- true "values" vector, shape (1, number of examples)
+
+  cost = (np.square(AL - Y)).mean(axis=1)
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Backward propagation</p>
+
+    <p>After computing the cost, or how far off our predictions are from our true values, we can use that cost to adjust our weights in our NN. But first, we need to get the gradients of 3 things with respect to our cost: (1) Gradient of predicted Y value, (2) gradient of weights of each hidden unit, and (3) gradient of weights of the bias unit. With these gradients under our belt, we can know how to adjust our weights to minimize the cost.</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  One backward pass goes like this, the 3 gradients will be computed for each layer
+
+  Cost -&gt;  Activation Function (Non-Linear)-&gt; Matrix Multiplication (Linear) -&gt;
+  |_____________________ Repeat this N times (N Layers) ______________________|
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Update parameters (using parameters, and grads from backprop)</p>
+
+    <p>At this stage, we have finished one back propagation and obtained all 3 types of gradients for all of our weights needed to adjust our NN.</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  parameters["W" + str(l + 1)] = parameters["W" + str(l + 1)] - learning_rate * grads["dW" + str(l + 1)]
+  parameters["b" + str(l + 1)] = parameters["b" + str(l + 1)] - learning_rate * grads["db" + str(l + 1)]
+</code></pre></div>    </div>
+
+    <p>We’re simply doing:</p>
+
+    <p><code class="highlighter-rouge">parameter = parameter - learning rate * gradient of that parameter</code></p>
+  </li>
+</ul>
+
+<p><strong>4. Use trained parameters to predict prices</strong></p>
+
+<p>We just perform a forward pass just like in training. It will produce the predicted values based on the current NN weights.</p>
+
+<h2 id="version-2">Version 2</h2>
+<blockquote>
+  <p>Keras-based Neural Network</p>
+</blockquote>
+
+<p><a href="https://github.com/workofart/work-trader/tree/master/v2">Code</a></p>
+
+<p>In this version, since we’re dealing with high-level Keras framework, we only need to have good idea of the architecture of the NN and how to construct it using the building blocks provided by Keras (just like lego). We don’t need to implement matrix multiplication or activation functions. We <strong>should</strong>, however, understand <em>how we initialize our weights, which activation functions to choose and how to structure our NN</em>. If you have time, you might even want to tweak the “icing on the cake” to prevent overfitting by applying regularization and dropout techniques. The reason I mention the “icing” here in version 2 and not in version 1 is because all of these components are lego pieces that you don’t need to implement yourself. This is why high-level frameworks provide a productivity boost over hand-coded solutions. But it’s always good to understand what’s going on under the hood to debug potential issues.</p>
+
+<p><strong>In our example:</strong></p>
+
+<ol>
+  <li>
+    <p>Instantiate a sequential model. This is like a container that holds the NN and its layers. Read more about <a href="https://keras.io/models/sequential/">Keras Sequential Models</a></p>
+
+    <p><code class="highlighter-rouge"><span class="k">model</span> <span class="p">=</span> <span class="n">Sequential</span><span class="p">()</span></code></p>
+  </li>
+  <li>
+    <p>Add a Layer to the NN, note that we don’t need separate functions for forward/backward propagation, we just think in terms of layers in the NN. Read more about <a href="https://keras.io/layers/core/">Keras Layers</a>. The <code class="highlighter-rouge">16</code> is the number of neurons in this layer, and we’re using <code class="highlighter-rouge">relu</code> as the activation function. Remember the building block argument I said before, in a high-level framework, we only need to <em>determine</em> what pieces we need to build the NN, as opposed to <em>implementing</em> them.</p>
+
+    <p><code class="highlighter-rouge">model.add(Dense(16, input_dim=X_train.shape[1], activation='relu'))</code></p>
+
+    <blockquote>
+      <p>Note that this is equivalent to our <code class="highlighter-rouge">L_model_forward()</code> function and <code class="highlighter-rouge">L_model_backward()</code> combined in <strong>Version 1</strong> since we think in terms of <em>operations</em> in <strong>Version 1</strong>, and <em>layers</em> in <strong>Version 2</strong></p>
+    </blockquote>
+  </li>
+  <li>
+    <p>Similarly, we add another layer to the NN. The output space is N by 6 dimenions, where N is the number of samples, and the 6 is the number of neurons in this layer.</p>
+
+    <p><code class="highlighter-rouge">model.add(Dense(6, activation='relu'))</code></p>
+  </li>
+  <li>Finally, we add our output layer to the NN. The output space (<code class="highlighter-rouge">Y_train.shape[1]</code>) in our example is 1, since we’re only predicting one price at a time.
+    <blockquote>
+      <p>The difference in using <code class="highlighter-rouge">.shape[1]</code> and <code class="highlighter-rouge">shape[0]</code> in the two versions is because in version 1, to follow Andrew Ng’s course notation, the samples are placed along columns <code class="highlighter-rouge">shape[1]</code> and the features (input/output dimension) are rows <code class="highlighter-rouge">shape[0]</code>. But in version 2, it’s the opposite, thus <code class="highlighter-rouge">Y_train.shape[1]</code> here denotes the output dimension.</p>
+    </blockquote>
+
+    <p><code class="highlighter-rouge">model.add(Dense(Y_train.shape[1]))</code></p>
+  </li>
+  <li>
+    <p>After the network is fully constructed, we have to tell it how to train the NN. This involves specifying the <a href="https://keras.io/optimizers/">optimizer</a> for the NN as well as the <a href="https://keras.io/losses/">loss</a> function</p>
+
+    <p><code class="highlighter-rouge">model.compile(optimizer=SGD(lr=0.03), loss='mse') # SGD = Stochastic Gradient Descent</code></p>
+  </li>
+</ol>
+
+<h2 id="version-3">Version 3</h2>
+<blockquote>
+  <p>Tensorflow-based Neural Network</p>
+</blockquote>
+
+<p><a href="https://github.com/workofart/work-trader/tree/master/v3">Code</a></p>
+
+<p>So we’ve seen creating operations from scratch in our <strong>Version 1</strong>, and using a high-level framework to create a “model” of our NN and just “fitting” it in <strong>Version 2</strong>. In <strong>Version 3</strong>, we have to switch our conceptual model of a NN a little bit again, because I have to introduce you to the concept of a <a href="https://en.wikipedia.org/wiki/Tensor">Tensor</a>. In my definition, it’s a wrapper or a building block that can encompasses a variable, a constant, an operation, or any series of operations. We can connect tensors together by referencing them.</p>
+
+<p>Let’s quickly go through our example and I’ll explain line by line with respect to how they relate to our <strong>Version 1</strong> and <strong>Version 2</strong> conceptual models.</p>
+
+<ol>
+  <li>We will start by defining our input variables:
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> input_x = tf.placeholder('float', [None, X_train_orig.shape[1]], name='input_x')
+ input_y = tf.placeholder('float', [None, Y_train_orig.shape[1]], name='input_y')
+</code></pre></div>    </div>
+
+    <p>Note that this is a “placeholder”, which means before we feed in the actual input data, this tensor will be empty. The dimensions for this placeholder is None by <code class="highlighter-rouge">X/Y_train_orig.shape[1]</code>, this means it’s “<strong>any number</strong> of samples by <code class="highlighter-rouge">shape[1]</code> of features per sample”. The <code class="highlighter-rouge">name</code> is optional, but it helps later when we need to debug.</p>
+
+    <blockquote>
+      <p>The row/column vs samples/features notations are consistent with Version 2, where <code class="highlighter-rouge">shape[1]</code>(columns) are the features, and <code class="highlighter-rouge">shape[0]</code>(rows) are the samples</p>
+    </blockquote>
+  </li>
+  <li>
+    <p>Next, we will define some of the weights of our NN, namely our hidden unit weights and bias unit weights.</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> W1 = tf.Variable(tf.random_normal([X_train_orig.shape[1], 16]))
+ B1 = tf.Variable(tf.zeros([16]))
+</code></pre></div>    </div>
+    <p>Note that these tensor types are “Variable”, which means they will “vary” during our training process. These are, by default, <a href="https://www.tensorflow.org/guide/variables">trainable variables</a>.</p>
+  </li>
+  <li>
+    <p>We will define our linear function and activation function together in one line:</p>
+
+    <p><code class="highlighter-rouge">layer1 = tf.nn.relu(tf.add(tf.matmul(input_x, W1), B1))</code></p>
+
+    <p>I will leave out the definition for <code class="highlighter-rouge">layer2</code> and <code class="highlighter-rouge">output</code> layer since they are similar in nature.</p>
+
+    <p>If we break this down and see each computation clearly, it’s equivalent to:</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> # Matrix Multiplication to get the linear result first
+
+ mat_result = tf.matmul(input_x, W1)
+	
+ # Add the result to the bias units using Numpy broadcasting
+
+ linear_result = tf.add(mat_result, B1)
+
+ # Apply rectified linear unit activation to the linear function result
+
+ layer1 = tf.nn.relu(linear_result)
+</code></pre></div>    </div>
+
+    <p>This is similar to our Version 1 definition, <a href="#nn-forward-def">here</a>.
+ Note that we’re refering <code class="highlighter-rouge">W1</code> and <code class="highlighter-rouge">B1</code> varibles from our second step. This establishes the connection between tensors.</p>
+  </li>
+  <li>
+    <p>Before we can train the network, we still need to define the loss functions and define how to optimize (train) it.</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> cost = tf.reduce_mean(tf.square(output - input_y))
+ optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
+</code></pre></div>    </div>
+
+    <p>Note that we’re still reference other tensors <code class="highlighter-rouge">output</code>, <code class="highlighter-rouge">input_y</code>, and <code class="highlighter-rouge">cost</code>. We can use the <code class="highlighter-rouge">tf.reduce_mean()</code> function to compute the MSE loss. And since Tensorflow has a built-in <code class="highlighter-rouge">AdamOptimizer</code>, we can just call it. This is similar to <strong>Version 2’s</strong> <code class="highlighter-rouge">optimizer=SGD()</code>.</p>
+  </li>
+  <li>
+    <p>Now we have finished defining all the tensors. It’s time to actually feed in the input data and see how the data flow through all the connected tensors.</p>
+
+    <p>Initialize all the variables that are <strong>not</strong> placeholders, such as weights and biases</p>
+
+    <p><code class="highlighter-rouge">init = tf.global_variables_initializer()</code></p>
+
+    <p>Feed in our <code class="highlighter-rouge">batch_x</code> and <code class="highlighter-rouge">batch_y</code> inputs to the <strong>placeholders</strong>. Note that the names (keys) must match the variable names <code class="highlighter-rouge">input_x/y</code> and specify what we want to be returned: <code class="highlighter-rouge">optimizer</code>, and <code class="highlighter-rouge">cost</code> from step (4).</p>
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> _, c = sess.run([optimizer, cost], feed_dict={
+         input_x: batch_x, 
+         input_y: batch_y, 
+     })
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<p><img src="/blog/assets/images/ml/tensorflow.png" /></p>
+<h6 id="image-from-httpsplaygroundtensorfloworg">Image from https://playground.tensorflow.org/</h6>
+
+<p>As you can see now, after we feed in the input data into the NN, all the connected tensors will subsequently receive the input from the previous output and perform their computations accordingly, thus the name <strong>“TensorFlow”</strong>.</p>
+
+<hr />
+
+<p>I will be posting another note for applying reinforcement learning to trading. Since even with predicted prices, the agent will still not know when to buy or sell (i.e. after a 1% price drop? 2%?). We don’t want to hard-code those conditions, rather we want the agent to learn them as the “policy”. Until next time…Thanks!</p>
+
+  </div><a class="u-url" href="/blog/machine-learning/2019/03/20/ml-tut-price-prediction.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/blog/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Henry&#39;s Blog</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Henry&#39;s Blog</li><li><a class="u-email" href="mailto:hanxiangp@gmail.com">hanxiangp@gmail.com</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/workofart"><svg class="svg-icon"><use xlink:href="/blog/assets/minima-social-icons.svg#github"></use></svg> <span class="username">workofart</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>My learning notes, research, projects and musings.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

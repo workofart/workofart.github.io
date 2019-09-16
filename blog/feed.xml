@@ -1,0 +1,595 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://henrypan.com/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="http://henrypan.com/blog/" rel="alternate" type="text/html" /><updated>2019-04-04T00:59:36-04:00</updated><id>http://henrypan.com/blog/feed.xml</id><title type="html">Henry’s Blog</title><subtitle>My learning notes, research, projects and musings.</subtitle><entry><title type="html">Creating a Policy Gradient (PG) Agent to Trade</title><link href="http://henrypan.com/blog/reinforcement-learning/2019/04/04/pg-trading.html" rel="alternate" type="text/html" title="Creating a Policy Gradient (PG) Agent to Trade" /><published>2019-04-04T01:55:00-04:00</published><updated>2019-04-04T01:55:00-04:00</updated><id>http://henrypan.com/blog/reinforcement-learning/2019/04/04/pg-trading</id><content type="html" xml:base="http://henrypan.com/blog/reinforcement-learning/2019/04/04/pg-trading.html">&lt;p&gt;This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share some findings along the way. The goal of the series is to learn RL by applying it on an actual problem that I can relate to.&lt;/p&gt;
+
+&lt;h2 id=&quot;policy-gradient&quot;&gt;Policy Gradient&lt;/h2&gt;
+
+&lt;p&gt;Policy gradient is a policy-based approach, where the goal of the training process is to develop a policy that maximizes the reward the agent receives overtime. The other approach is value-based, which basically tries to develop a value function that outputs the value (goodness) of choosing a particular action in given a state.&lt;/p&gt;
+
+&lt;h2 id=&quot;problem-setting&quot;&gt;Problem Setting&lt;/h2&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;High-level overview&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;agent&quot;&gt;Agent&lt;/h3&gt;
+&lt;p&gt;At the start of each time step in each episode, the agent is presented with a state (see environment section for details on the state). The agent initially randomly selects different actions (buy, sell, hold) and observes its outcomes to determine which actions it should choose or avoid later. At the end of each episode, the agent is trained on the entire dataset to improve its policy.&lt;/p&gt;
+
+&lt;h3 id=&quot;environment&quot;&gt;Environment&lt;/h3&gt;
+&lt;p&gt;The environment consists of &lt;em&gt;states&lt;/em&gt; and &lt;em&gt;actions&lt;/em&gt;. Each &lt;em&gt;state&lt;/em&gt; is a set of prices (high/low/current) at any given point in time. There’s an option to use 10-second raw data or 1-minute data. I’ll be sticking to 1-minute intervals as there’s less noise compared to the 10-second data which looks like ping-pong and we’re not going for high-frequency trading (HFT) here. There are three possible &lt;em&gt;actions&lt;/em&gt;: buy, sell or hold.&lt;/p&gt;
+
+&lt;h3 id=&quot;reward&quot;&gt;Reward&lt;/h3&gt;
+&lt;p&gt;This is the hardest to design. Naively, I used the unrealized profit/loss (market value) of the entire portfolio (including cash) as the reward. Note that there’s no point in scaling up/down the reward as the significance gets taken into account by the market value anyways. In the later part of the series, I will go into details on the different reward functions that I’ve designed for trading.&lt;/p&gt;
+
+&lt;h2 id=&quot;technical-details&quot;&gt;Technical Details&lt;/h2&gt;
+
+&lt;h3 id=&quot;policy-network-design&quot;&gt;Policy Network Design&lt;/h3&gt;
+&lt;p&gt;In policy gradient, we are trying to approximate a good policy using a neural network. As a result, I implemented a simple 3-layer neural network.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/pg_architecture.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;training&quot;&gt;Training&lt;/h3&gt;
+
+&lt;p&gt;Note that in policy gradient, there is no traditional loss for a given sample. We use our reward to help us come up with a loss for a particular sample, and help update our neural network weights.&lt;/p&gt;
+
+&lt;p&gt;E.g. If we chose action 1 in our forward propagation pass, the update rule will update the weights of the neural network so that action 1 can be more/less likely to be chosen in the next iteration. This is dependent on our reward. If reward (V&lt;sub&gt;t&lt;/sub&gt;) is high, the update value (∇) will increase, and vice versa. See the formal update rule below:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/reinforce_pseudocode.png&quot; width=&quot;400&quot; /&gt;&lt;/p&gt;
+&lt;h5 id=&quot;reference-httpwww0csuclacukstaffdsilverwebteaching_filespgpdf&quot;&gt;Reference: http://www0.cs.ucl.ac.uk/staff/d.silver/web/Teaching_files/pg.pdf&lt;/h5&gt;
+
+&lt;h3 id=&quot;key-considerations&quot;&gt;Key Considerations&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;em&gt;How many neurons per hidden layer.&lt;/em&gt; I’ve noticed that using very small number of neurons in the second-last layer will result in nothing being learned, regardless of which activation function we use in between. Once I’ve increased the number of neurons in the second-last layer to 16, the loss started to decrease.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Activation function for each layer of the NN.&lt;/em&gt; Since the policy is trying to decide between 3 different actions. We can treat this problem as a multi-classification problem. As a result, I used the expotential linear unit for intermediary hidden layers, and the softmax function in the output layer.&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;em&gt;Discount factor for future rewards.&lt;/em&gt; The intuitive thought would be to think of this from a investment/time perspective, in other words, the time value of money. Since we’re dealing with 1-minute increments of rewards, the risk-free interest rate (treasury rate) for 1 year is around 2.4%, the 1-minute rate would calculated to be:&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  0.024 / 365 / 24 / 60 = .000000046 = 4.6e-8
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;Therefore, the discount factor should be 1 - 4.6e-8 = 0.999999954.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Learning rate.&lt;/em&gt; This is a hyperparameter that we should tune. However, for the purpose of this short tutorial on PG, I will use a learning rate of &lt;code class=&quot;highlighter-rouge&quot;&gt;4e-5&lt;/code&gt; that I found to be good without going into the details.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;key-challenges&quot;&gt;Key Challenges&lt;/h3&gt;
+
+&lt;h4 id=&quot;challenge-1&quot;&gt;Challenge 1&lt;/h4&gt;
+
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/dead_relu_loss.png&quot; width=&quot;300&quot; /&gt;
+&lt;img src=&quot;/blog/assets/images/rl/dead_relu_reward.png&quot; width=&quot;300&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;During training, I’ve noticed that the training loss is stuck at 0 for many episodes. After some investigation, I realized that it was because the activation function I chose to be ReLU behaved in a interesting way when the learning rate was too high. In other words, some of the neurons were “permanently dead” after passing through the ReLU activation function. This meant that learning stopped for those neurons, and thus the entire training session was useless. Formally, this is called the “Dying ReLU” problem, and I can’t believe I personally encoutered it. I overcame the challenge by using expotential linear unit (ELU) instead.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/elu_graph.png&quot; width=&quot;300&quot; /&gt;&lt;/p&gt;
+
+&lt;h6 id=&quot;source-httpsmediumcomtinyminda-practical-guide-to-relu-b83ca804f1f7&quot;&gt;Source: https://medium.com/tinymind/a-practical-guide-to-relu-b83ca804f1f7&lt;/h6&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;A “dead” ReLU always outputs the same value (zero as it happens, but that is not important) for any input. Probably this is arrived at by learning a large negative bias term for its weights.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;In turn, that means that it takes no role in discriminating between inputs. For classification, you could visualise this as a decision plane outside of all possible input data.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Once a ReLU ends up in this state, it is unlikely to recover, because the function gradient at 0 is also 0, so gradient descent learning will not alter the weights. “Leaky” ReLUs with a small positive gradient for negative inputs (y=0.01x when x &amp;lt; 0 say) are one attempt to address this issue and give a chance to recover.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h6 id=&quot;reference-httpsdatasciencestackexchangecomquestions5706what-is-the-dying-relu-problem-in-neural-networks&quot;&gt;Reference: https://datascience.stackexchange.com/questions/5706/what-is-the-dying-relu-problem-in-neural-networks&lt;/h6&gt;
+
+&lt;h4 id=&quot;challenge-2&quot;&gt;Challenge 2&lt;/h4&gt;
+
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/fluctuate_loss.png&quot; width=&quot;300&quot; /&gt;
+&lt;img src=&quot;/blog/assets/images/rl/fluctuate_reward.png&quot; width=&quot;300&quot; /&gt;
+&lt;img src=&quot;/blog/assets/images/rl/fluctuate_test_reward.png&quot; width=&quot;300&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;To measure the effectiveness of the agent, I constantly monitor the loss of the training as well as the “mean_reward” per episode to see if there’s a upward trend. However, the loss seem to fluctuate with (high variance) with no clear upward or downward trend.&lt;/p&gt;
+
+&lt;p&gt;To understand why this is &lt;em&gt;inherently&lt;/em&gt; a challenge for our problem let’s revisit two things:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;em&gt;How policy gradient learns the policy.&lt;/em&gt; The agent initially randomly chooses actions, and based on the reward that this action yielded at this state, the agent encourages/discourages the action chosen so it will be more/less likely to be chosen next time the agent sees the same state.&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;em&gt;The state definition in our problem statement.&lt;/em&gt; We are defining each state to be a set of prices at &lt;strong&gt;one point in time&lt;/strong&gt;. Combining this fact with (1) that the agent learns by observing the reward at a given state, we can easily see that a state doesn’t tell the agent that the price is in a downward trend or a upward trend.&lt;/p&gt;
+
+    &lt;p&gt;E.g. A price of 70 can either be part of a upward trend from 65 to 75, or a downward trend from 80 to 60. The agent initially bought at 70 (by random). Since this is in a upward trend from 65 to 75, buying at 70 yielded a reward of 5. This positive reward reinforced the agent to take the “buy” action whenever it sees state containing the price 70. However, the next time the agent encounters the same state 70, it utilizes the knowledge learned from last time and still buys, resulting in a reward of -15. This time the state 70 is part of a downward trend from 80 to 60.&lt;/p&gt;
+
+    &lt;p&gt;Perhaps if we utilize a recurrent neural network or long short-term memory network, we could incorporate the sequence information that could potentially help the agent make better decisions. But that’s for another time.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;I can’t believe I spent 5 days on this last challenge, because I thought there was a bug in the algorithm. But I eventually revisited the fundamentals and came to this realization.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;results&quot;&gt;Results&lt;/h3&gt;
+&lt;p&gt;Due to the inherent nature of vanilla policy gradient, this problem setting wasn’t “solved” so there are no fancy profit curves accomplished by the agent. However, the learning was invaluable to me. Feel free to check out the code &lt;a href=&quot;https://github.com/workofart/work-trader/tree/master/playground/pg&quot;&gt;here&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;next-steps&quot;&gt;Next Steps&lt;/h3&gt;
+
+&lt;p&gt;I’ll be continuing on my journey with applying RL towards trading. The next step is to try out Q-learning. Stay tuned…&lt;/p&gt;</content><author><name></name></author><summary type="html">This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share some findings along the way. The goal of the series is to learn RL by applying it on an actual problem that I can relate to.</summary></entry><entry><title type="html">Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future</title><link href="http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction.html" rel="alternate" type="text/html" title="Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future" /><published>2019-03-20T11:50:00-04:00</published><updated>2019-03-20T11:50:00-04:00</updated><id>http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction</id><content type="html" xml:base="http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction.html">&lt;h2 id=&quot;previous-knowledge-required&quot;&gt;Previous Knowledge Required&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Understand what is a neural network (NN) and how it works conceptually.&lt;/li&gt;
+  &lt;li&gt;Python&lt;/li&gt;
+  &lt;li&gt;Basic understanding of what derivatives/gradients are&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;goals&quot;&gt;Goals&lt;/h2&gt;
+&lt;p&gt;In this tutorial, I will go over 3 different approaches of creating a NN that can predict the prices of a particular cryptocurrency pair (ETHBTC). This include using (very-low-level) Numpy/raw Python, (low-level) Tensorflow and (high-level) Keras.&lt;/p&gt;
+
+&lt;p&gt;Since it’s similar to predicting any price/number given a sequence of historical prices/numbers, I will describe this process as general as possible. The purpose of this tutorial is more about how to create NNs from scratch and to understand how high level frameworks like Keras work underneath the hood. It’s less about the correctness of predicting the future.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Personal goal:&lt;/strong&gt; When I was studying machine learning, I thought it would be good for me to implement things at the low level first, and then slowly move up the abstraction to improve productivity. I made sure that the 3 approaches all achieved the same outcome.&lt;/p&gt;
+
+&lt;h2 id=&quot;showcase&quot;&gt;Showcase&lt;/h2&gt;
+
+&lt;p&gt;Since the outcome of the 3 approaches are the same, I’ll just show one set of the training and testing result. All three sets are in the &lt;a href=&quot;https://github.com/workofart/work-trader&quot;&gt;repo&lt;/a&gt;, and you can regenerate them if you’d like.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Note: The prices in the graph are normalized, but the accuracy is the same if denormalized. Again, this is just an illustration of how NN works and by no means a correct way to predict prices.&lt;/em&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;training-set&quot;&gt;Training Set&lt;/h4&gt;
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/ml/trainingset.png&quot; width=&quot;600&quot; /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;test-set&quot;&gt;Test Set&lt;/h4&gt;
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/ml/testset.png&quot; width=&quot;600&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;input-data&quot;&gt;Input Data&lt;/h2&gt;
+&lt;p&gt;82 Hours worth of BTCETH data in 10-second increments covering the following dimensions:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Closing price&lt;/li&gt;
+  &lt;li&gt;high&lt;/li&gt;
+  &lt;li&gt;low&lt;/li&gt;
+  &lt;li&gt;volume&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Source: Binance&lt;/p&gt;
+
+&lt;h2 id=&quot;neural-network-architecture-all-3-versions&quot;&gt;Neural Network Architecture (All 3 Versions)&lt;/h2&gt;
+&lt;p&gt;&lt;a name=&quot;nn-architecture&quot;&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;3 Layers, &lt;strong&gt;Relu Activation Function&lt;/strong&gt; for first (n-1) layers, with last layer being a &lt;strong&gt;linear output&lt;/strong&gt;. The 1st hidden layer contains 16 neurons, the 2nd hidden layer contains 6 neurons. The &lt;code class=&quot;highlighter-rouge&quot;&gt;N&lt;/code&gt; denotes the number of samples.&lt;/p&gt;
+
+&lt;p&gt;Note that when counting layers, we usually don’t count the layer without tunable parameters. In this case, the input layer doesn’t have tunable parameters, which results in a 3-layer NN, as opposed to a 4-layer NN.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/ml/NN_architecture.png&quot; alt=&quot;NN&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;version-1&quot;&gt;Version 1&lt;/h2&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;(Hand-coded Neural Network (without using any 3rd party framework)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/workofart/work-trader/tree/master/v1&quot;&gt;Code&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;In this version, we need to understand the innerworkings of NNs. In other words, how propagation of neuron computations take place and how to compute gradients from a programmatic perspective. I’ve borrowed and adapted some of the homework code from &lt;a href=&quot;https://www.coursera.org/learn/neural-networks-deep-learning&quot;&gt;Andrew Ng’s Coursera Course&lt;/a&gt; on Deep Learning and Neural Networks to fit our context.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;1. Initialize parameters&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Neuron Weights (W)&lt;/li&gt;
+  &lt;li&gt;Bias Weights (B)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;2. Define hyperparameters&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Learning Rate - how much each step of gradient descent should move&lt;/li&gt;
+  &lt;li&gt;Number of training iterations&lt;/li&gt;
+  &lt;li&gt;Number of hidden layers (Layers excluding input layer)&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Activation function for each layer&lt;/p&gt;
+
+    &lt;p&gt;The dimensions of the NN is defined on this line: &lt;code class=&quot;highlighter-rouge&quot;&gt;layers_dims = [X_train.shape[0], 16, 6, Y_train.shape[0]]&lt;/code&gt;&lt;/p&gt;
+
+    &lt;p&gt;It means the &lt;strong&gt;first input layer&lt;/strong&gt; takes in a size of &lt;code class=&quot;highlighter-rouge&quot;&gt;X_train.shape[0]&lt;/code&gt;. In our example, that would be equal to &lt;code class=&quot;highlighter-rouge&quot;&gt;4&lt;/code&gt; since there are 4 dimensions (Price, High, Low, Volume) for every data point. The &lt;strong&gt;first hidden layer&lt;/strong&gt; (2nd element in the array) contains 16 neurons, &lt;strong&gt;second hidden layer&lt;/strong&gt; contains 6 neurons, and the &lt;strong&gt;output layer&lt;/strong&gt; contains &lt;code class=&quot;highlighter-rouge&quot;&gt;Y_train.shape[0]&lt;/code&gt;, in our example that is equal to &lt;code class=&quot;highlighter-rouge&quot;&gt;1&lt;/code&gt; since we’re predicting one price at a time.&lt;/p&gt;
+
+    &lt;p&gt;To summarize, the NN looks like &lt;a href=&quot;#nn-architecture&quot;&gt;this&lt;/a&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;3. Define and perform training - loop for &lt;code class=&quot;highlighter-rouge&quot;&gt;num_iterations&lt;/code&gt;:&lt;/strong&gt;
+&lt;a name=&quot;nn-forward-def&quot;&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Forward propagation&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  Usually one forward pass goes like this:
+
+  Input -&amp;gt; Matrix Multiplication (Linear) -&amp;gt; Activation Function (Non-Linear)-&amp;gt; 
+  |_____________________ Repeat this N times (N Layers) ______________________|
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+
+    &lt;p&gt;In our price prediction example (we use a linear output since we’re predicting values not classifying categories):
+  [LINEAR-&amp;gt;RELU]*(N-1)-&amp;gt;LINEAR&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  Matrix Multiplication (Linear) = Input X * Weights + Bias
+  Activation Function (Non-Linear) = Relu(Matrix Multiplication Result) = max(0, result)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Compute cost function&lt;/p&gt;
+
+    &lt;p&gt;After we have performed one pass of our forward propagation, we will have obtained the predictions (from the last layer’s activation function output) and we can compare it with the ground truth to compute the cost. Note that I’m using MSE (Mean-squared Error), that’s a common cost function for value prediction. I’ll keep the notations consistent with the code so you can refer to it if necessary.&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  AL -- predicted &quot;values&quot; vector, shape (1, number of examples)
+  Y -- true &quot;values&quot; vector, shape (1, number of examples)
+
+  cost = (np.square(AL - Y)).mean(axis=1)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Backward propagation&lt;/p&gt;
+
+    &lt;p&gt;After computing the cost, or how far off our predictions are from our true values, we can use that cost to adjust our weights in our NN. But first, we need to get the gradients of 3 things with respect to our cost: (1) Gradient of predicted Y value, (2) gradient of weights of each hidden unit, and (3) gradient of weights of the bias unit. With these gradients under our belt, we can know how to adjust our weights to minimize the cost.&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  One backward pass goes like this, the 3 gradients will be computed for each layer
+
+  Cost -&amp;gt;  Activation Function (Non-Linear)-&amp;gt; Matrix Multiplication (Linear) -&amp;gt;
+  |_____________________ Repeat this N times (N Layers) ______________________|
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Update parameters (using parameters, and grads from backprop)&lt;/p&gt;
+
+    &lt;p&gt;At this stage, we have finished one back propagation and obtained all 3 types of gradients for all of our weights needed to adjust our NN.&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  parameters[&quot;W&quot; + str(l + 1)] = parameters[&quot;W&quot; + str(l + 1)] - learning_rate * grads[&quot;dW&quot; + str(l + 1)]
+  parameters[&quot;b&quot; + str(l + 1)] = parameters[&quot;b&quot; + str(l + 1)] - learning_rate * grads[&quot;db&quot; + str(l + 1)]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+
+    &lt;p&gt;We’re simply doing:&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;parameter = parameter - learning rate * gradient of that parameter&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;4. Use trained parameters to predict prices&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;We just perform a forward pass just like in training. It will produce the predicted values based on the current NN weights.&lt;/p&gt;
+
+&lt;h2 id=&quot;version-2&quot;&gt;Version 2&lt;/h2&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;Keras-based Neural Network&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/workofart/work-trader/tree/master/v2&quot;&gt;Code&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;In this version, since we’re dealing with high-level Keras framework, we only need to have good idea of the architecture of the NN and how to construct it using the building blocks provided by Keras (just like lego). We don’t need to implement matrix multiplication or activation functions. We &lt;strong&gt;should&lt;/strong&gt;, however, understand &lt;em&gt;how we initialize our weights, which activation functions to choose and how to structure our NN&lt;/em&gt;. If you have time, you might even want to tweak the “icing on the cake” to prevent overfitting by applying regularization and dropout techniques. The reason I mention the “icing” here in version 2 and not in version 1 is because all of these components are lego pieces that you don’t need to implement yourself. This is why high-level frameworks provide a productivity boost over hand-coded solutions. But it’s always good to understand what’s going on under the hood to debug potential issues.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;In our example:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;Instantiate a sequential model. This is like a container that holds the NN and its layers. Read more about &lt;a href=&quot;https://keras.io/models/sequential/&quot;&gt;Keras Sequential Models&lt;/a&gt;&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;&lt;span class=&quot;k&quot;&gt;model&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Sequential&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Add a Layer to the NN, note that we don’t need separate functions for forward/backward propagation, we just think in terms of layers in the NN. Read more about &lt;a href=&quot;https://keras.io/layers/core/&quot;&gt;Keras Layers&lt;/a&gt;. The &lt;code class=&quot;highlighter-rouge&quot;&gt;16&lt;/code&gt; is the number of neurons in this layer, and we’re using &lt;code class=&quot;highlighter-rouge&quot;&gt;relu&lt;/code&gt; as the activation function. Remember the building block argument I said before, in a high-level framework, we only need to &lt;em&gt;determine&lt;/em&gt; what pieces we need to build the NN, as opposed to &lt;em&gt;implementing&lt;/em&gt; them.&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;model.add(Dense(16, input_dim=X_train.shape[1], activation='relu'))&lt;/code&gt;&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;Note that this is equivalent to our &lt;code class=&quot;highlighter-rouge&quot;&gt;L_model_forward()&lt;/code&gt; function and &lt;code class=&quot;highlighter-rouge&quot;&gt;L_model_backward()&lt;/code&gt; combined in &lt;strong&gt;Version 1&lt;/strong&gt; since we think in terms of &lt;em&gt;operations&lt;/em&gt; in &lt;strong&gt;Version 1&lt;/strong&gt;, and &lt;em&gt;layers&lt;/em&gt; in &lt;strong&gt;Version 2&lt;/strong&gt;&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Similarly, we add another layer to the NN. The output space is N by 6 dimenions, where N is the number of samples, and the 6 is the number of neurons in this layer.&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;model.add(Dense(6, activation='relu'))&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Finally, we add our output layer to the NN. The output space (&lt;code class=&quot;highlighter-rouge&quot;&gt;Y_train.shape[1]&lt;/code&gt;) in our example is 1, since we’re only predicting one price at a time.
+    &lt;blockquote&gt;
+      &lt;p&gt;The difference in using &lt;code class=&quot;highlighter-rouge&quot;&gt;.shape[1]&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;shape[0]&lt;/code&gt; in the two versions is because in version 1, to follow Andrew Ng’s course notation, the samples are placed along columns &lt;code class=&quot;highlighter-rouge&quot;&gt;shape[1]&lt;/code&gt; and the features (input/output dimension) are rows &lt;code class=&quot;highlighter-rouge&quot;&gt;shape[0]&lt;/code&gt;. But in version 2, it’s the opposite, thus &lt;code class=&quot;highlighter-rouge&quot;&gt;Y_train.shape[1]&lt;/code&gt; here denotes the output dimension.&lt;/p&gt;
+    &lt;/blockquote&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;model.add(Dense(Y_train.shape[1]))&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;After the network is fully constructed, we have to tell it how to train the NN. This involves specifying the &lt;a href=&quot;https://keras.io/optimizers/&quot;&gt;optimizer&lt;/a&gt; for the NN as well as the &lt;a href=&quot;https://keras.io/losses/&quot;&gt;loss&lt;/a&gt; function&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;model.compile(optimizer=SGD(lr=0.03), loss='mse') # SGD = Stochastic Gradient Descent&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;version-3&quot;&gt;Version 3&lt;/h2&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;Tensorflow-based Neural Network&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/workofart/work-trader/tree/master/v3&quot;&gt;Code&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;So we’ve seen creating operations from scratch in our &lt;strong&gt;Version 1&lt;/strong&gt;, and using a high-level framework to create a “model” of our NN and just “fitting” it in &lt;strong&gt;Version 2&lt;/strong&gt;. In &lt;strong&gt;Version 3&lt;/strong&gt;, we have to switch our conceptual model of a NN a little bit again, because I have to introduce you to the concept of a &lt;a href=&quot;https://en.wikipedia.org/wiki/Tensor&quot;&gt;Tensor&lt;/a&gt;. In my definition, it’s a wrapper or a building block that can encompasses a variable, a constant, an operation, or any series of operations. We can connect tensors together by referencing them.&lt;/p&gt;
+
+&lt;p&gt;Let’s quickly go through our example and I’ll explain line by line with respect to how they relate to our &lt;strong&gt;Version 1&lt;/strong&gt; and &lt;strong&gt;Version 2&lt;/strong&gt; conceptual models.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;We will start by defining our input variables:
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; input_x = tf.placeholder('float', [None, X_train_orig.shape[1]], name='input_x')
+ input_y = tf.placeholder('float', [None, Y_train_orig.shape[1]], name='input_y')
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+
+    &lt;p&gt;Note that this is a “placeholder”, which means before we feed in the actual input data, this tensor will be empty. The dimensions for this placeholder is None by &lt;code class=&quot;highlighter-rouge&quot;&gt;X/Y_train_orig.shape[1]&lt;/code&gt;, this means it’s “&lt;strong&gt;any number&lt;/strong&gt; of samples by &lt;code class=&quot;highlighter-rouge&quot;&gt;shape[1]&lt;/code&gt; of features per sample”. The &lt;code class=&quot;highlighter-rouge&quot;&gt;name&lt;/code&gt; is optional, but it helps later when we need to debug.&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;The row/column vs samples/features notations are consistent with Version 2, where &lt;code class=&quot;highlighter-rouge&quot;&gt;shape[1]&lt;/code&gt;(columns) are the features, and &lt;code class=&quot;highlighter-rouge&quot;&gt;shape[0]&lt;/code&gt;(rows) are the samples&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Next, we will define some of the weights of our NN, namely our hidden unit weights and bias unit weights.&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; W1 = tf.Variable(tf.random_normal([X_train_orig.shape[1], 16]))
+ B1 = tf.Variable(tf.zeros([16]))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;Note that these tensor types are “Variable”, which means they will “vary” during our training process. These are, by default, &lt;a href=&quot;https://www.tensorflow.org/guide/variables&quot;&gt;trainable variables&lt;/a&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;We will define our linear function and activation function together in one line:&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;layer1 = tf.nn.relu(tf.add(tf.matmul(input_x, W1), B1))&lt;/code&gt;&lt;/p&gt;
+
+    &lt;p&gt;I will leave out the definition for &lt;code class=&quot;highlighter-rouge&quot;&gt;layer2&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;output&lt;/code&gt; layer since they are similar in nature.&lt;/p&gt;
+
+    &lt;p&gt;If we break this down and see each computation clearly, it’s equivalent to:&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; # Matrix Multiplication to get the linear result first
+
+ mat_result = tf.matmul(input_x, W1)
+	
+ # Add the result to the bias units using Numpy broadcasting
+
+ linear_result = tf.add(mat_result, B1)
+
+ # Apply rectified linear unit activation to the linear function result
+
+ layer1 = tf.nn.relu(linear_result)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+
+    &lt;p&gt;This is similar to our Version 1 definition, &lt;a href=&quot;#nn-forward-def&quot;&gt;here&lt;/a&gt;.
+ Note that we’re refering &lt;code class=&quot;highlighter-rouge&quot;&gt;W1&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;B1&lt;/code&gt; varibles from our second step. This establishes the connection between tensors.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Before we can train the network, we still need to define the loss functions and define how to optimize (train) it.&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; cost = tf.reduce_mean(tf.square(output - input_y))
+ optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+
+    &lt;p&gt;Note that we’re still reference other tensors &lt;code class=&quot;highlighter-rouge&quot;&gt;output&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;input_y&lt;/code&gt;, and &lt;code class=&quot;highlighter-rouge&quot;&gt;cost&lt;/code&gt;. We can use the &lt;code class=&quot;highlighter-rouge&quot;&gt;tf.reduce_mean()&lt;/code&gt; function to compute the MSE loss. And since Tensorflow has a built-in &lt;code class=&quot;highlighter-rouge&quot;&gt;AdamOptimizer&lt;/code&gt;, we can just call it. This is similar to &lt;strong&gt;Version 2’s&lt;/strong&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;optimizer=SGD()&lt;/code&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Now we have finished defining all the tensors. It’s time to actually feed in the input data and see how the data flow through all the connected tensors.&lt;/p&gt;
+
+    &lt;p&gt;Initialize all the variables that are &lt;strong&gt;not&lt;/strong&gt; placeholders, such as weights and biases&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;init = tf.global_variables_initializer()&lt;/code&gt;&lt;/p&gt;
+
+    &lt;p&gt;Feed in our &lt;code class=&quot;highlighter-rouge&quot;&gt;batch_x&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;batch_y&lt;/code&gt; inputs to the &lt;strong&gt;placeholders&lt;/strong&gt;. Note that the names (keys) must match the variable names &lt;code class=&quot;highlighter-rouge&quot;&gt;input_x/y&lt;/code&gt; and specify what we want to be returned: &lt;code class=&quot;highlighter-rouge&quot;&gt;optimizer&lt;/code&gt;, and &lt;code class=&quot;highlighter-rouge&quot;&gt;cost&lt;/code&gt; from step (4).&lt;/p&gt;
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; _, c = sess.run([optimizer, cost], feed_dict={
+         input_x: batch_x, 
+         input_y: batch_y, 
+     })
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/ml/tensorflow.png&quot; /&gt;&lt;/p&gt;
+&lt;h6 id=&quot;image-from-httpsplaygroundtensorfloworg&quot;&gt;Image from https://playground.tensorflow.org/&lt;/h6&gt;
+
+&lt;p&gt;As you can see now, after we feed in the input data into the NN, all the connected tensors will subsequently receive the input from the previous output and perform their computations accordingly, thus the name &lt;strong&gt;“TensorFlow”&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;I will be posting another note for applying reinforcement learning to trading. Since even with predicted prices, the agent will still not know when to buy or sell (i.e. after a 1% price drop? 2%?). We don’t want to hard-code those conditions, rather we want the agent to learn them as the “policy”. Until next time…Thanks!&lt;/p&gt;</content><author><name></name></author><summary type="html">Previous Knowledge Required</summary></entry><entry><title type="html">Asynchronous Advantage Actor Critic (A3C)-Reinforcement Learning -Laymens Explanation</title><link href="http://henrypan.com/blog/reinforcement-learning/2019/02/27/a3c-rl-layments-explanation.html" rel="alternate" type="text/html" title="Asynchronous Advantage Actor Critic (A3C)-Reinforcement Learning -Laymens Explanation" /><published>2019-02-27T12:00:00-05:00</published><updated>2019-02-27T12:00:00-05:00</updated><id>http://henrypan.com/blog/reinforcement-learning/2019/02/27/a3c-rl-layments-explanation</id><content type="html" xml:base="http://henrypan.com/blog/reinforcement-learning/2019/02/27/a3c-rl-layments-explanation.html">&lt;p&gt;The A3C method in Reinforcement Learning (RL) combines both a &lt;em&gt;critic’s value function&lt;/em&gt; (how good a state is) and an &lt;em&gt;actor’s policy&lt;/em&gt; (a set of action probability for a given state). &lt;strong&gt;I promise this explanation doesn’t not contain greek letters or calculus. It only contains English alphabets and subtraction in math.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/a3c_architecture.png&quot; alt=&quot;Diagram&quot; /&gt;&lt;/p&gt;
+
+&lt;h6 id=&quot;taken-from-hands-on-reinforcement-learning-with-python-by-sudharsan-ravichandiran&quot;&gt;Taken from “Hands-On Reinforcement Learning with Python by Sudharsan Ravichandiran”&lt;/h6&gt;
+
+&lt;p&gt;Advantage in A3C is used to determine which actions were “good” and “bad”, and it is updated to encourage or discourage accordingly. Note that this also informs the agent how much better it is than expected. This is better than just using discounted rewards in vanilla Deep Q-learning. To see why, below is a formal explanation.&lt;/p&gt;
+
+&lt;p&gt;The advantage is estimated using &lt;em&gt;discounted rewards&lt;/em&gt; (R) and the value from the &lt;em&gt;critic’s value function&lt;/em&gt;, how good a state is, V(s). Thus formally:&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Estimated Advantage = R-V(s)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;In A3C, there is a global network. This network will consist of a neural network to process the input data (states), and the output layers consists of value (how good a state is) and policy (a set of action probability for a given state) estimations.&lt;/p&gt;
+
+&lt;p&gt;The following summarizes the process of each episode:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;To start the process, each worker initializes its network parameters equal to the global network.&lt;/li&gt;
+  &lt;li&gt;Each worker interacts with its own environment and accumulates experience in the form of tuples &lt;em&gt;(observation, action, reward, done, value)&lt;/em&gt; after every interaction.&lt;/li&gt;
+  &lt;li&gt;Once the worker’s experience history reaches our set size, we calculate the &lt;em&gt;discounted return -&amp;gt; estimated advantage -&amp;gt; temporal difference (TD) -&amp;gt;value and policy losses&lt;/em&gt;. Note that we also calculate an entropy of the policy to understand the spread of the action probabilities. In other words, a high entropy is the result of similar action probabilities, or &lt;em&gt;uncertain what to do&lt;/em&gt; in laymens terms. A low entropy means the agent is very confident (high probability of one action versus the rest) in the action it choses.&lt;/li&gt;
+  &lt;li&gt;Once we’ve obtained the value and policy losses from (3), our forward pass (propagation) through the network is complete. Now it’s time for the backward pass (propagation). Each worker uses these calculated losses to compute the gradients for its network parameters.&lt;/li&gt;
+  &lt;li&gt;We then use the gradients from (4) to update the global network parameters. This is when we reap the benefits of the asynchronous workers. The global network is constantly updated by each worker as they interact with its &lt;em&gt;own environment&lt;/em&gt;. The intuition here is that because each worker has it’s own environment, the overall experience for training is more diverse.&lt;/li&gt;
+  &lt;li&gt;This concludes one round-trip (episode) of training. Then it repeats (1–5)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Overall, the value estimates from the critic is used to update the policy in the actor, which works better than traditional policy gradient methods which doesn’t have a value etimate and solely tries to optimize the policy function. Therefore, it may be intuitive to let the critic learn faster (higher learning rate) than the actor.&lt;/p&gt;</content><author><name></name></author><summary type="html">The A3C method in Reinforcement Learning (RL) combines both a critic’s value function (how good a state is) and an actor’s policy (a set of action probability for a given state). I promise this explanation doesn’t not contain greek letters or calculus. It only contains English alphabets and subtraction in math.</summary></entry><entry><title type="html">React Redux Intro</title><link href="http://henrypan.com/blog/react/2019/01/26/react-redux-intro.html" rel="alternate" type="text/html" title="React Redux Intro" /><published>2019-01-26T12:00:00-05:00</published><updated>2019-01-26T12:00:00-05:00</updated><id>http://henrypan.com/blog/react/2019/01/26/react-redux-intro</id><content type="html" xml:base="http://henrypan.com/blog/react/2019/01/26/react-redux-intro.html">&lt;p&gt;I’ve been bugged by the native state management system in React that I finally had to take a stab at Redux. Here are some notes I took along the way to understand what Redux is and why we need it.&lt;/p&gt;
+
+&lt;p&gt;First off, why do we need Redux when we already have build-in states? Isn’t this just more boilerplate code? What’s the return on investment?&lt;/p&gt;
+
+&lt;p&gt;The short answer is it depends on the lifecycle of the data being stored in the state. In other words:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/react_redux/painpoint.png&quot; alt=&quot;Pain Point&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Let’s see how this might be a problem. There are cases where mismanaged states could cause chaos. For example:
+&lt;img src=&quot;/blog/assets/images/react_redux/painpoint2.png&quot; alt=&quot;Pain Point&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;If Dropdown 1’s options wants to be conditionally dependant on Dropdown 2’s state or vice versa or both. And since props can only be passed from top to bottom, the only way either Dropdown knows the value of its sibling is to ask it’s parent (container). This means every action either dropdown invokes, it has to invoke an actionHandler at the parent level which sets the state for the other child which is then passed down to the child as a prop. This approach doesn’t scale well. Below is an example snippet of how this might be troublesome.&lt;/p&gt;
+
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Dropdown1&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Component&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  
+  &lt;span class=&quot;nx&quot;&gt;render&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;select&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;onChange&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)}&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;style&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt;
+      &lt;span class=&quot;c1&quot;&gt;//... various options&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;sr&quot;&gt;/select&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;gt;
+&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Dropdown2&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Component&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  
+  &lt;span class=&quot;nx&quot;&gt;render&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;select&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;onChange&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)}&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;style&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt;
+      &lt;span class=&quot;c1&quot;&gt;//... various options&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;sr&quot;&gt;/select&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;gt;
+&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Form&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Component&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;state&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;dropdown1Active&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;dropdown2Active&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;handleAction1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;setState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;dropdown2Active&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;handleAction2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;setState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;dropdown1Active&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;render&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Dropdown1&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;handleAction1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;isActive&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;dropdown1Active&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sr&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;gt;
+&lt;/span&gt;      &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Dropdown2&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;handleAction2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;isActive&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;dropdown2Active&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sr&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;gt;
+&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Wouldn’t it be great if each child’s action can directly change the centralized state of a particular field without always going through the parent and all other children will know right away? That’s the simplified idea of Redux.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;Before we go into the details of Redux, here are some commonly used terms that I’ll refer extensively in my notes.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Store{Object}&lt;/strong&gt;—The centralized state storage. One instance exists at any given time; therefore, states that pertain to particular components will be stored under separate “keys”.&lt;/p&gt;
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// Fetch the current store contents&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;store&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// returns &lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nl&quot;&gt;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;text&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;test&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}],&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;counter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nl&quot;&gt;currentNumber&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;Reducer{Function}&lt;/strong&gt;—Given the current state and action, returns the next state. This reminds me of the Markov Decision Process. Therefore, this function will contain the logic on how to update the states. By default, it will return the initial state &lt;code class=&quot;highlighter-rouge&quot;&gt;currentNum: 0&lt;/code&gt; if no action is provided. Similar to calling &lt;code class=&quot;highlighter-rouge&quot;&gt;this.state&lt;/code&gt; in plain React. Always remember not to modify the state directly but to return a copy of the state &lt;code class=&quot;highlighter-rouge&quot;&gt;{…state, currentNum: state.currentNum+1}&lt;/code&gt;(this is ES6 syntax).&lt;/p&gt;
+
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// actions.js&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;counter&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;state&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;currentNum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;action&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;switch&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;action&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'INCREMENT'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                &lt;span class=&quot;na&quot;&gt;currentNum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;currentNum&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'DECREMENT'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+                &lt;span class=&quot;na&quot;&gt;currentNum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;currentNum&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;nl&quot;&gt;default&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;The process:&lt;/strong&gt;
+Define the reducer like above
+Create the store for a particular (or set of) reducers. You can include multiple reducers for a given store by using the &lt;code class=&quot;highlighter-rouge&quot;&gt;combineReducers&lt;/code&gt; function provided by Redux. Using &lt;code class=&quot;highlighter-rouge&quot;&gt;combineReducers&lt;/code&gt; will essentially combine multiple reducers into one reducer object, which saves the effort of redefining a parent reducer object.&lt;/p&gt;
+
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// App.js&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;createStore&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;combineReducers&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'redux'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;cm&quot;&gt;/**
+ * The keys used here will be the keys in the redux store
+ * E.g.
+ * {
+ *    &quot;todos&quot;: [],
+ *    &quot;counter&quot;: {
+ *      &quot;currentNum&quot;: 0
+ *    },
+ *    &quot;filter&quot;: &quot;SHOW_ALL&quot;
+ * }
+ */&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;app&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;combineReducers&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;todos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;counter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;filter&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;store&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;createStore&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Have the presentational components subscribe to the changes of the store to know when to re-render. This step could be replaced by &lt;code class=&quot;highlighter-rouge&quot;&gt;connect()&lt;/code&gt; from &lt;code class=&quot;highlighter-rouge&quot;&gt;react-redux&lt;/code&gt; package, which basically wraps around the component and all children under it will have access to the &lt;code class=&quot;highlighter-rouge&quot;&gt;store&lt;/code&gt; instead of passing the &lt;code class=&quot;highlighter-rouge&quot;&gt;store&lt;/code&gt; to every child that needs access to it. (Not explained in this note)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// index.js&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;App&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;store&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'./App'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;render&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;ReactDOM&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;render&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;App&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&amp;gt;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;document&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getElementById&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'root'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;store&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;subscribe&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;render&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// invokes render whenever the store changes, essentially pushing render into an array of listeners&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;In the presentational components, reference the store and the contents that it’s interested in &lt;code class=&quot;highlighter-rouge&quot;&gt;counter.currentNum&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;store&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'./App'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;h3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;store&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;counter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;currentNum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;sr&quot;&gt;/h3&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;gt;
+&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ol&gt;
+  &lt;li&gt;Fire off an action from a button to dispatch a particular action for the reducer function to process&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;button&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;onClick&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;store&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;dispatch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;INCREMENT&quot;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;sr&quot;&gt;/button&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;The “INCREMENT” action gets dispatched by the store to the reducer. In the reducer, the action and the current state gets processed by the logic, which then returns the next state &lt;code class=&quot;highlighter-rouge&quot;&gt;{currentNum: state.currentNum + 1}&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;You can find a working example &lt;a href=&quot;https://github.com/workofart/playground/tree/master/react&quot;&gt;here&lt;/a&gt; that demonstrates and compares React Redux and Component State usage.&lt;/p&gt;</content><author><name></name></author><summary type="html">I’ve been bugged by the native state management system in React that I finally had to take a stab at Redux. Here are some notes I took along the way to understand what Redux is and why we need it.</summary></entry><entry><title type="html">One Sentence Summary of Books</title><link href="http://henrypan.com/blog/books/2013/07/18/one-sentence-summary-books.html" rel="alternate" type="text/html" title="One Sentence Summary of Books" /><published>2013-07-18T18:36:00-04:00</published><updated>2013-07-18T18:36:00-04:00</updated><id>http://henrypan.com/blog/books/2013/07/18/one-sentence-summary-books</id><content type="html" xml:base="http://henrypan.com/blog/books/2013/07/18/one-sentence-summary-books.html">&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Outliers&lt;/strong&gt; - The curiosity of seeing one of my classmates do exceptionally well both in school and in life led me to reading this book; this book ties lots of real-world examples closely together and observing the information that people normally neglect.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;The Tipping Point&lt;/strong&gt; - A awesome marketing, sociology, psychology, consumer behavior book that touches on different aspects of  ”short-cut” finding in this complex business world.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Blink&lt;/strong&gt; - Mostly psychology related as well as consumer behavior; however, I didn’t take too much away from that book.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Thinking Fast and Slow&lt;/strong&gt; - A very in depth psychology nonfiction book that is written by an Economics Noble Prize Winner, who elaborates thoroughly on the psychological side of the human brain and provide a myriad of examples that help explain difficult professional psychological concepts.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Getting to Yes&lt;/strong&gt; - A negotiation handbook that teaches the reader different types of negotiation techniques needed to overcome almost all possible scenarios; however, please treat this book as a handbook not as a “one-time” read.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;80/20 Principle&lt;/strong&gt; - Personally, my very first nonfiction book that later dug up my time management potential and vastly increased my efficiency and effectiveness in task accomplishments.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Drive: The Surprising Truth About What Motivates Us&lt;/strong&gt; - Took a lot of different approaches towards motivating people in business and life, but also connected lots of concepts that I learnt in my I/O psychology class to real world examples, which is really easy to comprehend; needless to say the life-applicable tips at the back of the book.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Liars Poker&lt;/strong&gt; - A really good and funny wall-street depiction written by a former wall-street trader in the last few decades; however, this book requires adequate knowledge of finance/economics to understand it’s black humor.&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Getting Things Done&lt;/strong&gt; - This book is also a good handbook in complement with the GTD software/apps, most of the examples are concrete summaries from real life experiences.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;7 Habits of Highly Effective People&lt;/strong&gt; - I personally haven’t completely finished the book because some of the tips the book gives are hard to relate to my life.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;The Snowball: Warren Buffet and the Business of Life&lt;/strong&gt; - A huge biography that is recommended by lots of my upper-year friends who are interested in the finance career as well as a deeper understanding of this Oracle of Omaha.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;The 4-hour Work Week&lt;/strong&gt; - This book is broken down into 4 parts (DEAL), D for Definition, E for Elimination, A for Automation, L for Liberation, in which the Automation part intrigues me the most mostly because I hate spending large chunks of time doing repetitive tasks, instead, outsourcing them to professional personnel is the choice for the New Rich (NR, this concept is talked thoroughly through the book)&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Hacking Work&lt;/strong&gt; - Since I was a kid, I hate to play by the rules for all kind of games, from the single player hacks to MMO games hacks, this made me feel I saved up a lot of useless time; by transferring this mindset to the workplace as well as life, companies tend to assign tasks to employees with the effort of reaching cost-savings for the company as a whole, now here is where this book comes into place - there are many ways to do those tasks, why not go around the rules once for a while (of course, you don’t wanna break the law as an expense).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Hope this gave you, at least, some inspiration on what books to pursue in the near future. :)&lt;/p&gt;</content><author><name></name></author><summary type="html">Outliers - The curiosity of seeing one of my classmates do exceptionally well both in school and in life led me to reading this book; this book ties lots of real-world examples closely together and observing the information that people normally neglect.</summary></entry></feed>
