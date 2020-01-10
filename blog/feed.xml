@@ -1,4 +1,295 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://henrypan.com/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="http://henrypan.com/blog/" rel="alternate" type="text/html" /><updated>2019-04-04T00:59:36-04:00</updated><id>http://henrypan.com/blog/feed.xml</id><title type="html">Henry’s Blog</title><subtitle>My learning notes, research, projects and musings.</subtitle><entry><title type="html">Creating a Policy Gradient (PG) Agent to Trade</title><link href="http://henrypan.com/blog/reinforcement-learning/2019/04/04/pg-trading.html" rel="alternate" type="text/html" title="Creating a Policy Gradient (PG) Agent to Trade" /><published>2019-04-04T01:55:00-04:00</published><updated>2019-04-04T01:55:00-04:00</updated><id>http://henrypan.com/blog/reinforcement-learning/2019/04/04/pg-trading</id><content type="html" xml:base="http://henrypan.com/blog/reinforcement-learning/2019/04/04/pg-trading.html">&lt;p&gt;This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share some findings along the way. The goal of the series is to learn RL by applying it on an actual problem that I can relate to.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://henrypan.com/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="http://henrypan.com/blog/" rel="alternate" type="text/html" /><updated>2020-01-10T13:03:49-05:00</updated><id>http://henrypan.com/blog/feed.xml</id><title type="html">Henry’s Blog</title><subtitle>My learning notes, research, projects and musings.</subtitle><entry><title type="html">BrawlStars AI Series (Part 2) - Reinforcement Learning</title><link href="http://henrypan.com/blog/reinforcement-learning/2019/04/25/Brawlstars-RL.html" rel="alternate" type="text/html" title="BrawlStars AI Series (Part 2) - Reinforcement Learning" /><published>2019-04-25T01:00:00-04:00</published><updated>2019-04-25T01:00:00-04:00</updated><id>http://henrypan.com/blog/reinforcement-learning/2019/04/25/Brawlstars-RL</id><content type="html" xml:base="http://henrypan.com/blog/reinforcement-learning/2019/04/25/Brawlstars-RL.html">&lt;p&gt;&lt;strong&gt;First and foremost, I must say, perception is harder than planning.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;This part, I will be attempting to apply reinforcement learning (RL) towards creating an agent that can play Brawlstars. The goal of the project is similar to &lt;a href=&quot;...&quot;&gt;part 1&lt;/a&gt; —be a decent player and excert human-like behaviors. My personal goal is to learn various reinforcement learning techniques and apply them towards a practical problem.&lt;/p&gt;
+
+&lt;p&gt;This is a challenging problem because：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;I will &lt;em&gt;&lt;strong&gt;not&lt;/strong&gt;&lt;/em&gt; be using any Brawlstars APIs to retrieve information about the game state, everything we humans can see, will be everything the agent can see.&lt;/li&gt;
+  &lt;li&gt;I will &lt;em&gt;&lt;strong&gt;not&lt;/strong&gt;&lt;/em&gt; be telling the agent about the game rules, what each game element means (shooting the wall), or about the objective of killing the opposing characters. I will only provide rewards just as if humans are playing the game and sees their stars increase at the top of their character when they kill their opponents.&lt;/li&gt;
+  &lt;li&gt;Training is done in real-time as there is &lt;strong&gt;&lt;em&gt;no&lt;/em&gt;&lt;/strong&gt; simulator that can allow the agent to train faster than the actual time. Thus, it will be significantly slower than training an agent to play chess or go where a simulator is available.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;In any RL problem definition, there are 3 components:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;Action&lt;/strong&gt;: Forward, backward, left, right, stand still (no-op), normal attack, super attack&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Environment&lt;/strong&gt;: The fixed map consists of 6 players (including the agent, 2 of which are allies, 3 enemies). Each of the other 5 players are controlled by Brawlstars built-in game AI.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Reward&lt;/strong&gt;: There is a star icon above the player’s avatar denoting the player’s stars, this can be increased when killing opponents and reset to 2 stars when the agent is killed.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;1-perception&quot;&gt;1. Perception&lt;/h2&gt;
+
+&lt;p&gt;For perception, we are concerned with modeling the environment. In the context of Brawlstars, since we don’t have any access to backend APIs to retrieve information about the position, state and action of players, we will need to go the human route of capturing these information from the screen.
+We will convert the raw pixels into a feature vector and quantify the stars (reward) and player position.&lt;/p&gt;
+
+&lt;h3 id=&quot;11-current-player-position&quot;&gt;1.1 Current Player Position&lt;/h3&gt;
+
+&lt;h4 id=&quot;green-circle&quot;&gt;Green Circle&lt;/h4&gt;
+&lt;p&gt;Initially, I used the green circle beneath the player to detect its position. By performing supervised training on the set of labeled images for all game modes, I was able to get a rough object detection classifier working. However, the circle get’s easily distracted by other background elements or even other player’s elements. Considering the number of labeled images I could manually create, I should have only focused on one game mode (and map) so the variation wouldn’t be that high. Nevertheless, this approach was not very accurate.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/workofart/brawlstars-ai/master/object_detection/img/green_circle.png&quot; alt=&quot;Green Circle&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Sorry for the green background, it must have been compression.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/brawlstars-ai/raw/master/object_detection/demo/player_detection.png&quot; alt=&quot;Green Circle 2&quot; /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;player-name&quot;&gt;Player Name&lt;/h4&gt;
+&lt;p&gt;Then I realized the player’s name is always in front of every other element, at least 90% of the time (the rest 10% is when explosion elements take over the screen). I extracted out my player’s name and used template matching for detecting the player’s position.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/workofart/brawlstars-ai/master/object_detection/img/name.png&quot; alt=&quot;Name_Template&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Sorry for the green background, it must have been compression.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/workofart/brawlstars-ai/master/object_detection/demo/name_detection.png&quot; alt=&quot;Name Detection&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;12-stars-reward&quot;&gt;1.2 Stars (Reward)&lt;/h3&gt;
+
+&lt;h4 id=&quot;player-stars&quot;&gt;Player Stars&lt;/h4&gt;
+&lt;p&gt;This is the most direct form of reward. You kill one opponent, you gain one star. The max stars is capped at 7. If you die, your stars get reset to 2.&lt;/p&gt;
+
+&lt;p&gt;For initial training, I used player stars as the sole reward. (i.e. x stars = x reward)&lt;/p&gt;
+
+&lt;h4 id=&quot;team-stars&quot;&gt;Team Stars&lt;/h4&gt;
+&lt;p&gt;This is a high-abstraction reward, since not only will the performance of the agent but also the other 2 teammates will directly affect the number of team stars. &lt;em&gt;Note that dying will not decrease the number of team stars.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;I created the reference digits [0-9] to be used for template matching.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/brawlstars-ai/raw/master/digits/digits.png&quot; alt=&quot;RefDigits&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/brawlstars-ai/raw/master/object_detection/demo/player_team_stars_v2.gif&quot; alt=&quot;Player Team Star Detection&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;2-planning&quot;&gt;2. Planning&lt;/h2&gt;
+
+&lt;p&gt;After I have made some progress on the perception problem, we know where our current player is, as well as the number of player and team stars we have. This section is dedicated to solving the planning problem to a certain degree.&lt;/p&gt;
+
+&lt;p&gt;I used &lt;em&gt;&lt;strong&gt;Double Deep Q Network w/ Experience Replay&lt;/strong&gt;&lt;/em&gt; to approximate value functions to identify the value of performing a certain action in any given state. As for why not vanilla Q-learning, you can read up &lt;a href=&quot;https://datascience.stackexchange.com/questions/20535/what-is-experience-replay-and-what-are-its-benefits&quot;&gt;Experience Replay&lt;/a&gt; and &lt;a href=&quot;https://arxiv.org/abs/1509.06461&quot;&gt;Double Q-Learning&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;As for why Q-learning (or value-based approach): The intuition here is that since the game board is fixed, the objective is fairly straight-forward, there will be lots of cases where the same state will be given (same enemy at the same distance away from current player) and the same action (attack or super attack) will need to be performed to increase the reward (gain stars). Therefore, having a value for each state-action pair will be helpful.&lt;/p&gt;
+
+&lt;h3 id=&quot;21-agent&quot;&gt;2.1 Agent&lt;/h3&gt;
+&lt;p&gt;The agent acts based on the output q-value. The q-value represents the value of a particular state-action pair. Out of all the possible actions, it picks the one that has the highest q-value, separately for action and movement. An epsilon value dictates the trade-off between exploration and exploitation to ensure that we are still exploring the environment. The agent also perceives the state, rewards and stores them into the “Experience Buffer” for further sampling and replay for training the “Brain”.&lt;/p&gt;
+
+&lt;p&gt;Hyper Parameters:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Learning Rate&lt;/li&gt;
+  &lt;li&gt;Initial Epsilon&lt;/li&gt;
+  &lt;li&gt;Final Epsilon&lt;/li&gt;
+  &lt;li&gt;Epsilon Decay&lt;/li&gt;
+  &lt;li&gt;Gamma (Discount factor for Q value)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;22-brain&quot;&gt;2.2 Brain&lt;/h3&gt;
+&lt;p&gt;Initially, I use 4 simple two-layer neural network (NN) to represent the brain and to approximate the q-values for the following:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Movement (Target q-network, Q-network)&lt;/li&gt;
+  &lt;li&gt;Attack (Target q-network, Q-network)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;Why 4, not just 2?&lt;/strong&gt; This is to avoid the &lt;a href=&quot;https://papers.nips.cc/paper/3964-double-q-learning&quot;&gt;overestimation of Q-values&lt;/a&gt; problem, I used two NNs per action type, one being the target network and the other is the main q-network&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Input:&lt;/em&gt; The features extracted from MobileNet&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Output:&lt;/em&gt; Approximated Q-values (state-action values)&lt;/p&gt;
+
+&lt;p&gt;[Diagram of the Network Architecture]&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;state_input -&amp;gt; relu activation -&amp;gt; drop out -&amp;gt; relu activation -&amp;gt; drop out
+             |_________ Layer 1 ____________|_________ Layer 2 _________|
+-&amp;gt; q-value
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;3-error-analysis&quot;&gt;3. Error Analysis&lt;/h2&gt;
+
+&lt;p&gt;After watching the agent play during it’s training process. I’ve noticed several problems that are &lt;em&gt;very&lt;/em&gt; obvious to the human eye, but not quite obvious to the agent and may take a very long time for the agent to improve. Below are some of these problems:&lt;/p&gt;
+
+&lt;p&gt;Initially, the agent spams the movement and attack keys randomly, which is expected due to the EpsilonGreedy approach starting with 100% randomness slowly decaying to around 5% at the end of the training process. However, the obvious problem is how fast the agent can learn to navigate properly (not walking into walls) versus how slow the agent can learn to &lt;em&gt;not&lt;/em&gt; constantly waste its ammo. It would be helpful to somehow build in the concept/model of ammo into its state so the relationship between ammo and attack actions can be better coordinated.&lt;/p&gt;
+
+&lt;p&gt;E.g. At around 140 Episodes, the agent is still firing its attacks pretty much whenever it’s available (once very 0.7-0.8s). But it’s able to walk continuously in a straight path, suddenly stopping (pressing no keys) and be able to take different straight path towards the enemy targets.&lt;/p&gt;
+
+&lt;h2 id=&quot;4-challenges--future-steps&quot;&gt;4. Challenges &amp;amp; Future Steps&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;The current agent’s training speed is bounded by the game play speed. In other words, there’s no simulator that can speed up the training process, and I can’t alter the game speed by any means. So one second of game play = one second of actual training time. This has always been a constraint in my own learning as well, since the slower the training goes, the slower I can identify problems in my approach.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Since the sequence of frames (states) and actions are both important for the agent to learn. Some sequences have more value of learning where there’s lots of game mechanics involved, than others where the agent is just waiting for resurrection after being killed. A prioritized experience replay buffer would help to address this challenge.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Since this game is a online game, and I don’t have a fixed game that I can experiment, as the game keeps updating overtime, it would be equivalent to shooting a moving target if I keep maintaining this. Therefore, I decided to discontinue this project. This project was based on Brawlstars version 16.176. It was overall a great experience to try to apply machine learning on a game I enjoy playing personally, I really learnt a lot.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;On to the next challenge.&lt;/p&gt;
+
+&lt;p&gt;- Henry&lt;/p&gt;</content><author><name></name></author><summary type="html">First and foremost, I must say, perception is harder than planning.</summary></entry><entry><title type="html">BrawlStars AI Series (Part 1)</title><link href="http://henrypan.com/blog/machine-learning/2019/04/20/Brawlstars-AI.html" rel="alternate" type="text/html" title="BrawlStars AI Series (Part 1)" /><published>2019-04-20T01:00:00-04:00</published><updated>2019-04-20T01:00:00-04:00</updated><id>http://henrypan.com/blog/machine-learning/2019/04/20/Brawlstars-AI</id><content type="html" xml:base="http://henrypan.com/blog/machine-learning/2019/04/20/Brawlstars-AI.html">&lt;p&gt;Brawlstars: &lt;a href=&quot;https://supercell.com/en/games/brawlstars/&quot;&gt;https://supercell.com/en/games/brawlstars/&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;1-motivation&quot;&gt;1. Motivation&lt;/h2&gt;
+&lt;p&gt;I’ve personally being playing Brawlstars for over 3 months, and it’s a simple game to start considering the limited key combinations that it has. However, it’s fairly hard to master, considering the different mechanics each character has and the different maps in which each character’s play style can be affected by.&lt;/p&gt;
+
+&lt;h2 id=&quot;2-goals&quot;&gt;2. Goals&lt;/h2&gt;
+&lt;p&gt;For this project, I want to train an agent that will be able to play Brawlstars decently (be able to consistently beat built-in AI, and be able to play in Player-vs-Player (PVP) games “like” a human player. During the process, my personal goal is to brush up on topics in computer vision and deep learning.&lt;/p&gt;
+
+&lt;h2 id=&quot;3-starting-point&quot;&gt;3. Starting Point&lt;/h2&gt;
+&lt;p&gt;As for the game, I will start with the “Bounty” game mode and the “Temple Ruins” map as the fixed map, with “Shelly” being the character to train on.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Map&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://vignette.wikia.nocookie.net/brawlstars/images/3/3e/Temple_Ruins-Map.png/revision/latest/scale-to-width-down/310?cb=20190714193752&quot; alt=&quot;Map&quot; width=&quot;180&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Character&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;More info: &lt;a href=&quot;https://brawlstars.fandom.com/wiki/Shelly&quot;&gt;https://brawlstars.fandom.com/wiki/Shelly&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://vignette.wikia.nocookie.net/brawlstars/images/5/5e/Shelly_Skin-Default.png/revision/latest?cb=20191220032258&quot; alt=&quot;Shelly&quot; width=&quot;100&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Game Mode&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Bounty: &lt;a href=&quot;https://brawlstars.fandom.com/wiki/Bounty&quot;&gt;https://brawlstars.fandom.com/wiki/Bounty&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Considerations&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;Ultimately, I will want to explore Reinforcement learning (RL), and one of the hardest things is reward definition. (Refer to my post about defining reward in stock trading using RL). The “Bounty” game mode allows for straight-forward reward definition by the number of stars each player gains by killing the opposing players.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;“Shelly” has a simple set of attack mechanics. Her normal attack is short-to-medium range, and her super attack is the same range with more damage.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Using a fixed map allows me to eliminate a lot of the variation in agent performance due to map mechanics or other factors that is derived from the map.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;3-related-work&quot;&gt;3. Related Work&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;https://github.com/ChintanTrivedi/DeepGamingAI_FIFA&quot;&gt;FIFA AI&lt;/a&gt; For inspiring me to try out LSTM for action determination in supervised learning.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/Sentdex/pygta5&quot;&gt;PyGTA5&lt;/a&gt; For the initial direction with regards to perception and supervised learning training data generation.&lt;/p&gt;
+
+&lt;h2 id=&quot;4-project-focusscope&quot;&gt;4. Project Focus/Scope&lt;/h2&gt;
+&lt;p&gt;In the first part of this series of projects, I will be exploring the possibility of using supervised learning to train an agent to play Brawlstars. In the process, I will evaluate different feature extractors and identify other areas of improvements.&lt;/p&gt;
+
+&lt;p&gt;The second part of the project is to use reinforcement learning to let the agent play Brawlstars on its own and learn from it’s own mistakes. In this process, I will evaluate various RL techniques to improvement the agent’s decision-making abilities.&lt;/p&gt;
+
+&lt;h2 id=&quot;5-showcase&quot;&gt;5. Showcase&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;https://github.com/workofart/brawlstars-ai&quot;&gt;Code &amp;amp; Gameplay Snapshot&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;6-supervised-learning&quot;&gt;6. Supervised Learning&lt;/h2&gt;
+
+&lt;h3 id=&quot;61-creating-training-data&quot;&gt;6.1 Creating training data&lt;/h3&gt;
+&lt;p&gt;As the name suggests, supervised learning requires training data with labeled ground truth. As for this project, I will be the person creating the training data by playing the game. The &lt;em&gt;screen information&lt;/em&gt; and my &lt;em&gt;key presses&lt;/em&gt; will be recorded into training data, which will be fed into the agent during the training process.&lt;/p&gt;
+
+&lt;h3 id=&quot;62-features&quot;&gt;6.2 Features&lt;/h3&gt;
+
+&lt;h4 id=&quot;621-raw-pixels-as-features&quot;&gt;6.2.1 Raw Pixels as Features&lt;/h4&gt;
+&lt;p&gt;Feeding in raw pixels doesn’t yield too good of a result, because it’s difficult to make sense of individual pixels and translate them into concrete meaning. For example, it’s hard for the agent to infer from raw pixels which set of pixels corresponds to the its own player, allies or enemies.&lt;/p&gt;
+
+&lt;p&gt;For my training instance, I used 1 hour of game play data played only on the fixed map “Temple Ruins”.&lt;/p&gt;
+
+&lt;h4 id=&quot;622-using-mobilenet-as-the-feature-extractor&quot;&gt;6.2.2 Using MobileNet as the feature extractor&lt;/h4&gt;
+
+&lt;p&gt;After seeing the performance of raw pixels, I decided to try out some feature extractors that could help with the performance of the agent for Supervised Learning. I chose Mobilenet as the feature extractor for its balance between high accuracy and fast speed.&lt;/p&gt;
+
+&lt;p&gt;For my training instance, I used 1 hour of data played only on the fixed map “Temple Ruins”.&lt;/p&gt;
+
+&lt;h3 id=&quot;63-action-determination&quot;&gt;6.3 Action Determination&lt;/h3&gt;
+
+&lt;h4 id=&quot;631-alexnet-convolutional-neural-network&quot;&gt;6.3.1 AlexNet (Convolutional Neural Network)&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;Motivation:&lt;/strong&gt; As a starting point, AlexNet is fairly robust for image feature extraction and classification.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Input&lt;/em&gt;: Raw Pixels&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Output&lt;/em&gt;: A one-hot array of 6 elements. Representing (left, right, forward, backward, attack, superattack) Basically, the neural network will try to classify “snapshot” of the game screen into one of 6 actions.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1600/0*xPOQ3btZ9rQO23LK.png&quot; alt=&quot;AlexNet&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Paper Reference: &lt;em&gt;https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf&lt;/em&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;632-long-short-term-memory&quot;&gt;6.3.2 Long short-term memory&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;Motivation:&lt;/strong&gt; Because this is a game with animation composed of frames of game screen. It is intuitive to think that a sequence of frames will provide more information than one snapshot of the game screen. This is the main motivation for choosing LSTM. The intuition behind separating into 2 LSTMs is because the movement actions and attack actions are not necessarily mutually exclusive—one can, and ought to, move and attack at the same time.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Input&lt;/em&gt;: Features extracted by MobileNet from after the last convolutional layer and right before the softmax.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Output&lt;/em&gt;: A one-hot array representing the actions to take&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;LSTM1&lt;/strong&gt; - A one-hot array of 5 elements. Representing (left, right, forward, backward, no-op)&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;LSTM2&lt;/strong&gt; - A one-hot array of 3 elements. Representing (attack, superattack, no-op)&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Note that each set of actions includes no-op (no action) compared to the AlexNet approach.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;a href=&quot;https://github.com/workofart/brawlstars-ai/blob/master/net/lstm.py&quot;&gt;NN Architecture&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Input - LSTM Layer 1 - Dropout - LSTM Layer 2 - Dropout
+- Fully Connected Layer - Softmax Activation
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Training blew up my home desktop due to the amount of memory the feature space occupys at the peak. I had to use Google Cloud’s VM with 32GB of ram to train this.&lt;/p&gt;
+
+&lt;h2 id=&quot;7-challenges&quot;&gt;7. Challenges&lt;/h2&gt;
+
+&lt;h3 id=&quot;71-data&quot;&gt;7.1 Data&lt;/h3&gt;
+
+&lt;p&gt;The challenge with supervised learning is always with data gathering. In this case, I can’t gather a huge amount of gameplay data for the agent to be trained to play well. Also, the generalization ability of supervised learning is questionable. Does the agent play well on other maps? Other characters? I believe incorporating reinforcement learning into the equation will allow the agent to develop a more robust and general strategy for playing this game. Also, by using RL, I personally wouldn’t need to “waste time” playing the game to generate training data.&lt;/p&gt;
+
+&lt;h3 id=&quot;72-features&quot;&gt;7.2 Features&lt;/h3&gt;
+
+&lt;p&gt;Since there was no game “hacking” involved or game data available for the agent to use, getting the features to be passed into the agent for supervised learning was challenging. I had to visualize the CNN intermediary layers to understand if the CNN was useful in detecting and classifying elements of the game. This was important because even if the agent’s decision-making abilities (planning) were superb, giving misleading information (bad perception) might still lead to chaos.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Snapshot of Intermediate CNN Layers&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;This is visualized using the second-last &lt;strong&gt;(CONV-5-1)&lt;/strong&gt; block (out of 5 blocks) of the &lt;a href=&quot;https://arxiv.org/abs/1409.1556&quot;&gt;Very Deep Convolutional Networks for Large-Scale Image Recognition (VGG)&lt;/a&gt; architecture.
+&lt;img src=&quot;https://neurohive.io/wp-content/uploads/2018/11/vgg16.png&quot; alt=&quot;VGG16&quot; /&gt;
+Reference: https://neurohive.io/en/popular-networks/vgg16/&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/brawlstars-ai/raw/master/vgg_block5_conv1_18x18.png&quot; alt=&quot;CNNVIZ&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;8-statistics-and-performance&quot;&gt;8. Statistics and Performance&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;The input screen dimension:&lt;/strong&gt; 1280 x 715 (cut off some pixels from the title bar)&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Supervised Learning&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Trained on Raw Pixels fed into Alexnet for decision output with the following hyperparameters:
+    &lt;ul&gt;
+      &lt;li&gt;EPOCHS=500&lt;/li&gt;
+      &lt;li&gt;Learning Rate=3e-5&lt;/li&gt;
+      &lt;li&gt;Resize_Width=80&lt;/li&gt;
+      &lt;li&gt;Resize_Height=60&lt;/li&gt;
+      &lt;li&gt;Batch size=12&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Trained on MobileNet extracted features fed into 2 LSTMs for decision output with the following hyperparameters:
+    &lt;ul&gt;
+      &lt;li&gt;Mobilenet&lt;/li&gt;
+      &lt;li&gt;Learning Rate=3e-5&lt;/li&gt;
+      &lt;li&gt;Batch size=8&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The best way to evaluate performance in this game is by keeping track of the average number of stars the player possess throughout the game. This is a high-level reward/goal because it encompasses short-term goals of killing the oponent and gaining an additional star each time and a long-term goal of not dying and resetting the player’s stars to 2.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Human Benchmark (Measured by myself):&lt;/strong&gt;
+For the given setting, I can, on average, possess 5 stars throughout the game. With aggresive playstyle taking the initial 30 seconds, and conservative playstyle dominating the last 30 seconds, to preserve the 7 max stars on the player.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Agent Performance:&lt;/strong&gt;
+For the given setting, in the supervised learning approach, the results weren’t impressive. The agent does avoid running into the wall, but attacks randomly at no target.&lt;/p&gt;
+
+&lt;h2 id=&quot;9-error-analysis--future-steps&quot;&gt;9. Error Analysis + Future Steps&lt;/h2&gt;
+
+&lt;p&gt;I wasn’t surprised that supervised learning in a dynamic multi-agent environment would not go well. Unless I have near infinite amount of training data, I wouldn’t be able to train a decent agent.&lt;/p&gt;
+
+&lt;p&gt;Next, I will attempt to tackle this problem from a more fundamental level, starting from perception. Currently, I simply “dump” the pixels as input to a feature extractor, and hope that it will be able to transfer-learn some useful features.&lt;/p&gt;
+
+&lt;p&gt;Then, I am going to apply reinforcement learning on this problem to tackle the planning part of it. I will be framing the environment, constructing the agent’s brain, and designing rewards.&lt;/p&gt;
+
+&lt;p&gt;If you’re interested, please check my next post &lt;a href=&quot;http://www.henrypan.com/blog/reinforcement-learning/2019/04/25/Brawlstars-RL.html&quot;&gt;here&lt;/a&gt;. Thanks!&lt;/p&gt;
+
+&lt;p&gt;- Henry&lt;/p&gt;</content><author><name></name></author><summary type="html">Brawlstars: https://supercell.com/en/games/brawlstars/</summary></entry><entry><title type="html">Creating a Policy Gradient (PG) Agent to Trade</title><link href="http://henrypan.com/blog/reinforcement-learning/2019/04/04/pg-trading.html" rel="alternate" type="text/html" title="Creating a Policy Gradient (PG) Agent to Trade" /><published>2019-04-04T01:55:00-04:00</published><updated>2019-04-04T01:55:00-04:00</updated><id>http://henrypan.com/blog/reinforcement-learning/2019/04/04/pg-trading</id><content type="html" xml:base="http://henrypan.com/blog/reinforcement-learning/2019/04/04/pg-trading.html">&lt;p&gt;This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share some findings along the way. The goal of the series is to learn RL by applying it on an actual problem that I can relate to.&lt;/p&gt;
 
 &lt;h2 id=&quot;policy-gradient&quot;&gt;Policy Gradient&lt;/h2&gt;
 
@@ -297,7 +588,7 @@
 
 &lt;p&gt;&lt;a href=&quot;https://github.com/workofart/work-trader/tree/master/v3&quot;&gt;Code&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;So we’ve seen creating operations from scratch in our &lt;strong&gt;Version 1&lt;/strong&gt;, and using a high-level framework to create a “model” of our NN and just “fitting” it in &lt;strong&gt;Version 2&lt;/strong&gt;. In &lt;strong&gt;Version 3&lt;/strong&gt;, we have to switch our conceptual model of a NN a little bit again, because I have to introduce you to the concept of a &lt;a href=&quot;https://en.wikipedia.org/wiki/Tensor&quot;&gt;Tensor&lt;/a&gt;. In my definition, it’s a wrapper or a building block that can encompasses a variable, a constant, an operation, or any series of operations. We can connect tensors together by referencing them.&lt;/p&gt;
+&lt;p&gt;So we’ve seen creating operations from scratch in our &lt;strong&gt;Version 1&lt;/strong&gt;, and using a high-level framework to create a “model” of our NN and just “fitting” it in &lt;strong&gt;Version 2&lt;/strong&gt;. In &lt;strong&gt;Version 3&lt;/strong&gt;, we have to switch our conceptual model of a NN a little bit again, because I have to introduce you to the concept of a &lt;a href=&quot;https://en.wikipedia.org/wiki/Tensor&quot;&gt;Tensor&lt;/a&gt;. In my definition, it’s a wrapper or a building block that can encompass a variable, a constant, an operation, or any series of operations. We can connect tensors together by referencing them.&lt;/p&gt;
 
 &lt;p&gt;Let’s quickly go through our example and I’ll explain line by line with respect to how they relate to our &lt;strong&gt;Version 1&lt;/strong&gt; and &lt;strong&gt;Version 2&lt;/strong&gt; conceptual models.&lt;/p&gt;
 
