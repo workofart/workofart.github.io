@@ -1,4 +1,682 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://henrypan.com/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="http://henrypan.com/blog/" rel="alternate" type="text/html" /><updated>2020-01-10T13:03:49-05:00</updated><id>http://henrypan.com/blog/feed.xml</id><title type="html">Henry’s Blog</title><subtitle>My learning notes, research, projects and musings.</subtitle><entry><title type="html">BrawlStars AI Series (Part 2) - Reinforcement Learning</title><link href="http://henrypan.com/blog/reinforcement-learning/2019/04/25/Brawlstars-RL.html" rel="alternate" type="text/html" title="BrawlStars AI Series (Part 2) - Reinforcement Learning" /><published>2019-04-25T01:00:00-04:00</published><updated>2019-04-25T01:00:00-04:00</updated><id>http://henrypan.com/blog/reinforcement-learning/2019/04/25/Brawlstars-RL</id><content type="html" xml:base="http://henrypan.com/blog/reinforcement-learning/2019/04/25/Brawlstars-RL.html">&lt;p&gt;&lt;strong&gt;First and foremost, I must say, perception is harder than planning.&lt;/strong&gt;&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://henrypan.com/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="http://henrypan.com/blog/" rel="alternate" type="text/html" /><updated>2020-09-15T03:17:48-04:00</updated><id>http://henrypan.com/blog/feed.xml</id><title type="html">Henry’s Blog</title><subtitle>My learning notes, research, projects and musings.</subtitle><entry><title type="html">OpenAI Gym - Pendulum-v0</title><link href="http://henrypan.com/blog/reinforcement-learning/2019/11/05/pendulum.html" rel="alternate" type="text/html" title="OpenAI Gym - Pendulum-v0" /><published>2019-11-05T16:00:00-05:00</published><updated>2019-11-05T16:00:00-05:00</updated><id>http://henrypan.com/blog/reinforcement-learning/2019/11/05/pendulum</id><content type="html" xml:base="http://henrypan.com/blog/reinforcement-learning/2019/11/05/pendulum.html">&lt;h2 id=&quot;code&quot;&gt;Code&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/workofart/openai-gym-baselines/tree/master/Pendulum-v0&quot;&gt;Here&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;1-goal&quot;&gt;1. Goal&lt;/h2&gt;
+&lt;p&gt;The problem setting is to solve the &lt;a href=&quot;https://gym.openai.com/envs/MountainCarContinuous-v0/&quot;&gt;Inverted Pendulum&lt;/a&gt; problem in OpenAI gym. Try to keep a frictionless pendulum standing up.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/openai-gym-baselines/raw/master/Pendulum-v0/test-run.gif&quot; alt=&quot;test-run&quot; style=&quot;zoom: 67%;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;2-environment&quot;&gt;2. Environment&lt;/h2&gt;
+&lt;p&gt;The pendulum environment has a continuous state space as follows (copied from &lt;a href=&quot;https://github.com/openai/gym/wiki/Pendulum-v0&quot;&gt;wiki&lt;/a&gt;):&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;state&quot;&gt;State&lt;/h4&gt;
+
+&lt;p&gt;Type: Box(3)&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Num&lt;/th&gt;
+      &lt;th&gt;State&lt;/th&gt;
+      &lt;th&gt;Observation&lt;/th&gt;
+      &lt;th&gt;Min&lt;/th&gt;
+      &lt;th&gt;Max&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;Angle1&lt;/td&gt;
+      &lt;td&gt;cos(theta)&lt;/td&gt;
+      &lt;td&gt;-1.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;Angle2&lt;/td&gt;
+      &lt;td&gt;sin(theta)&lt;/td&gt;
+      &lt;td&gt;-1.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;Velocity&lt;/td&gt;
+      &lt;td&gt;theta dot&lt;/td&gt;
+      &lt;td&gt;-8.0&lt;/td&gt;
+      &lt;td&gt;8.0&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;actions&quot;&gt;Actions&lt;/h4&gt;
+
+&lt;p&gt;Type: Box(1)&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Num&lt;/th&gt;
+      &lt;th&gt;Action&lt;/th&gt;
+      &lt;th&gt;Min&lt;/th&gt;
+      &lt;th&gt;Max&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;Joint effort&lt;/td&gt;
+      &lt;td&gt;-2.0&lt;/td&gt;
+      &lt;td&gt;2.0&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;reward&quot;&gt;Reward&lt;/h4&gt;
+
+&lt;p&gt;The precise equation for reward:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;-(theta^2 + 0.1*theta_dt^2 + 0.001*action^2)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Theta is normalized between -pi and pi. Therefore, the lowest reward is &lt;code class=&quot;highlighter-rouge&quot;&gt;-(pi^2 + 0.1*8^2 + 0.001*2^2) = -16.2736044&lt;/code&gt;, and the highest reward is &lt;code class=&quot;highlighter-rouge&quot;&gt;0&lt;/code&gt;. In essence, the goal is to remain at zero angle (vertical), with the least rotational velocity, and the least effort.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;starting-state&quot;&gt;Starting State&lt;/h4&gt;
+
+&lt;p&gt;Random angle from &lt;script type=&quot;math/tex&quot;&gt;-\pi&lt;/script&gt; to &lt;script type=&quot;math/tex&quot;&gt;\pi&lt;/script&gt;, and random velocity between &lt;code class=&quot;highlighter-rouge&quot;&gt;-1&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;1&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;episode-termination&quot;&gt;Episode Termination&lt;/h4&gt;
+
+&lt;p&gt;There is no specified termination. Adding a maximum number of steps might be a good idea.&lt;/p&gt;
+
+&lt;p&gt;NOTE: Your environment object could be wrapped by the TimeLimit wrapper, if created using the “gym.make” method. In that case it will terminate after 200 steps.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;solved-condition&quot;&gt;Solved Condition&lt;/h4&gt;
+
+&lt;p&gt;There are no specific requirements, see the &lt;strong&gt;experiments section&lt;/strong&gt; for a comparison of performance with the leaderboard.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;3-approach&quot;&gt;3. Approach&lt;/h2&gt;
+&lt;p&gt;The approach uses the one-step &lt;em&gt;actor-critic&lt;/em&gt; (episodic) algorithm with &lt;em&gt;temporal difference&lt;/em&gt; for estimating the advantage function for the critic. The policy will be a continuous one, namely the gaussian function.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;31-discretization&quot;&gt;3.1 Discretization&lt;/h3&gt;
+
+&lt;p&gt;Since the state space is continuous and is comprised of angle of the pendulum and the velocity we will discretize them separately using a radial basis function (RBF) as follows:&lt;/p&gt;
+
+&lt;p&gt;Angle1 and Angle2 will &lt;em&gt;each&lt;/em&gt; be discretized into 15 radial basis kernels&lt;/p&gt;
+
+&lt;p&gt;Pendulum velocity will be discretized into 15 radial basis kernels.&lt;/p&gt;
+
+&lt;p&gt;Essentially, each “transformed” state will be computed by measuring how far the raw state is from each of the 15 radial basis kernel centers.&lt;/p&gt;
+
+&lt;p&gt;Therefore, in total, there will be &lt;script type=&quot;math/tex&quot;&gt;15^3=3375&lt;/script&gt; states.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;32-exploration-vs-exploitation&quot;&gt;3.2 Exploration vs Exploitation&lt;/h3&gt;
+
+&lt;p&gt;To overcome the exploration-exploitation dilemma, we will be slowly decreasing the standard deviation of the gaussian function. This will allow the agent’s action to vary a lot initially for exploration. At later stages of training, since the standard deviation is smaller, the actions will tend to be closer to the estimated gaussian mean, thus exploiting the learnt policy weights for a more accurate action selection.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;33-gaussian-policy&quot;&gt;3.3 Gaussian Policy&lt;/h3&gt;
+
+&lt;p&gt;To generate continuous actions for this problem, the gaussian policy is a simple and good baseline to start off with.&lt;/p&gt;
+
+&lt;p&gt;&lt;script type=&quot;math/tex&quot;&gt;\Large
+\pi(a \mid s, \theta) = \frac{1}{\sigma \sqrt{2\pi}} e^{-\frac{(a - \mu(s, \theta))^2}{2\sigma^2}}&lt;/script&gt;
+We can see that there are three variables that we need to provide for the policy to generate an action:
+&lt;script type=&quot;math/tex&quot;&gt;\mu = \text{The mean given the state and weights, this will be approximated by a function approximator}\\
+\sigma = \text{The standard deviation parameter for this policy} \\
+\theta = \text{The weights of the policy that will be trained}&lt;/script&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;34-linear-value-function&quot;&gt;3.4 Linear Value Function&lt;/h3&gt;
+
+&lt;p&gt;Not to complicate our approach, our value function is defined to be a function approximator that has the same number of parameters as the number of states, which is 3375. The prediction of the value given the state is just a dot product between the current weights and the given state.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;35-training&quot;&gt;3.5 Training&lt;/h3&gt;
+
+&lt;p&gt;As the name suggest, the agent is trained one step at a time, which means the learning happens after every timestep (max 200 timestep make up one episode).&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Policy (Actor) and Value (Critic) Function Weight Update&lt;/strong&gt;&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;% &lt;![CDATA[
+\Large
+\begin{align*}
+\alpha_v &amp;= \text{Value function learning rate}\\
+\alpha_p &amp;= \text{Policy function learning rate}\\
+\hat{v} &amp;= \text{Estimated value for the given state} \\
+\theta_v &amp;= \text{Value function parameterization weights}\\
+\theta_p &amp;= \text{Policy function parameterization weights}\\
+\delta &amp;= \text{Advantage}\\
+\gamma &amp;= \text{Discount rate}\\
+I &amp;= \text{Policy parameter scaling factor, initially 1} \\
+R &amp;= \text{Reward}\\ \\
+
+\delta &amp;\leftarrow R + \gamma \hat{v}(S', \theta_v) - \hat{v}(S, \theta_v)\\
+\theta_v &amp;\leftarrow \theta_v + \alpha_v \delta \triangledown \hat{v}(S, \theta_v) \\
+\theta_p &amp;\leftarrow \theta_p + \alpha_p I \delta \triangledown \ln{\pi(A \mid S, \theta_p)} \\
+I &amp;\leftarrow \gamma I \\
+\end{align*} %]]&gt;&lt;/script&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;36-hyperparameters&quot;&gt;3.6 Hyperparameters&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Discount rate (&lt;script type=&quot;math/tex&quot;&gt;\gamma&lt;/script&gt;): 0.99&lt;/li&gt;
+  &lt;li&gt;Actor learning rate (&lt;script type=&quot;math/tex&quot;&gt;\alpha_v&lt;/script&gt;): &lt;script type=&quot;math/tex&quot;&gt;1e^{-4}&lt;/script&gt;&lt;/li&gt;
+  &lt;li&gt;Critic learning rate (&lt;script type=&quot;math/tex&quot;&gt;\alpha_p&lt;/script&gt;): &lt;script type=&quot;math/tex&quot;&gt;5e^{-3}&lt;/script&gt;&lt;/li&gt;
+  &lt;li&gt;Gaussian Policy standard deviation (&lt;script type=&quot;math/tex&quot;&gt;\sigma_p&lt;/script&gt;): 0.5 decreasing to 0.1 linearly over all training episodes&lt;/li&gt;
+  &lt;li&gt;Radial Basis Function Kernel Width (&lt;script type=&quot;math/tex&quot;&gt;\sigma_{rbf}&lt;/script&gt;): 0.1&lt;/li&gt;
+  &lt;li&gt;Total number of RBF kernels: 15 for each dimension of the state.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;4-experiment--findings&quot;&gt;4. Experiment &amp;amp; Findings&lt;/h2&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;# Episodes&lt;/th&gt;
+      &lt;th&gt;Training Time&lt;/th&gt;
+      &lt;th&gt;Avg Reward (last 100 episodes)&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;2000&lt;/td&gt;
+      &lt;td&gt;213 seconds&lt;/td&gt;
+      &lt;td&gt;-146&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;1000&lt;/td&gt;
+      &lt;td&gt;117 seconds&lt;/td&gt;
+      &lt;td&gt;-151&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;500&lt;/td&gt;
+      &lt;td&gt;76 seconds&lt;/td&gt;
+      &lt;td&gt;-215&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;200&lt;/td&gt;
+      &lt;td&gt;23.55 seconds&lt;/td&gt;
+      &lt;td&gt;-1062&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/openai-gym-baselines/raw/master/Pendulum-v0/500_ep.png&quot; alt=&quot;500ep&quot; style=&quot;zoom: 67%;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/openai-gym-baselines/raw/master/Pendulum-v0/2000_ep.png&quot; alt=&quot;2000ep&quot; style=&quot;zoom: 67%;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;We can see that there is a significant improvement in performance after training for 1000 episodes. And by looking at the rewards graph, for the 2000 episode training instance, it has converged to &amp;gt; -200 rewards at around 500 episodes. This means that perhaps a better initial and decay value for &lt;script type=&quot;math/tex&quot;&gt;\sigma_p&lt;/script&gt; can be chosen to speed up the convergence rate in shorter training sessions.&lt;/p&gt;
+
+&lt;p&gt;It also shows that having 15 RBF kernels for each state dimension is enough for discretizing the state space. Since this hyperparameter directly affects the training speed and memory usage during training, it is often necessary to revisit this when it becomes a bottleneck.&lt;/p&gt;
+
+&lt;p&gt;Compared to the leaderboard below, our performance is within the range of the average users.&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;User&lt;/th&gt;
+      &lt;th&gt;Best 100-episode performance&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/msinto93&quot;&gt;msinto93&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;-123.11 ± 6.86&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/msinto93&quot;&gt;msinto93&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;-123.79 ± 6.90&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/heerad&quot;&gt;heerad&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;-134.48 ± 9.07&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/Bhaney44&quot;&gt;BS Haney&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;-135&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/ThyrixYang&quot;&gt;ThyrixYang&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;-136.16 ± 11.97&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/lirnli&quot;&gt;lirnli&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;-152.24 ± 10.87&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;5-next-steps&quot;&gt;5. Next Steps&lt;/h2&gt;
+
+&lt;p&gt;Fine tune the initial and decay value for &lt;script type=&quot;math/tex&quot;&gt;\sigma_p&lt;/script&gt; and see its effect on the convergence rate and overall performance.&lt;/p&gt;
+
+&lt;p&gt;Remember that we’re still using a very simple linear function approximator for our value function. It works pretty well even with this simple baseline setup, which makes me wonder how much of an improvement will we have if we try something more powerful.&lt;/p&gt;
+
+&lt;p&gt;Try to shrink the state discretization to less RBF kernels, and see if there’s a significant reduction in training efficiency or effectiveness.&lt;/p&gt;
+
+&lt;p&gt;Overall, this was a very shallow dive into actor-critic, and there are far more intricacies to this method. I will try to explore other alternatives with the OpenAI gym. Stay tuned.&lt;/p&gt;</content><author><name></name></author><summary type="html">Code</summary></entry><entry><title type="html">OpenAI Gym - MountainCar-v0</title><link href="http://henrypan.com/blog/reinforcement-learning/2019/11/04/mountain-car.html" rel="alternate" type="text/html" title="OpenAI Gym - MountainCar-v0" /><published>2019-11-04T18:00:00-05:00</published><updated>2019-11-04T18:00:00-05:00</updated><id>http://henrypan.com/blog/reinforcement-learning/2019/11/04/mountain-car</id><content type="html" xml:base="http://henrypan.com/blog/reinforcement-learning/2019/11/04/mountain-car.html">&lt;h2 id=&quot;code&quot;&gt;Code&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/workofart/openai-gym-baselines/tree/master/MountainCarContinuous-v0&quot;&gt;Here&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;1-goal&quot;&gt;1. Goal&lt;/h2&gt;
+&lt;p&gt;The problem setting is to solve the &lt;a href=&quot;https://gym.openai.com/envs/MountainCarContinuous-v0/&quot;&gt;Continuous MountainCar&lt;/a&gt; problem in OpenAI gym.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/openai-gym-baselines/raw/master/MountainCarContinuous-v0/test-run.gif&quot; alt=&quot;test-run&quot; /&gt;
+&lt;br /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;2-environment&quot;&gt;2. Environment&lt;/h2&gt;
+
+&lt;p&gt;The mountain car follows a continuous state space as follows(copied from &lt;a href=&quot;https://github.com/openai/gym/wiki/MountainCarContinuous-v0&quot;&gt;wiki&lt;/a&gt;):&lt;/p&gt;
+
+&lt;p&gt;The acceleration of the car is controlled via the application of a force which takes values in the range [1, 1]. The states are the position of the car in the horizontal axis on the range [1.2, 0.6] and its velocity on the range [0.07, 0.07]. The goal is to get the car to accelerate up the hill and get to the flag.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;state&quot;&gt;State&lt;/h4&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Num&lt;/th&gt;
+      &lt;th&gt;Observation&lt;/th&gt;
+      &lt;th&gt;Min&lt;/th&gt;
+      &lt;th&gt;Max&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;Car Position&lt;/td&gt;
+      &lt;td&gt;-1.2&lt;/td&gt;
+      &lt;td&gt;0.6&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;Car Velocity&lt;/td&gt;
+      &lt;td&gt;-0.07&lt;/td&gt;
+      &lt;td&gt;0.07&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;Note that velocity has been constrained to facilitate exploration, but this constraint might be relaxed in a more challenging version.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;actions&quot;&gt;Actions&lt;/h4&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Num&lt;/th&gt;
+      &lt;th&gt;Action&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;Push car to the left (negative value) or to the right (positive value)&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;reward&quot;&gt;Reward&lt;/h4&gt;
+
+&lt;p&gt;Reward is &lt;code class=&quot;highlighter-rouge&quot;&gt;100&lt;/code&gt; for reaching the target of the hill on the right hand side, minus the squared sum of actions from start to goal.&lt;/p&gt;
+
+&lt;p&gt;This reward function raises an exploration challenge, because if the agent does not reach the target soon enough, it will figure out that it is better not to move, and won’t find the target anymore.&lt;/p&gt;
+
+&lt;p&gt;Note that this reward is unusual with respect to most published work, where the goal was to reach the target as fast as possible, hence favouring a bang-bang strategy.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;starting-state&quot;&gt;Starting State&lt;/h4&gt;
+
+&lt;p&gt;Position between &lt;code class=&quot;highlighter-rouge&quot;&gt;-0.6&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;-0.4&lt;/code&gt;, null velocity.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;episode-termination&quot;&gt;Episode Termination&lt;/h4&gt;
+
+&lt;p&gt;Position equal to &lt;code class=&quot;highlighter-rouge&quot;&gt;0.5&lt;/code&gt;. A constraint on velocity might be added in a more challenging version.&lt;/p&gt;
+
+&lt;p&gt;The episode will terminate either when the car has reached the goal OR when the total number of time steps reached 1000 regardless of reaching the goal or not.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;solved-requirements&quot;&gt;Solved Requirements&lt;/h4&gt;
+
+&lt;p&gt;Get a reward over &lt;code class=&quot;highlighter-rouge&quot;&gt;90&lt;/code&gt;. This value might be tuned.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;3-approach&quot;&gt;3. Approach&lt;/h2&gt;
+
+&lt;p&gt;The approach uses the &lt;em&gt;policy gradient&lt;/em&gt; algorithm with a baseline to reduce variance. Even though the state space is continuous, in this attempt, we will be using a discrete softmax policy. In other words, the continuous state space will be discretized into buckets of states that will be fed to the agent that will output a discrete action either &lt;code class=&quot;highlighter-rouge&quot;&gt;[-1, 0, 1]&lt;/code&gt;, which is &lt;code class=&quot;highlighter-rouge&quot;&gt;[left, no-action, right]&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;31-discretization&quot;&gt;3.1 Discretization&lt;/h3&gt;
+
+&lt;p&gt;Since there are two dimensions in the state space, namely position and velocity. We will discretize them separately into &lt;strong&gt;150&lt;/strong&gt; buckets and &lt;strong&gt;120&lt;/strong&gt; buckets for position and velocity respectively.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;32-exploration-vs-exploitation&quot;&gt;3.2 Exploration vs Exploitation&lt;/h3&gt;
+
+&lt;p&gt;To overcome the exploration-exploitation dilemma, we will be using the epsilon-greedy approach to slowly decrease the randomization factor overtime. This will ensure that our agent will have a wide variety of state-action training samples and in the later part of the training, it will allow the agent to follow it’s own “trained strategy” as opposed to random actions.&lt;/p&gt;
+
+&lt;p&gt;Technically, in the code, we will be using a &lt;strong&gt;temperature&lt;/strong&gt; term to smooth the probability of actions, and &lt;strong&gt;epsilon&lt;/strong&gt; to decide between whether to take a random action or the predicted action output from the policy.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;33-training&quot;&gt;3.3 Training&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;Monte Carlo&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The training process follows a &lt;em&gt;Monte Carlo&lt;/em&gt; method. This means the training only takes place after an entire episode is completed, and replays the accumulated state/action/reward/next state for training. This is at one end of the spectrum, the other end of the spectrum is called &lt;em&gt;1-Step Temporal Difference&lt;/em&gt; learning. So Monte Carlo is essentially a &lt;em&gt;&lt;script type=&quot;math/tex&quot;&gt;\infty&lt;/script&gt;-step Temporal Difference&lt;/em&gt; learning. There is a balance between when you want to train the agent. Training it too early could render very messy results and thus might be harder to converge. Training it too late might prolong the training duration for convergence. &lt;strong&gt;The criteria for choosing the method depends heavily on the problem itself.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/td_vs_montecarlo.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
+
+&lt;center&gt;[1] Richard S. Sutton and Andrew G. Barto. 2018. *Reinforcement Learning: An Introduction*. A Bradford Book, Cambridge, MA, USA.&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Policy Gradient Weight Update&lt;/strong&gt;
+&lt;script type=&quot;math/tex&quot;&gt;\alpha_v = \text{Value function learning rate}\\
+\alpha_p = \text{Policy function learning rate}\\
+\hat{v} = \text{Estimated value for the given state} \\
+\theta_v = \text{Value function parameterization weights}\\
+\theta_p = \text{Policy function parameterization weights}\\
+\delta = \text{Advantage}\\
+\gamma = \text{Discount rate}\\\
+G = \text{Discounted Rewards}&lt;/script&gt;&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;\Large
+\delta \leftarrow G - \hat{v}(S, \theta_{v})\\
+\Large
+\theta_{v} \leftarrow \theta_{v} + \alpha_v \delta \triangledown \hat{v}(S, \theta_{v}) \\
+\Large
+\theta_{p} \leftarrow \theta_{p} + \alpha_p \delta \gamma \triangledown \ln{\pi(A \mid S, \theta_p)}\\&lt;/script&gt;
+
+&lt;p&gt;&lt;strong&gt;Gradient Calculation for Softmax Policy&lt;/strong&gt;
+&lt;script type=&quot;math/tex&quot;&gt;a = \text{action}\\
+a' = \text{selected action by policy}\\
+w = \text{policy weights}\\
+\tau = \text{temperature for epsilon-greedy}\\
+s = \text{current state} \\
+\pi(a \mid s) = \text{policy outputs an action given the current state} \\
+\Large
+\quad \quad \quad = \frac{e^{w_{s,a}}}{\sum_{a'}e^{w_{s,a'}}}&lt;/script&gt;&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;% &lt;![CDATA[
+\Large
+\begin{align*}
+    \triangledown_w \log \pi(a \mid s) &amp;= \frac{\partial \log \frac{e^{w_{s,a}} / \tau}{\sum_{a'}e^{w_{s,a'}} / \tau}}{\partial w} \\
+    \newline \\
+    \text{(Take logs)} \; &amp;= \frac{\partial \log \big(e^{w_{s,a}} / \tau\big) - \partial \log \big (\sum_{a'}e^{w_{s,a'}} / \tau \big)} {\partial w}\\
+    \newline \\
+    \text{(Chain &amp; Log rule)} &amp;= \frac{e^{w_{s, a}} / \tau  w_{s,a} / \tau}{e^{w_{s,a}} / \tau \ln{e}} - \frac{\sum_{a'} w_{s,a'} / \tau \; e^{w_{s,a'}/ \tau}}{\sum_{a'}e^{w_{s,a'}}/ \tau}\\
+    \newline \\
+    \text{(Simplify first equation)} \; &amp;= w_{s,a} / \tau - \frac{\sum_{a'} w_{s,a'} / \tau \; e^{w_{s,a'}/ \tau}}{\sum_{a'}e^{w_{s,a'}}/ \tau}\\
+    \newline \\
+    % \text{(Second equation substitute } \pi(a \mid s) \text{)} \; &amp;= w_{s,a} / \tau - \sum_{a'} w_{s,a'} / \tau \; \pi(a' \mid s)\\
+    \text{(If Action = $a^\prime$) } &amp;= (1 - \frac{e^{w_{s, a}}}{\sum_{a'}e^{w_{s,a'}}}) / \tau \\
+    &amp;= \frac{1 - \pi(a \mid s)}{\tau} \\
+    \text{(If Action  $\neq a^\prime$) } &amp;= -(\frac{e^{w_{s, a}}}{\sum_{a'}e^{w_{s,a'}}}) / \tau \\
+    &amp;= - \frac{\pi(a \mid s)}{\tau} \\
+\end{align*} %]]&gt;&lt;/script&gt;
+
+&lt;h3 id=&quot;34-hyperparameters&quot;&gt;3.4 Hyperparameters&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Discount rate (&lt;script type=&quot;math/tex&quot;&gt;\gamma&lt;/script&gt;): 0.999&lt;/li&gt;
+  &lt;li&gt;Value function learning rate (&lt;script type=&quot;math/tex&quot;&gt;\alpha_v&lt;/script&gt;): &lt;script type=&quot;math/tex&quot;&gt;1e^{-2}&lt;/script&gt;&lt;/li&gt;
+  &lt;li&gt;Policy function learning rate (&lt;script type=&quot;math/tex&quot;&gt;\alpha_p&lt;/script&gt;): &lt;script type=&quot;math/tex&quot;&gt;1e^{-3}&lt;/script&gt;&lt;/li&gt;
+  &lt;li&gt;Temperature (&lt;script type=&quot;math/tex&quot;&gt;\tau&lt;/script&gt;): 1 decreasing to 0.5 linearly over all training episodes&lt;/li&gt;
+  &lt;li&gt;Discretization for position state: 150 buckets&lt;/li&gt;
+  &lt;li&gt;Discretization for velocity state: 120 buckets&lt;/li&gt;
+  &lt;li&gt;Epsilon-greedy (&lt;script type=&quot;math/tex&quot;&gt;\epsilon&lt;/script&gt;): 1 decreasing to 0.1 linearly over all training episodes&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;4-experiment--findings&quot;&gt;4. Experiment &amp;amp; Findings&lt;/h2&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;# Episodes&lt;/th&gt;
+      &lt;th&gt;Training Time&lt;/th&gt;
+      &lt;th&gt;Min. Reward&lt;/th&gt;
+      &lt;th&gt;Max Reward&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;2500&lt;/td&gt;
+      &lt;td&gt;473 seconds&lt;/td&gt;
+      &lt;td&gt;31.7&lt;/td&gt;
+      &lt;td&gt;90.6&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;1500&lt;/td&gt;
+      &lt;td&gt;327 seconds&lt;/td&gt;
+      &lt;td&gt;31.5&lt;/td&gt;
+      &lt;td&gt;89.9&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;1000&lt;/td&gt;
+      &lt;td&gt;254 seconds&lt;/td&gt;
+      &lt;td&gt;31.2&lt;/td&gt;
+      &lt;td&gt;89.3&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;500&lt;/td&gt;
+      &lt;td&gt;154 seconds&lt;/td&gt;
+      &lt;td&gt;30.2&lt;/td&gt;
+      &lt;td&gt;86.7&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;200&lt;/td&gt;
+      &lt;td&gt;77 seconds&lt;/td&gt;
+      &lt;td&gt;31.1&lt;/td&gt;
+      &lt;td&gt;84.6&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;41-introducing-baseline-to-reduce-variance&quot;&gt;4.1 Introducing baseline to reduce variance&lt;/h3&gt;
+
+&lt;center&gt;&lt;b&gt;Without Baseline&lt;/b&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/openai-gym-baselines/raw/master/MountainCarContinuous-v0/without_baseline.png&quot; alt=&quot;without_baseline&quot; style=&quot;zoom: 67%;&quot; /&gt;&lt;/p&gt;
+
+&lt;center&gt;Training took: 280.78 seconds&lt;/center&gt;
+
+&lt;hr /&gt;
+
+&lt;center&gt;&lt;b&gt;With Baseline&lt;/b&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/openai-gym-baselines/raw/master/MountainCarContinuous-v0/with_baseline.png&quot; alt=&quot;with_baseline&quot; style=&quot;zoom:67%;&quot; /&gt;&lt;/p&gt;
+
+&lt;center&gt;Training took: 253.72 seconds&lt;/center&gt;
+
+&lt;p&gt;The above comparison experiment is to show the effects of having a baseline on the agent’s performance. We can easily see from the rewards graph, the agent &lt;strong&gt;with baseline&lt;/strong&gt; has a smaller variance in the rewards. This translates to a faster convergence rate.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;42-discrete-vs-continuous-actions&quot;&gt;4.2 Discrete vs Continuous Actions&lt;/h3&gt;
+
+&lt;p&gt;This problem (MountainCarContinuous-v0) was intended to be solved using a continuous action policy. However, I didn’t use continuous actions because I wanted to see how well a discrete-action agent could perform on this simple task. In conclusion, the number of episodes until convergence is quite good. The overall max reward reaches the goal of 90 at around ~1000 episodes.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;43-performance&quot;&gt;4.3 Performance&lt;/h3&gt;
+
+&lt;p&gt;Let’s look at the leaderboard of this problem and &lt;strong&gt;MountainCar-v0&lt;/strong&gt;, which is a discrete version of the problem.&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;MountainCar-v0&lt;/th&gt;
+      &lt;th&gt; &lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;strong&gt;User&lt;/strong&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;strong&gt;Episodes before solve&lt;/strong&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/ZhiqingXiao&quot;&gt;Zhiqing Xiao&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;0 (use close-form preset policy)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/StepNeverStop&quot;&gt;Keavnn&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;47&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/ZhiqingXiao&quot;&gt;Zhiqing Xiao&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;75&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/roboticist-by-day&quot;&gt;Mohith Sakthivel&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;90&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/amohamed11&quot;&gt;Anas Mohamed&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;341&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/harshitandro&quot;&gt;Harshit Singh Lodha&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;643&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/CM-Data&quot;&gt;Colin M&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;944&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/jing582&quot;&gt;jing582&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;1119&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/DaveLeongSingapore&quot;&gt;DaveLeongSingapore&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;1967&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/Pechckin&quot;&gt;Pechckin&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;30&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/amitkvikram&quot;&gt;Amit&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;1000-1200&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/elcrion/mountain_car&quot;&gt;Gleb I&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;100&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;MountainCarContinuous-v0&lt;/th&gt;
+      &lt;th&gt; &lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;User&lt;/td&gt;
+      &lt;td&gt;Episodes before solve&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/Ashioto&quot;&gt;Ashioto&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/StepNeverStop&quot;&gt;Keavnn&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;11&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/camigord&quot;&gt;camigord&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;18&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/tobiassteidle&quot;&gt;Tobias Steidle&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;32&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/lirnli&quot;&gt;lirnli&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;33&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/Khev/RL-practice-keras/blob/master/DDPG/writeup_for_openai.ipynb&quot;&gt;khev&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;130&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/sanketsans/openAIenv/tree/master/CEM/mountainCar_Cont&quot;&gt;Sanket Thakur&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;140&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/Pechckin&quot;&gt;Pechckin&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/nikhilbarhate99&quot;&gt;Nikhil Barhate&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;200 (HAC)&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;This shows that our discrete policy is a good baseline to start with before we dive into continuous actions. With continuous actions, debugging might be slightly harder as the policy function will be slightly more complicated, perhaps using a neural network approximating the policy function.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;5-next-steps&quot;&gt;5. Next Steps&lt;/h2&gt;
+
+&lt;p&gt;An obvious next step would be to try out continuous actions on this same problem and see how much more “efficient” and “effective” training can be. Intuitively, with continuous actions, you would expect a more fine-grain control of the car, and thus less “bouncing” around. Think driving with full petal and full brake, it’s not a very effective way to drive, is it?&lt;/p&gt;
+
+&lt;p&gt;Another thing that could be interesting to try out is to change the “n” in the &lt;em&gt;n-step Temporal Difference (TD)&lt;/em&gt; learning and see the effects with regards to performance, convergence rate, reward variance. Right now we are using &lt;em&gt;Monte Carlo&lt;/em&gt;, which is essentially a &lt;script type=&quot;math/tex&quot;&gt;\infty&lt;/script&gt;-step TD method.&lt;/p&gt;
+
+&lt;p&gt;The current approach uses policy gradient as the approach to train the agent. There are some limitations in policy-based methods. There are other reinforcement learning algorithms that can be used to tackle this problem such as Deep Q-Learning, and Actor-Critic. I will be tackling another OpenAI Gym problem (&lt;a href=&quot;https://github.com/openai/gym/wiki/Pendulum-v0&quot;&gt;Pendulum-v0&lt;/a&gt;) using actor-critic. Stay tuned for my next post.&lt;/p&gt;</content><author><name></name></author><summary type="html">Code</summary></entry><entry><title type="html">BrawlStars AI Series (Part 2) - Reinforcement Learning</title><link href="http://henrypan.com/blog/reinforcement-learning/2019/04/25/Brawlstars-RL.html" rel="alternate" type="text/html" title="BrawlStars AI Series (Part 2) - Reinforcement Learning" /><published>2019-04-25T01:00:00-04:00</published><updated>2019-04-25T01:00:00-04:00</updated><id>http://henrypan.com/blog/reinforcement-learning/2019/04/25/Brawlstars-RL</id><content type="html" xml:base="http://henrypan.com/blog/reinforcement-learning/2019/04/25/Brawlstars-RL.html">&lt;p&gt;&lt;strong&gt;First and foremost, I must say, perception is harder than planning.&lt;/strong&gt;&lt;/p&gt;
 
 &lt;p&gt;This part, I will be attempting to apply reinforcement learning (RL) towards creating an agent that can play Brawlstars. The goal of the project is similar to &lt;a href=&quot;...&quot;&gt;part 1&lt;/a&gt; —be a decent player and excert human-like behaviors. My personal goal is to learn various reinforcement learning techniques and apply them towards a practical problem.&lt;/p&gt;
 
