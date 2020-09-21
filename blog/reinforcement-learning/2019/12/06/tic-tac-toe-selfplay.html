@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Tic-tac-toe Self-Play | Henry’s Blog</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="Tic-tac-toe Self-Play" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Code" />
+<meta property="og:description" content="Code" />
+<link rel="canonical" href="http://henrypan.com/blog/reinforcement-learning/2019/12/06/tic-tac-toe-selfplay.html" />
+<meta property="og:url" content="http://henrypan.com/blog/reinforcement-learning/2019/12/06/tic-tac-toe-selfplay.html" />
+<meta property="og:site_name" content="Henry’s Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-12-06T16:00:00-05:00" />
+<script type="application/ld+json">
+{"url":"http://henrypan.com/blog/reinforcement-learning/2019/12/06/tic-tac-toe-selfplay.html","headline":"Tic-tac-toe Self-Play","datePublished":"2019-12-06T16:00:00-05:00","dateModified":"2019-12-06T16:00:00-05:00","description":"Code","mainEntityOfPage":{"@type":"WebPage","@id":"http://henrypan.com/blog/reinforcement-learning/2019/12/06/tic-tac-toe-selfplay.html"},"@type":"BlogPosting","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/blog/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://henrypan.com/blog/feed.xml" title="Henry's Blog" /></head>
+<body><header class="site-header" role="banner">
+    <div class="wrapper"><a class="site-title" rel="author" href="/blog/">Henry&#39;s Blog</a><nav class="site-nav">
+          <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+          <label for="nav-trigger">
+            <span class="menu-icon">
+              <svg viewBox="0 0 18 15" width="18px" height="15px">
+                <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+              </svg>
+            </span>
+          </label>
+  
+          <div class="trigger">
+            <a class="page-link" href="http://henrypan.com">Homepage</a>
+            <!---->
+          </div>
+        </nav></div>
+  </header>
+  <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Tic-tac-toe Self-Play</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2019-12-06T16:00:00-05:00" itemprop="datePublished">Dec 6, 2019
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <h2 id="code">Code</h2>
+
+<p><a href="https://github.com/workofart/tic-tac-toe-selfplay">Here</a></p>
+
+<h2 id="1-goal">1. Goal</h2>
+
+<p>The motivation of this project is <a href="https://deepmind.com/research/case-studies/alphago-the-story-so-far">AlphaGo</a> and its mechanism of self-play. So I took on the task of implementing a very simple self-play mechanism that is able to train 2 agents in mastering tic-tac-toe with only the visible state/reward information. No information on the rules of the game or prior knowledge.</p>
+
+<p>The goal of this project is two folds:</p>
+
+<ol>
+  <li>Train a reinforcement learning agent to beat the predefined min-max agent, this is a good starting point for self-play because it would be very inefficient to train two dummy agents to learn from scratch.</li>
+  <li>Using the trained agent from step (1), self-play against a copy of itself. Obviously one will go first. We expect that given the mechanics of tic-tac-toe, the two agents will converge to a draw game every single time.</li>
+</ol>
+
+<p><br /></p>
+
+<h2 id="2-environment">2. Environment</h2>
+
+<p>The environment contains a <a href="https://en.wikipedia.org/wiki/Minimax">mini-max</a> tic-tac-toe player. This is used as a starting point for training the reinforcement learning agent.</p>
+
+<p><br /></p>
+
+<h3 id="state">State</h3>
+
+<p>The states are stored in a 3x3 grid.</p>
+
+<p><img src="/blog/assets/images/rl/tictactoe_board.png" alt="tictactoe_board" /></p>
+
+<p><br /></p>
+
+<h3 id="action">Action</h3>
+
+<p>‘X’ - denotes the first player</p>
+
+<p>‘O’ - denotes the second player</p>
+
+<p><br /></p>
+
+<h3 id="reward">Reward</h3>
+
+<p>This wasn’t part of the original environment. This was intentionally left as a open-ended discussion which will be covered in section <strong>[3.1 Reward Design]</strong> since this will determine how well the agent can learn.</p>
+
+<p><br /></p>
+
+<h3 id="termination-condition">Termination Condition</h3>
+
+<p>The game (episode) is terminated when either player wins or the game is drawed by having all the board cells filled with actions.</p>
+
+<p><br /></p>
+
+<h2 id="3-approach">3. Approach</h2>
+
+<p><br /></p>
+
+<h3 id="31-reward-function-design">3.1 Reward Function Design</h3>
+
+<p><strong>Assumption:</strong> This reward design is assuming the agent always goes first in the game. This will change in the self-play setting, which is covered in <strong>[4.2 Optimal Policy Discussion]</strong></p>
+
+<p><br /></p>
+
+<p>The reward function is designed as follows:</p>
+
+<ul>
+  <li>if agent wins: +20</li>
+  <li>if agent loses: 0</li>
+  <li>if agent ties: +10</li>
+  <li>For every step the agent makes: -2</li>
+</ul>
+
+<p><br /></p>
+
+<p>The design of the rewards is closely related to <strong>how the game can terminate</strong>, specifically:</p>
+
+<ul>
+  <li>Tie when the board is fully occupied (9 pieces)</li>
+  <li>Win as early as 3 moves in, or as late as 5 moves in (full board)</li>
+  <li>Lose is symmetric to win</li>
+</ul>
+
+<p><br /></p>
+
+<p>The design is also dependent on the <strong>priority of the strategy</strong>, specifically:</p>
+
+<ul>
+  <li>Priority 1: Win</li>
+  <li>Priority 2: Tie</li>
+</ul>
+
+<p><br /></p>
+
+<p>The reason for having a small negative reward at every step is because the Tic-Tac-Toe game’s environment is set in a small 3 x 3 board, and even for a very smart agent, the later the game proceeds to, there are less moves for the agent to <strong>win</strong>. Even with a smart agent, the game will more likely result in a <strong>tie</strong> in a late game battle. Therefore, the negative reward at each step is to encourage the agent to finish the game as early as possible, which, in turn, increases its probability of winning the game.</p>
+
+<p>The reward values for the <strong>win</strong> condition should be high enough to encourage good actions. The <strong>tie</strong> reward is the mid-point for <strong>win</strong> and <strong>lose</strong>, but also taking into account, if a game is played until the board is fully occupied (9 pieces), the sum of rewards for winning that late game should be the same as a tie. Since the agent always goes first, it can, at most, have 5 moves before the no moves left, this translates to $-2 * 5 + 20 = 10$ episode reward. As mentioned before, we want to encourage the agent to win the game as early as possible. Therefore, <strong>winning a late-game is considered the same as tie, from a rewards perspective</strong>.</p>
+
+<p><br /></p>
+
+<h3 id="32-learning-algorithm">3.2 Learning Algorithm</h3>
+
+<p>I chose to use Q-learning to solve this problem. This specific TIC-TAC-TOE game has a small fixed game board of <script type="math/tex">3 \times 3</script>. Specifically, there are, at most, <script type="math/tex">3^9 = 19683</script> possible game states, in which there are 3 possible states (empty, X or O) for each of the <script type="math/tex">3 \times 3 = 9</script> positions. This can easily fit into the computer memory. Therefore, within a reasonable amount of training time, Q-learning is expected to find the global optimal policy. The discussion on how to determine whether the policy is a global optimal policy is in <strong>[4.2 Optimal Policy Discussion]</strong>.</p>
+
+<p>The q-table is represented as a HashTable, specifically: <code class="highlighter-rouge">{"hashed_state": q-value}</code>. The <code class="highlighter-rouge">hashed_state</code> is just the game board converted into a string (i.e. <code class="highlighter-rouge">000000000</code>).</p>
+
+<p><br /></p>
+
+<h3 id="33-hyperparameters">3.3 Hyperparameters</h3>
+
+<ul>
+  <li><strong>Learning Rate (<script type="math/tex">\alpha</script>)</strong>: 0.1</li>
+  <li><strong>Exploration Rate (<script type="math/tex">\epsilon</script>)</strong>: Initially 1, decreasing linearly with respect to episodes to 0</li>
+  <li><strong>Discount Rate (<script type="math/tex">\gamma</script>)</strong>: 0.9</li>
+</ul>
+
+<p><br /></p>
+
+<h2 id="4-experiment--findings">4. Experiment &amp; Findings</h2>
+
+<h3 id="41-training-evaluation">4.1 Training Evaluation</h3>
+
+<p>The reward in the plot is the sum of rewards for every episode averaged over the last 20 episodes to reduce noise in the plot.</p>
+
+<p><strong>Evaluating Trained Policy</strong></p>
+
+<center>1000EP Training Session</center>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>EP100 | Agent Reward: -4
+EP200 | Agent Reward: -4
+EP300 | Agent Reward: 16
+EP400 | Agent Reward: -6
+EP500 | Agent Reward: 16
+EP600 | Agent Reward: 14
+EP700 | Agent Reward: 16
+EP800 | Agent Reward: 16
+EP900 | Agent Reward: 16
+EP1000 | Agent Reward: 16
+EP[1000] Avg Reard: 16.0
+</code></pre></div></div>
+
+<p><img src="/blog/assets/images/rl/tictactoe_p1_1000ep.png" alt="tictactoe_p1_1000ep" /></p>
+
+<p><br /></p>
+
+<center>500EP Training Session</center>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>EP100 | Agent Reward: -4
+EP200 | Agent Reward: 16
+EP300 | Agent Reward: 16
+EP400 | Agent Reward: 16
+EP500 | Agent Reward: 16
+EP[500] Avg Reward: 14.9
+</code></pre></div></div>
+
+<p><img src="/blog/assets/images/rl/tictactoe_p1_500ep.png" alt="tictactoe_p1_500ep.png" /></p>
+
+<p><br /></p>
+
+<center>250EP Training Session</center>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>EP100 | Agent Reward: -6
+EP200 | Agent Reward: 16
+EP[250] Avg Reward: 14.0
+</code></pre></div></div>
+
+<p><img src="/blog/assets/images/rl/tictactoe_p1_250ep.png" alt="tictactoe_p1_250ep.png" /></p>
+
+<p><br /></p>
+
+<p><strong>Discussion</strong></p>
+
+<p>From the three training instances, We can see that the 1000 EP agent, at the end of training, the final reward is above +10, and the test run shows 100% win rate against the opponent. However, there is still room for improvement for both the 250EP agent and 500EP agent compared to the 1000EP agent. Intuitively, this difference maybe due to the agent not able to <strong>win</strong> the game early on, resulting in a late game <strong>tie</strong>. The final reward for 1000EP agent is around 16, which is equivalent to winning the game in 3 steps (<script type="math/tex">-2 * 2 + 20 * 1</script>). The other two 500EP and 250EP agents only manages to reach around 14.9 and 14 episode reward respectively, which is probably converging to a local optimal of <strong>tie</strong> more than the <strong>win</strong> state.</p>
+
+<p><br /></p>
+
+<h3 id="42-optimal-policy-discussion">4.2 Optimal Policy Discussion</h3>
+
+<p>A more direct way to determine whether the agent has learnt the globally optimal policy is to play the agent against itself. If the agent indeed learn the optimal policy, then both agents should reach a 100% <strong>tie</strong> rate.</p>
+
+<p><strong>Notation:</strong> The agent that goes first will be denoted as <strong>Player 1</strong> and the agent that goes second will be denoted as <strong>Player 2</strong>.</p>
+
+<p><br /></p>
+
+<h4 id="experiment---play-two-copies-of-the-same-agent-against-each-other-by-following-the-trained-policy">Experiment - Play two copies of the same agent against each other, by following the trained policy</h4>
+
+<p>By following a trained optimal deterministic strategy, after playing the trained agent against a copy of itself, <strong>Player 1</strong> always wins. This is because the policy <em>is trained on going first</em>, and will not perform well if used by <strong>Player 2</strong>.</p>
+
+<p><br /></p>
+
+<h4 id="experiment---train-two-agents-against-each-other-self-play">Experiment - Train two agents against each other (self-play)</h4>
+
+<p>Note that I modified the reward structure for self-play. <strong>Win: +10, lose: -10, draw: 0, step: 0.</strong> The reward in the plot is the sum of rewards for every episode averaged over a moving 50 episodes to reduce noise in the plot. Based on the reward plot below, the 2 agents successfully converge to 0 reward and 100\% tie rate. To verify that this is indeed a global optimal policy, refer to my next experiment, which runs the self-played agent against the original min-max agent.</p>
+
+<p><img src="/blog/assets/images/rl/tictactoe_p1_5000ep_selfplay.png" alt="tictactoe_p1_5000ep_selfplay" /></p>
+
+<p><img src="/blog/assets/images/rl/tictactoe_p2_5000ep_selfplay.png" alt="tictactoe_p2_5000ep_selfplay" /></p>
+
+<p><img src="/blog/assets/images/rl/tictactoe_selfplay.png" alt="tictactoe_selfplay" /></p>
+
+<p><br /></p>
+
+<h4 id="experiment-re-evaluate-how-a-self-play-agent-player-1-performs-against-min-max-opponent">Experiment: Re-evaluate how a self-play agent (Player 1) performs against min-max opponent</h4>
+
+<p>We would expect the self-played agents to converge to the global optimal policy, but it could be because the two agents are <code class="highlighter-rouge">colluding'' with each other and reaching the</code>tie’’ state as the best outcome, similar to the prisoner’s dilemma. To verify this, we have to re-evaluate the self-played agent (Player 1) against the min-max opponent again to see. To verify my point, I intentionally ran two versions of self-play, (1) With pre-trained policy that was trained against the min-max agent first, then self-play. (2) \textit{Without} pre-trained policy, the two agents self-play from scratch. Below are the outcomes after evaluating against the min-max opponent again. We can see that without prior knowledge, the self-play agent lost to the min-max agent. However, with prior training, the self-play agent won the min-max agent, thus verifying that it indeed reached the global optimal policy.</p>
+
+<p><strong>Effects of Prior Training</strong></p>
+
+<center>[Pre-trained against min-max opponent]</center>
+
+<p><img src="/blog/assets/images/rl/tictactoe_selfplay_prior.png" alt="tictactoe_selfplay_prior" /></p>
+
+<center>[No prior training against min-max opponent]</center>
+
+<p><img src="/blog/assets/images/rl/tictactoe_selfplay_no_prior.png" alt="tictactoe_selfplay_no_prior" /></p>
+
+<p><br /></p>
+
+<h2 id="5-next-steps">5. Next Steps</h2>
+
+<p><br /></p>
+
+<p>Since this is a static game, we could extend this agent to play a more generic version of tic-tac-toe, with either a larger board size or with different mechanics (connecting more than 3 lines to win).</p>
+
+<p>Since the reward function is defined in a very flexible way. There are potential opportunities to change the reward design to see if it has effects on the learning speed and agent performance.</p>
+
+<p>This is the first step towards AlphaGo. There are way more complexities when it comes to mastering such a complicated game. But this is a taste of the capability of <strong>self-play</strong> in reinforcement learning.</p>
+
+  </div><a class="u-url" href="/blog/reinforcement-learning/2019/12/06/tic-tac-toe-selfplay.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/blog/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Henry&#39;s Blog</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Henry&#39;s Blog</li><li><a class="u-email" href="mailto:hanxiangp@gmail.com">hanxiangp@gmail.com</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/workofart"><svg class="svg-icon"><use xlink:href="/blog/assets/minima-social-icons.svg#github"></use></svg> <span class="username">workofart</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>My learning notes, research, projects and musings.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/latest.js?config=TeX-MML-AM_CHTML' async></script>
+  </body>
+
+</html>
