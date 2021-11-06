@@ -11,6 +11,7 @@ Languages & Frameworks:
 - React.js
 - Semantic UI
 - HTML/CSS
+- Blog (Jekyll)
 
 
 
