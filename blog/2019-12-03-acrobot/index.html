@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Beautiful Jekyll 5.0.0 | Copyright Dean Attali 2020 -->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  
+
+  
+
+  <title>OpenAI Gym - Acrobot-v1</title>
+
+  
+  <meta name="author" content="Henry Pan">
+  
+
+  <meta name="description" content="Code Here 1. Goal The problem setting is to solve the Acrobot problem in OpenAI gym. The acrobot system includes two joints and two links, where the joint between the two links is actuated. Initially, the links are hanging downwards, and the goal is to swing the end of the...">
+
+  
+
+  
+  <meta name="keywords" content="career,software,engineering,life,education,inspiration,machine learning,deep learning,reinforcement learning,web development,react">
+  
+
+  
+
+  
+
+  
+
+  
+<!-- Google Analytics -->
+<script>
+  (function (i, s, o, g, r, a, m) {
+    i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+      (i[r].q = i[r].q || []).push(arguments)
+    }, i[r].l = 1 * new Date(); a = s.createElement(o),
+      m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+  })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+  ga('create', 'UA-103622213-1', 'auto');
+  ga('send', 'pageview');
+</script>
+<!-- End Google Analytics -->
+
+
+  
+
+
+  
+    
+      
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+
+    
+      
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css">
+
+
+    
+      
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic">
+
+
+    
+      
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800">
+
+
+    
+  
+
+  
+    
+      <link rel="stylesheet" href="/blog/assets/css/bootstrap-social.css">
+    
+      <link rel="stylesheet" href="/blog/assets/css/beautifuljekyll.css">
+    
+  
+
+  
+
+  
+  
+  
+
+  
+
+  
+  <meta property="og:site_name" content="Henry's Blog">
+  <meta property="og:title" content="OpenAI Gym - Acrobot-v1">
+  <meta property="og:description" content="Code Here 1. Goal The problem setting is to solve the Acrobot problem in OpenAI gym. The acrobot system includes two joints and two links, where the joint between the two links is actuated. Initially, the links are hanging downwards, and the goal is to swing the end of the...">
+
+  
+
+  
+  <meta property="og:type" content="article">
+  <meta property="og:article:author" content="Henry Pan">
+  <meta property="og:article:published_time" content="2019-12-03T16:00:00-05:00">
+  <meta property="og:url" content="/blog/2019-12-03-acrobot/">
+  <link rel="canonical" href="/blog/2019-12-03-acrobot/">
+  
+
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@">
+  <meta name="twitter:creator" content="@">
+
+  <meta property="twitter:title" content="OpenAI Gym - Acrobot-v1">
+  <meta property="twitter:description" content="Code Here 1. Goal The problem setting is to solve the Acrobot problem in OpenAI gym. The acrobot system includes two joints and two links, where the joint between the two links is actuated. Initially, the links are hanging downwards, and the goal is to swing the end of the...">
+
+  
+
+  
+
+
+  
+
+  
+
+</head>
+
+
+<body>
+
+  
+
+
+  <nav class="navbar navbar-expand-xl navbar-light fixed-top navbar-custom top-nav-regular"><a class="navbar-brand" href="/blog">Henry's Blog</a><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="main-navbar">
+    <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/blog/tags">Topics</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="https://www.henrypan.com">Author's home</a>
+          </li>
+        <li class="nav-item">
+          <a class="nav-link" id="nav-search-link" href="#" title="Search">
+            <span id="nav-search-icon" class="fa fa-search"></span>
+            <span id="nav-search-text">Search</span>
+          </a>
+        </li></ul>
+  </div>
+
+  
+
+  
+
+</nav>
+
+
+
+<div id="beautifuljekyll-search-overlay">
+
+  <div id="nav-search-exit" title="Exit search">✕</div>
+  <input type="text" id="nav-search-input" placeholder="Search">
+  <ul id="search-results-container"></ul>
+  
+  <script src="https://unpkg.com/simple-jekyll-search@latest/dest/simple-jekyll-search.min.js"></script>
+  <script>
+    var searchjson = '[ \
+       \
+        { \
+          "title"    : "Tic-tac-toe Self-Play", \
+          "category" : "reinforcement-learning", \
+          "url"      : "/blog/2019-12-06-tic-tac-toe-selfplay/", \
+          "date"     : "December  6, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "OpenAI Gym - Acrobot-v1", \
+          "category" : "reinforcement-learning", \
+          "url"      : "/blog/2019-12-03-acrobot/", \
+          "date"     : "December  3, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "OpenAI Gym - Pendulum-v0", \
+          "category" : "reinforcement-learning", \
+          "url"      : "/blog/2019-11-05-pendulum/", \
+          "date"     : "November  5, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "OpenAI Gym - MountainCar-v0", \
+          "category" : "reinforcement-learning", \
+          "url"      : "/blog/2019-11-04-mountain-car/", \
+          "date"     : "November  4, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "BrawlStars AI Series (Part 2) - Reinforcement Learning", \
+          "category" : "reinforcement-learning", \
+          "url"      : "/blog/2019-04-25-Brawlstars-RL/", \
+          "date"     : "April 25, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "BrawlStars AI Series (Part 1)", \
+          "category" : "machine-learning", \
+          "url"      : "/blog/2019-04-20-Brawlstars-AI/", \
+          "date"     : "April 20, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "Creating a Policy Gradient (PG) Agent to Trade", \
+          "category" : "reinforcement-learning", \
+          "url"      : "/blog/2019-04-04-pg-trading/", \
+          "date"     : "April  4, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future", \
+          "category" : "machine-learning", \
+          "url"      : "/blog/2019-03-20-ml-tut-price-prediction/", \
+          "date"     : "March 20, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "Asynchronous Advantage Actor Critic (A3C)-Reinforcement Learning -Laymens Explanation", \
+          "category" : "reinforcement-learning", \
+          "url"      : "/blog/2019-02-27-a3c-rl-layments-explanation/", \
+          "date"     : "February 27, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "React Redux Intro", \
+          "category" : "react", \
+          "url"      : "/blog/2019-01-26-react-redux-intro/", \
+          "date"     : "January 26, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "Career Paths in Data Science/Machine Learning", \
+          "category" : "career", \
+          "url"      : "/blog/2019-01-10-career-paths-in-ml/", \
+          "date"     : "January 10, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "Looking back, planning forward", \
+          "category" : "career", \
+          "url"      : "/blog/2015-12-03-looking-back-planning-forward/", \
+          "date"     : "December  3, 2015" \
+        }, \
+       \
+        { \
+          "title"    : "A few thoughts on choosing a career path", \
+          "category" : "career", \
+          "url"      : "/blog/2013-12-24-a-few-thoughts-on-choosing-a-career-path/", \
+          "date"     : "December 24, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "Different Life Experiences Bring Different Perspectives", \
+          "category" : "life", \
+          "url"      : "/blog/2013-11-16-different-life-experiences-bring-different-perspectives/", \
+          "date"     : "November 16, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "Finding the &#39;right&#39; route", \
+          "category" : "education", \
+          "url"      : "/blog/2013-09-25-finding-the-right-route/", \
+          "date"     : "September 25, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "Step Back and Rethink", \
+          "category" : "career", \
+          "url"      : "/blog/2013-08-07-step-back-and-rethink/", \
+          "date"     : "August  7, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "One Sentence Summary of Books", \
+          "category" : "books", \
+          "url"      : "/blog/2013-07-18-one-sentence-summary-books/", \
+          "date"     : "July 18, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "1st day at McKinsey", \
+          "category" : "culture", \
+          "url"      : "/blog/2013-05-15-first-day-at-mckinsey/", \
+          "date"     : "May 15, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "Dinner Talk", \
+          "category" : "inspirationcareer", \
+          "url"      : "/blog/2013-03-30-dinner-talk/", \
+          "date"     : "March 30, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "Movie Review - &#39;Accepted&#39;", \
+          "category" : "movieeducation", \
+          "url"      : "/blog/2013-03-16-movie-review-accepted/", \
+          "date"     : "March 16, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "Some Inspirational People", \
+          "category" : "inspirationcareer", \
+          "url"      : "/blog/2013-03-02-some-inspirational-people/", \
+          "date"     : "March  2, 2013" \
+        }, \
+       \
+       \
+        { \
+          "title"    : "Henry&#39;s Blog", \
+          "category" : "page", \
+          "url"      : "/blog/", \
+          "date"     : "January 1, 1970" \
+        }, \
+       \
+        { \
+          "title"    : "Tag Index", \
+          "category" : "page", \
+          "url"      : "/blog/tags/", \
+          "date"     : "January 1, 1970" \
+        }, \
+       \
+        { \
+          "title"    : "Henry&#39;s Blog", \
+          "category" : "page", \
+          "url"      : "/blog/page2/", \
+          "date"     : "January 1, 1970" \
+        }, \
+       \
+        { \
+          "title"    : "Henry&#39;s Blog", \
+          "category" : "page", \
+          "url"      : "/blog/page3/", \
+          "date"     : "January 1, 1970" \
+        }, \
+       \
+        { \
+          "title"    : "Henry&#39;s Blog", \
+          "category" : "page", \
+          "url"      : "/blog/page4/", \
+          "date"     : "January 1, 1970" \
+        }, \
+       \
+        { \
+          "title"    : "Henry&#39;s Blog", \
+          "category" : "page", \
+          "url"      : "/blog/page5/", \
+          "date"     : "January 1, 1970" \
+        } \
+       \
+    ]';
+    searchjson = JSON.parse(searchjson);
+
+    var sjs = SimpleJekyllSearch({
+      searchInput: document.getElementById('nav-search-input'),
+      resultsContainer: document.getElementById('search-results-container'),
+      json: searchjson
+    });
+  </script>
+</div>
+
+
+
+
+
+  <!-- TODO this file has become a mess, refactor it -->
+
+
+
+
+
+
+
+<header class="header-section ">
+
+<div class="intro-header no-img">
+  <div class="container-md">
+    <div class="row">
+      <div class="col-xl-8 offset-xl-2 col-lg-10 offset-lg-1">
+        <div class="post-heading">
+          <h1>OpenAI Gym - Acrobot-v1</h1>
+          
+
+          
+            <span class="post-meta">Posted on December 3, 2019</span>
+            
+            
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</header>
+
+
+
+
+
+<div class=" container-md ">
+  <div class="row">
+    <div class=" col-xl-8 offset-xl-2 col-lg-10 offset-lg-1 ">
+
+      
+
+      
+
+      <article role="main" class="blog-post">
+        <h2 id="code">Code</h2>
+
+<p><a href="https://github.com/workofart/openai-gym-baselines/tree/master/Acrobot-v1">Here</a></p>
+
+<h2 id="1-goal">1. Goal</h2>
+<p>The problem setting is to solve the <a href="https://gym.openai.com/envs/Acrobot-v1/">Acrobot</a> problem in OpenAI gym. The acrobot system includes two joints and two links, where the joint between the two links is actuated. Initially, the links are hanging downwards, and the goal is to swing the end of the lower link up to a given height (<em>the black horizontal line</em>)</p>
+
+<p><img src="https://github.com/workofart/openai-gym-baselines/raw/master/Acrobot-v1/test-run.gif" alt="test-run" style="zoom: 67%;" /></p>
+
+<p><br /></p>
+
+<h2 id="2-environment">2. Environment</h2>
+<p>The acrobot environment has a continuous state space as follows (copied from <a href="https://github.com/rlpy/rlpy/blob/master/rlpy/Domains/Acrobot.py">source code comments</a>):</p>
+
+<h3 id="state">State:</h3>
+
+<p>The state consists of the sin() and cos() of the two rotational joint angles and the joint angular velocities :</p>
+
+\[[\cos(\theta_1), \sin(\theta_1), \cos(\theta_2), \sin(\theta_2), v_1,v_2]\]
+
+<p>For the first link, an angle of 0 corresponds to the link pointing downwards. The angle of the second link is relative to the angle of the first link.</p>
+
+<p>For example:</p>
+
+<ul>
+  <li>an angle of 0 corresponds to having the same angle between the two links.</li>
+  <li>a state of [1, 0, 1, 0, …, …] means that both links point downwards.</li>
+</ul>
+
+<h3 id="action">Action:</h3>
+
+<p>The action is either applying <code class="language-plaintext highlighter-rouge">+1</code>, <code class="language-plaintext highlighter-rouge">0</code> or <code class="language-plaintext highlighter-rouge">-1</code> torque on the joint between the two pendulum links.</p>
+
+<h3 id="reward">Reward:</h3>
+
+<p>At each timestep (not episode), the reward is set to be -1 if the lower end never reaches the horizontal ruler, and 0 if it has.</p>
+
+<h3 id="terminal-condition">Terminal Condition:</h3>
+
+<p>The environment imposes a 500 timestep limit to each episode, which means after 500 timesteps, if the pole still hasn’t reached the goal, the episode will terminate and reset.</p>
+
+<h3 id="solved-condition">Solved Condition:</h3>
+
+<p>There are no specific requirements, see the <strong>experiments section</strong> for a comparison of performance with the leaderboard.</p>
+
+<p><br /></p>
+
+<h2 id="3-approach">3. Approach</h2>
+
+<h3 id="31-algorithm-comparison">3.1 Algorithm Comparison</h3>
+
+<p>I chose to use <em>actor-critic</em> with state-value temporal difference (TD) to train an on-policy agent. I assumed an infinite time horizon when deciding on the algorithm, since this problem requires the agent to build momentum to actually swing up to the top, which means the policy can’t be short-sighted and needs to consider all the actions it took to build momentum and finally reach the goal.</p>
+
+<p><strong>Key considerations:</strong></p>
+<ul>
+  <li>The state space is continuous, it would be inefficient to represent the state-action values (q-values) in traditional tabular form.</li>
+  <li>This problem does not require a global optimal solution, we consider the problem solved after reaching a reward of larger than -100. This means that we can trade-off the accuracy of the algorithm in exchange for a more efficient training process while still finding a near-global optimal policy.</li>
+  <li>Dense rewards. There is no final reward, rather the reward is given at every time step, and represents how far/close the agent is from the goal, so the feedback is very “real-time”.</li>
+  <li>If the problem is using an on-policy algorithm, then we should consider adding temporal difference (baseline) to reduce the variance of the gradient estimation while ensuring the bias is not increased.</li>
+</ul>
+
+<p><br /></p>
+
+<h3 id="32-problem-parameterization">3.2 Problem Parameterization</h3>
+
+<p>I initially started with simple radial-basis functions with 10 centers for each of the state dimensions, which resulted in \(10^6\) size state space. This drastically slowed down the training of my agent and the progress of this project, so I switched to use a neural network to parameterize both the value function and policy function.</p>
+
+<p><strong>Key considerations:</strong></p>
+
+<p>Since this problem is in a continuous space, I had to use a function approximator to approximate the state space which can then be used to train the agent.</p>
+
+<p><br /></p>
+
+<h3 id="33-policy">3.3 Policy</h3>
+
+<p>I initially attempted to use a Gaussian function with varying \(\sigma\), but it was very inefficient and ineffective to hand-tweak the \(\sigma\) and parameterize the Gaussian mean, so I eventually resorted to a neural network.</p>
+
+<h4 id="key-consideration">Key consideration:</h4>
+
+<p>The relationship between actions and state space is non-linear</p>
+
+<p><br /></p>
+
+<h3 id="34-neural-network-architecture">3.4 Neural Network Architecture</h3>
+
+<p>By incorporating the Rectified-Linear unit (ReLU) activation function, we can represent the non-linear relationship between the state space, the policy, and the value of that state. Please refer to <strong>[4.3 Neural Network Complexity]</strong> section for the reasoning behind the number of neurons.</p>
+
+<p><img src="/blog/assets/images/rl/acrobot_actor_nn.png" alt="actor_NN" /></p>
+
+<center><b>Actor Neural Network</b></center>
+
+<p><br /></p>
+
+<p><img src="/blog/assets/images/rl/acrobot_critic_nn.png" alt="critic_NN" /></p>
+
+<center><b>Critic Neural Network</b></center>
+
+<p><br /></p>
+
+<h3 id="35-hyperparameters">3.5 Hyperparameters</h3>
+
+<ul>
+  <li><strong>Actor’s (Policy) Learning Rate (\(\alpha_{a}\)):</strong> \(1 \times 10^{-4}\)</li>
+  <li><strong>Critic’s (Value) Learning Rate (\(\alpha_{c}\)):</strong> \(5 \times 10^{-3}\)</li>
+  <li><strong>Discount Rate (\(\gamma\)):</strong> 0.9</li>
+  <li><strong>Neural Network Weight Initialization:</strong> Normal Distribution with zero mean and 0.1 standard deviation</li>
+  <li><strong>Neural Network Bias Initialization:</strong> 0.1 constant</li>
+  <li>128/64 Neurons in the first/second hidden layer respectively for both the policy network and the value network</li>
+</ul>
+
+<p><br /></p>
+
+<h2 id="4-experiment--findings">4. Experiment &amp; Findings</h2>
+
+<h3 id="41-performance">4.1 Performance</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>User</th>
+      <th>Best 100-episode performance</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>mallochio</td>
+      <td>-42.37 ± 4.83</td>
+    </tr>
+    <tr>
+      <td>marunowskia</td>
+      <td>-59.31 ± 1.23</td>
+    </tr>
+    <tr>
+      <td>MontrealAI</td>
+      <td>-60.82 ± 0.06</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/Bhaney44">BS Haney</a></td>
+      <td>-61.8</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/FelixNica">Felix Nica</a></td>
+      <td>-63.13 ± 2.65</td>
+    </tr>
+    <tr>
+      <td>Daniel Barbosa</td>
+      <td>-67.18</td>
+    </tr>
+    <tr>
+      <td><a href="https://gihub.com/khordoo">Mahmood Khordoo</a></td>
+      <td>-68.63</td>
+    </tr>
+    <tr>
+      <td>lirnli</td>
+      <td>-72.09 ± 1.15</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/Tiger767">Tiger37</a></td>
+      <td>-74.49 ± 10.87</td>
+    </tr>
+    <tr>
+      <td>tsdaemon</td>
+      <td>-77.87 ± 1.54</td>
+    </tr>
+    <tr>
+      <td>a7b23</td>
+      <td>-80.68 ± 1.18</td>
+    </tr>
+    <tr>
+      <td>DaveLeongSingapore</td>
+      <td>-84.02 ± 1.46</td>
+    </tr>
+    <tr>
+      <td>Sanket Thakur</td>
+      <td>-89.29</td>
+    </tr>
+    <tr>
+      <td>loicmarie</td>
+      <td>-99.18 ± 2.60</td>
+    </tr>
+    <tr>
+      <td>simonoso</td>
+      <td>-113.66 ± 5.15</td>
+    </tr>
+    <tr>
+      <td>alebac</td>
+      <td>-427.26 ± 15.02</td>
+    </tr>
+    <tr>
+      <td>mehdimerai</td>
+      <td>-500.00 ± 0.00</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Compared to the  leaderboard, our last 100 episode (total 1000 episodes) average reward is <strong>-74.9</strong>, with raw rewards below:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>EP[150]: -275.0
+EP[160]: -231.0
+EP[170]: -243.0
+EP[180]: -209.0
+EP[190]: -277.0
+EP[200]: -268.0
+EP[210]: -357.0
+EP[220]: -115.0
+EP[230]: -101.0
+EP[240]: -98.0
+EP[250]: -141.0
+EP[260]: -86.0
+...
+EP[910]: -83.0
+EP[920]: -77.0
+EP[930]: -70.0
+EP[940]: -80.0
+EP[950]: -80.0
+EP[960]: -132.0
+EP[980]: -82.0
+EP[990]: -76.0
+EP[1000]: -69.0
+</code></pre></div></div>
+
+<p>This shows that with a baseline agent, with only a simple 2-layer neural network to approximate the policy and value functions, the performance is relatively good (about average on the leaderboard). The agent is also able to reach &gt; -200 rewards at around 220 episodes and convergences to &gt; -100 rewards after 240 episodes. The next section will depict the reward/episode relationship, which shows the fast convergence of this algorithm.</p>
+
+<p><br /></p>
+
+<h3 id="42-training-duration">4.2 Training Duration</h3>
+
+<p><img src="/blog/assets/images/rl/acrobot_rewards_1000EP_128_64.png" alt="acrobot_rewards_1000EP_128_64" /></p>
+
+<p><img src="/blog/assets/images/rl/acrobot_rewards_500EP_128_64.png" alt="acrobot_rewards_500EP_128_64" /></p>
+
+<table>
+  <thead>
+    <tr>
+      <th># Episodes</th>
+      <th>Training Time</th>
+      <th>Avg Reward (last 100 episodes)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1000</td>
+      <td>404 seconds</td>
+      <td>-74.9</td>
+    </tr>
+    <tr>
+      <td>500</td>
+      <td>256 seconds</td>
+      <td>-82.3</td>
+    </tr>
+    <tr>
+      <td>250</td>
+      <td>151 seconds</td>
+      <td>-90.5</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>We can see that even with 500 episodes of training, the agent is able to converge to &gt; -100 rewards at around 60 episodes. The table shows that, with this approach, training for 500 episodes is sufficient for a baseline performance, and further training has only marginal gains in terms of improving average reward. Perhaps, this shows that performance <em>could be</em> bottlenecked by our simple 2-layer neural network’s function approximation ability.</p>
+
+<p><br /></p>
+
+<h3 id="43-neural-network-complexity">4.3 Neural Network Complexity</h3>
+
+<p><img src="/blog/assets/images/rl/acrobot_rewards_1000EP_32_16.png" alt="acrobot_rewards_1000EP_32_16" /></p>
+
+<center><b>16/32 Neurons</b></center>
+<p><br /></p>
+
+<p><img src="/blog/assets/images/rl/acrobot_rewards_1000EP_128_64.png" alt="acrobot_rewards_1000EP_128_64" /></p>
+
+<center><b>64/128 Neurons</b></center>
+<p><br /></p>
+
+<p><img src="/blog/assets/images/rl/acrobot_rewards_1000EP_256_128.png" alt="acrobot_rewards_1000EP_256_128" /></p>
+
+<center><b>128/256 Neurons</b></center>
+<p><br /></p>
+
+<p>If we have too many neurons per layer, it will likely to overfit the function, whether that’s the value function or the policy. Translated into rewards, the neural network will try to learn a more complex value function and policy, where in reality, the “true” function is not that complex, resulting in the agent taking worse actions, and leading to the big gaps and unstable rewards, shown in in the 128/256 neuron case. If we have too few neurons, such as 32 and 16 in layer1 and layer2 respectively, the neural network will not be complex enough to approximate the value function and the policy, which is reflected in the first plot, showing slower learning and more variance in the reward/episode. The best number of neurons is 128 and 64 in layer1 and layer2 respectively, shown in the second plot.</p>
+
+<p><br /></p>
+
+<h3 id="44-discount-rate">4.4 Discount Rate</h3>
+
+<p><strong>No Discount Rate</strong>
+<img src="/blog/assets/images/rl/acrobot_rewards_1000EP_128_64_no_discount.png" alt="acrobot_rewards_1000EP_128_64_no_discount" /></p>
+
+<p><br /></p>
+
+<p><strong>With Discount Rate</strong>
+<img src="/blog/assets/images/rl/acrobot_rewards_1000EP_128_64.png" alt="acrobot_rewards_1000EP_128_64" /></p>
+
+<p>Since I assumed the algorithm to be operating in infinite time horizon, adding in a discount rate helps with the reward estimation. Intuitively, the task of reaching the goal can be accomplished within a couple of timesteps, but during the training process, the agent will accumulate a lot of failed attempts in building momentum. Without a discount rate, these failed attempts will be will be equally weighted when computing the value for this episode.</p>
+
+<p><br /></p>
+
+<h2 id="5-next-steps">5. Next Steps</h2>
+
+<p>Since we’re using a simple neural network to represent both the policy and value function for our actor-critic algorithm, there could be potential improvements if we increase the complexity of these networks. Perhaps, with a more complex non-linear function approximator, there could be improvement in performance. At the same time, training for a longer period might be necessary to fully adjust the weights of the neural network.</p>
+
+<p>It is always a good thing to try out other value functions such as deep Q-learning, combined with the actor-critic approach.</p>
+
+
+      </article>
+
+      
+        <div class="blog-tags">
+          <span>Tags:</span>
+          
+            <a href="/blog/tags#reinforcement-learning">reinforcement-learning</a>
+          
+        </div>
+      
+
+      
+
+      
+        <!-- Check if any share-links are active -->
+
+
+
+
+
+      
+
+      <ul class="pagination blog-pager">
+        
+        <li class="page-item previous">
+          <a class="page-link" href="/blog/2019-11-05-pendulum/" data-toggle="tooltip" data-placement="top" title="OpenAI Gym - Pendulum-v0">&larr; Previous Post</a>
+        </li>
+        
+        
+        <li class="page-item next">
+          <a class="page-link" href="/blog/2019-12-06-tic-tac-toe-selfplay/" data-toggle="tooltip" data-placement="top" title="Tic-tac-toe Self-Play">Next Post &rarr;</a>
+        </li>
+        
+      </ul>
+      
+  
+  
+  
+
+  
+
+
+  
+
+
+
+    </div>
+  </div>
+</div>
+
+
+  <footer>
+  <div class="container-md beautiful-jekyll-footer">
+    <div class="row">
+      <div class="col-xl-8 offset-xl-2 col-lg-10 offset-lg-1">
+      <ul class="list-inline text-center footer-links"><li class="list-inline-item">
+    <a href="mailto:hanxiangp@gmail.com" title="Email me">
+      <span class="fa-stack fa-lg" aria-hidden="true">
+        <i class="fas fa-circle fa-stack-2x"></i>
+        <i class="fas fa-envelope fa-stack-1x fa-inverse"></i>
+      </span>
+      <span class="sr-only">Email me</span>
+   </a>
+  </li><li class="list-inline-item">
+    <a href="https://github.com/workofart" title="GitHub">
+      <span class="fa-stack fa-lg" aria-hidden="true">
+        <i class="fas fa-circle fa-stack-2x"></i>
+        <i class="fab fa-github fa-stack-1x fa-inverse"></i>
+      </span>
+      <span class="sr-only">GitHub</span>
+   </a>
+  </li><li class="list-inline-item">
+    <a href="https://linkedin.com/in/pan-henry" title="LinkedIn">
+      <span class="fa-stack fa-lg" aria-hidden="true">
+        <i class="fas fa-circle fa-stack-2x"></i>
+        <i class="fab fa-linkedin fa-stack-1x fa-inverse"></i>
+      </span>
+      <span class="sr-only">LinkedIn</span>
+   </a>
+  </li></ul>
+
+      
+      <p class="copyright text-muted">
+      
+        Henry Pan
+        &nbsp;&bull;&nbsp;
+      
+      2021
+
+      
+
+      
+      </p>
+      <p class="theme-by text-muted">
+        Powered by
+        <a href="https://beautifuljekyll.com">Beautiful Jekyll</a>
+      </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+  
+  
+    
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
+
+
+  
+    
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+
+  
+    
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+
+  
+
+
+
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+      <script src="/blog/assets/js/beautifuljekyll.js"></script>
+    
+  
+
+
+
+
+
+  
+    
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+  
+
+
+
+
+
+</body>
+</html>

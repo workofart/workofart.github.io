@@ -1,2050 +1,233 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://henrypan.com/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="http://henrypan.com/blog/" rel="alternate" type="text/html" /><updated>2021-11-04T21:22:34-07:00</updated><id>http://henrypan.com/blog/feed.xml</id><title type="html">Henry’s Blog</title><subtitle>My learning notes, research, projects and musings.</subtitle><entry><title type="html">Tic-tac-toe Self-Play</title><link href="http://henrypan.com/blog/reinforcement-learning/2019/12/06/tic-tac-toe-selfplay.html" rel="alternate" type="text/html" title="Tic-tac-toe Self-Play" /><published>2019-12-06T13:00:00-08:00</published><updated>2019-12-06T13:00:00-08:00</updated><id>http://henrypan.com/blog/reinforcement-learning/2019/12/06/tic-tac-toe-selfplay</id><content type="html" xml:base="http://henrypan.com/blog/reinforcement-learning/2019/12/06/tic-tac-toe-selfplay.html">&lt;h2 id=&quot;code&quot;&gt;Code&lt;/h2&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://github.com/workofart/selfplay-tictactoe&quot;&gt;Here&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;1-goal&quot;&gt;1. Goal&lt;/h2&gt;
-
-&lt;p&gt;The motivation of this project is &lt;a href=&quot;https://deepmind.com/research/case-studies/alphago-the-story-so-far&quot;&gt;AlphaGo&lt;/a&gt; and its mechanism of self-play. So I took on the task of implementing a very simple self-play mechanism that is able to train 2 agents in mastering tic-tac-toe with only the visible state/reward information. No information on the rules of the game or prior knowledge.&lt;/p&gt;
-
-&lt;p&gt;The goal of this project is two folds:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;Train a reinforcement learning agent to beat the predefined min-max agent, this is a good starting point for self-play because it would be very inefficient to train two dummy agents to learn from scratch.&lt;/li&gt;
-  &lt;li&gt;Using the trained agent from step (1), self-play against a copy of itself. Obviously one will go first. We expect that given the mechanics of tic-tac-toe, the two agents will converge to a draw game every single time.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;2-environment&quot;&gt;2. Environment&lt;/h2&gt;
-
-&lt;p&gt;The environment contains a &lt;a href=&quot;https://en.wikipedia.org/wiki/Minimax&quot;&gt;mini-max&lt;/a&gt; tic-tac-toe player. This is used as a starting point for training the reinforcement learning agent.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;state&quot;&gt;State&lt;/h3&gt;
-
-&lt;p&gt;The states are stored in a 3x3 grid.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/tictactoe_board.png&quot; alt=&quot;tictactoe_board&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;action&quot;&gt;Action&lt;/h3&gt;
-
-&lt;p&gt;‘X’ - denotes the first player&lt;/p&gt;
-
-&lt;p&gt;‘O’ - denotes the second player&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;reward&quot;&gt;Reward&lt;/h3&gt;
-
-&lt;p&gt;This wasn’t part of the original environment. This was intentionally left as a open-ended discussion which will be covered in section &lt;strong&gt;[3.1 Reward Design]&lt;/strong&gt; since this will determine how well the agent can learn.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;termination-condition&quot;&gt;Termination Condition&lt;/h3&gt;
-
-&lt;p&gt;The game (episode) is terminated when either player wins or the game is drawed by having all the board cells filled with actions.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;3-approach&quot;&gt;3. Approach&lt;/h2&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;31-reward-function-design&quot;&gt;3.1 Reward Function Design&lt;/h3&gt;
-
-&lt;p&gt;&lt;strong&gt;Assumption:&lt;/strong&gt; This reward design is assuming the agent always goes first in the game. This will change in the self-play setting, which is covered in &lt;strong&gt;[4.2 Optimal Policy Discussion]&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;The reward function is designed as follows:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;if agent wins: +20&lt;/li&gt;
-  &lt;li&gt;if agent loses: 0&lt;/li&gt;
-  &lt;li&gt;if agent ties: +10&lt;/li&gt;
-  &lt;li&gt;For every step the agent makes: -2&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;The design of the rewards is closely related to &lt;strong&gt;how the game can terminate&lt;/strong&gt;, specifically:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Tie when the board is fully occupied (9 pieces)&lt;/li&gt;
-  &lt;li&gt;Win as early as 3 moves in, or as late as 5 moves in (full board)&lt;/li&gt;
-  &lt;li&gt;Lose is symmetric to win&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;The design is also dependent on the &lt;strong&gt;priority of the strategy&lt;/strong&gt;, specifically:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Priority 1: Win&lt;/li&gt;
-  &lt;li&gt;Priority 2: Tie&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;The reason for having a small negative reward at every step is because the Tic-Tac-Toe game’s environment is set in a small 3 x 3 board, and even for a very smart agent, the later the game proceeds to, there are less moves for the agent to &lt;strong&gt;win&lt;/strong&gt;. Even with a smart agent, the game will more likely result in a &lt;strong&gt;tie&lt;/strong&gt; in a late game battle. Therefore, the negative reward at each step is to encourage the agent to finish the game as early as possible, which, in turn, increases its probability of winning the game.&lt;/p&gt;
-
-&lt;p&gt;The reward values for the &lt;strong&gt;win&lt;/strong&gt; condition should be high enough to encourage good actions. The &lt;strong&gt;tie&lt;/strong&gt; reward is the mid-point for &lt;strong&gt;win&lt;/strong&gt; and &lt;strong&gt;lose&lt;/strong&gt;, but also taking into account, if a game is played until the board is fully occupied (9 pieces), the sum of rewards for winning that late game should be the same as a tie. Since the agent always goes first, it can, at most, have 5 moves before the no moves left, this translates to $-2 * 5 + 20 = 10$ episode reward. As mentioned before, we want to encourage the agent to win the game as early as possible. Therefore, &lt;strong&gt;winning a late-game is considered the same as tie, from a rewards perspective&lt;/strong&gt;.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;32-learning-algorithm&quot;&gt;3.2 Learning Algorithm&lt;/h3&gt;
-
-&lt;p&gt;I chose to use Q-learning to solve this problem. This specific TIC-TAC-TOE game has a small fixed game board of &lt;script type=&quot;math/tex&quot;&gt;3 \times 3&lt;/script&gt;. Specifically, there are, at most, &lt;script type=&quot;math/tex&quot;&gt;3^9 = 19683&lt;/script&gt; possible game states, in which there are 3 possible states (empty, X or O) for each of the &lt;script type=&quot;math/tex&quot;&gt;3 \times 3 = 9&lt;/script&gt; positions. This can easily fit into the computer memory. Therefore, within a reasonable amount of training time, Q-learning is expected to find the global optimal policy. The discussion on how to determine whether the policy is a global optimal policy is in &lt;strong&gt;[4.2 Optimal Policy Discussion]&lt;/strong&gt;.&lt;/p&gt;
-
-&lt;p&gt;The q-table is represented as a HashTable, specifically: &lt;code class=&quot;highlighter-rouge&quot;&gt;{&quot;hashed_state&quot;: q-value}&lt;/code&gt;. The &lt;code class=&quot;highlighter-rouge&quot;&gt;hashed_state&lt;/code&gt; is just the game board converted into a string (i.e. &lt;code class=&quot;highlighter-rouge&quot;&gt;000000000&lt;/code&gt;).&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;33-hyperparameters&quot;&gt;3.3 Hyperparameters&lt;/h3&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Learning Rate (&lt;script type=&quot;math/tex&quot;&gt;\alpha&lt;/script&gt;)&lt;/strong&gt;: 0.1&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Exploration Rate (&lt;script type=&quot;math/tex&quot;&gt;\epsilon&lt;/script&gt;)&lt;/strong&gt;: Initially 1, decreasing linearly with respect to episodes to 0&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Discount Rate (&lt;script type=&quot;math/tex&quot;&gt;\gamma&lt;/script&gt;)&lt;/strong&gt;: 0.9&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;4-experiment--findings&quot;&gt;4. Experiment &amp;amp; Findings&lt;/h2&gt;
-
-&lt;h3 id=&quot;41-training-evaluation&quot;&gt;4.1 Training Evaluation&lt;/h3&gt;
-
-&lt;p&gt;The reward in the plot is the sum of rewards for every episode averaged over the last 20 episodes to reduce noise in the plot.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Evaluating Trained Policy&lt;/strong&gt;&lt;/p&gt;
-
-&lt;center&gt;1000EP Training Session&lt;/center&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;EP100 | Agent Reward: -4
-EP200 | Agent Reward: -4
-EP300 | Agent Reward: 16
-EP400 | Agent Reward: -6
-EP500 | Agent Reward: 16
-EP600 | Agent Reward: 14
-EP700 | Agent Reward: 16
-EP800 | Agent Reward: 16
-EP900 | Agent Reward: 16
-EP1000 | Agent Reward: 16
-EP[1000] Avg Reard: 16.0
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/tictactoe_p1_1000ep.png&quot; alt=&quot;tictactoe_p1_1000ep&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;center&gt;500EP Training Session&lt;/center&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;EP100 | Agent Reward: -4
-EP200 | Agent Reward: 16
-EP300 | Agent Reward: 16
-EP400 | Agent Reward: 16
-EP500 | Agent Reward: 16
-EP[500] Avg Reward: 14.9
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/tictactoe_p1_500ep.png&quot; alt=&quot;tictactoe_p1_500ep.png&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;center&gt;250EP Training Session&lt;/center&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;EP100 | Agent Reward: -6
-EP200 | Agent Reward: 16
-EP[250] Avg Reward: 14.0
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/tictactoe_p1_250ep.png&quot; alt=&quot;tictactoe_p1_250ep.png&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Discussion&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;From the three training instances, We can see that the 1000 EP agent, at the end of training, the final reward is above +10, and the test run shows 100% win rate against the opponent. However, there is still room for improvement for both the 250EP agent and 500EP agent compared to the 1000EP agent. Intuitively, this difference maybe due to the agent not able to &lt;strong&gt;win&lt;/strong&gt; the game early on, resulting in a late game &lt;strong&gt;tie&lt;/strong&gt;. The final reward for 1000EP agent is around 16, which is equivalent to winning the game in 3 steps (&lt;script type=&quot;math/tex&quot;&gt;-2 * 2 + 20 * 1&lt;/script&gt;). The other two 500EP and 250EP agents only manages to reach around 14.9 and 14 episode reward respectively, which is probably converging to a local optimal of &lt;strong&gt;tie&lt;/strong&gt; more than the &lt;strong&gt;win&lt;/strong&gt; state.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;42-optimal-policy-discussion&quot;&gt;4.2 Optimal Policy Discussion&lt;/h3&gt;
-
-&lt;p&gt;A more direct way to determine whether the agent has learnt the globally optimal policy is to play the agent against itself. If the agent indeed learn the optimal policy, then both agents should reach a 100% &lt;strong&gt;tie&lt;/strong&gt; rate.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Notation:&lt;/strong&gt; The agent that goes first will be denoted as &lt;strong&gt;Player 1&lt;/strong&gt; and the agent that goes second will be denoted as &lt;strong&gt;Player 2&lt;/strong&gt;.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;experiment---play-two-copies-of-the-same-agent-against-each-other-by-following-the-trained-policy&quot;&gt;Experiment - Play two copies of the same agent against each other, by following the trained policy&lt;/h4&gt;
-
-&lt;p&gt;By following a trained optimal deterministic strategy, after playing the trained agent against a copy of itself, &lt;strong&gt;Player 1&lt;/strong&gt; always wins. This is because the policy &lt;em&gt;is trained on going first&lt;/em&gt;, and will not perform well if used by &lt;strong&gt;Player 2&lt;/strong&gt;.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;experiment---train-two-agents-against-each-other-self-play&quot;&gt;Experiment - Train two agents against each other (self-play)&lt;/h4&gt;
-
-&lt;p&gt;Note that I modified the reward structure for self-play. &lt;strong&gt;Win: +10, lose: -10, draw: 0, step: 0.&lt;/strong&gt; The reward in the plot is the sum of rewards for every episode averaged over a moving 50 episodes to reduce noise in the plot. Based on the reward plot below, the 2 agents successfully converge to 0 reward and 100\% tie rate. To verify that this is indeed a global optimal policy, refer to my next experiment, which runs the self-played agent against the original min-max agent.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/tictactoe_p1_5000ep_selfplay.png&quot; alt=&quot;tictactoe_p1_5000ep_selfplay&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/tictactoe_p2_5000ep_selfplay.png&quot; alt=&quot;tictactoe_p2_5000ep_selfplay&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/tictactoe_selfplay.png&quot; alt=&quot;tictactoe_selfplay&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;experiment-re-evaluate-how-a-self-play-agent-player-1-performs-against-min-max-opponent&quot;&gt;Experiment: Re-evaluate how a self-play agent (Player 1) performs against min-max opponent&lt;/h4&gt;
-
-&lt;p&gt;We would expect the self-played agents to converge to the global optimal policy, but it could be because the two agents are &lt;code class=&quot;highlighter-rouge&quot;&gt;colluding'' with each other and reaching the&lt;/code&gt;tie’’ state as the best outcome, similar to the prisoner’s dilemma. To verify this, we have to re-evaluate the self-played agent (Player 1) against the min-max opponent again to see. To verify my point, I intentionally ran two versions of self-play, (1) With pre-trained policy that was trained against the min-max agent first, then self-play. (2) \textit{Without} pre-trained policy, the two agents self-play from scratch. Below are the outcomes after evaluating against the min-max opponent again. We can see that without prior knowledge, the self-play agent lost to the min-max agent. However, with prior training, the self-play agent won the min-max agent, thus verifying that it indeed reached the global optimal policy.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Effects of Prior Training&lt;/strong&gt;&lt;/p&gt;
-
-&lt;center&gt;[Pre-trained against min-max opponent]&lt;/center&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/tictactoe_selfplay_prior.png&quot; alt=&quot;tictactoe_selfplay_prior&quot; /&gt;&lt;/p&gt;
-
-&lt;center&gt;[No prior training against min-max opponent]&lt;/center&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/tictactoe_selfplay_no_prior.png&quot; alt=&quot;tictactoe_selfplay_no_prior&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;5-next-steps&quot;&gt;5. Next Steps&lt;/h2&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;Since this is a static game, we could extend this agent to play a more generic version of tic-tac-toe, with either a larger board size or with different mechanics (connecting more than 3 lines to win).&lt;/p&gt;
-
-&lt;p&gt;Since the reward function is defined in a very flexible way. There are potential opportunities to change the reward design to see if it has effects on the learning speed and agent performance.&lt;/p&gt;
-
-&lt;p&gt;This is the first step towards AlphaGo. There are way more complexities when it comes to mastering such a complicated game. But this is a taste of the capability of &lt;strong&gt;self-play&lt;/strong&gt; in reinforcement learning.&lt;/p&gt;</content><author><name></name></author><summary type="html">Code</summary></entry><entry><title type="html">OpenAI Gym - Acrobot-v1</title><link href="http://henrypan.com/blog/reinforcement-learning/2019/12/03/acrobot.html" rel="alternate" type="text/html" title="OpenAI Gym - Acrobot-v1" /><published>2019-12-03T13:00:00-08:00</published><updated>2019-12-03T13:00:00-08:00</updated><id>http://henrypan.com/blog/reinforcement-learning/2019/12/03/acrobot</id><content type="html" xml:base="http://henrypan.com/blog/reinforcement-learning/2019/12/03/acrobot.html">&lt;h2 id=&quot;code&quot;&gt;Code&lt;/h2&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://github.com/workofart/openai-gym-baselines/tree/master/Acrobot-v1&quot;&gt;Here&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;1-goal&quot;&gt;1. Goal&lt;/h2&gt;
-&lt;p&gt;The problem setting is to solve the &lt;a href=&quot;https://gym.openai.com/envs/Acrobot-v1/&quot;&gt;Acrobot&lt;/a&gt; problem in OpenAI gym. The acrobot system includes two joints and two links, where the joint between the two links is actuated. Initially, the links are hanging downwards, and the goal is to swing the end of the lower link up to a given height (&lt;em&gt;the black horizontal line&lt;/em&gt;)&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/openai-gym-baselines/raw/master/Acrobot-v1/test-run.gif&quot; alt=&quot;test-run&quot; style=&quot;zoom: 67%;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;2-environment&quot;&gt;2. Environment&lt;/h2&gt;
-&lt;p&gt;The acrobot environment has a continuous state space as follows (copied from &lt;a href=&quot;https://github.com/rlpy/rlpy/blob/master/rlpy/Domains/Acrobot.py&quot;&gt;source code comments&lt;/a&gt;):&lt;/p&gt;
-
-&lt;h3 id=&quot;state&quot;&gt;State:&lt;/h3&gt;
-
-&lt;p&gt;The state consists of the sin() and cos() of the two rotational joint angles and the joint angular velocities :&lt;/p&gt;
-
-&lt;script type=&quot;math/tex; mode=display&quot;&gt;[\cos(\theta_1), \sin(\theta_1), \cos(\theta_2), \sin(\theta_2), v_1,v_2]&lt;/script&gt;
-
-&lt;p&gt;For the first link, an angle of 0 corresponds to the link pointing downwards. The angle of the second link is relative to the angle of the first link.&lt;/p&gt;
-
-&lt;p&gt;For example:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;an angle of 0 corresponds to having the same angle between the two links.&lt;/li&gt;
-  &lt;li&gt;a state of [1, 0, 1, 0, …, …] means that both links point downwards.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;action&quot;&gt;Action:&lt;/h3&gt;
-
-&lt;p&gt;The action is either applying &lt;code class=&quot;highlighter-rouge&quot;&gt;+1&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;0&lt;/code&gt; or &lt;code class=&quot;highlighter-rouge&quot;&gt;-1&lt;/code&gt; torque on the joint between the two pendulum links.&lt;/p&gt;
-
-&lt;h3 id=&quot;reward&quot;&gt;Reward:&lt;/h3&gt;
-
-&lt;p&gt;At each timestep (not episode), the reward is set to be -1 if the lower end never reaches the horizontal ruler, and 0 if it has.&lt;/p&gt;
-
-&lt;h3 id=&quot;terminal-condition&quot;&gt;Terminal Condition:&lt;/h3&gt;
-
-&lt;p&gt;The environment imposes a 500 timestep limit to each episode, which means after 500 timesteps, if the pole still hasn’t reached the goal, the episode will terminate and reset.&lt;/p&gt;
-
-&lt;h3 id=&quot;solved-condition&quot;&gt;Solved Condition:&lt;/h3&gt;
-
-&lt;p&gt;There are no specific requirements, see the &lt;strong&gt;experiments section&lt;/strong&gt; for a comparison of performance with the leaderboard.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;3-approach&quot;&gt;3. Approach&lt;/h2&gt;
-
-&lt;h3 id=&quot;31-algorithm-comparison&quot;&gt;3.1 Algorithm Comparison&lt;/h3&gt;
-
-&lt;p&gt;I chose to use &lt;em&gt;actor-critic&lt;/em&gt; with state-value temporal difference (TD) to train an on-policy agent. I assumed an infinite time horizon when deciding on the algorithm, since this problem requires the agent to build momentum to actually swing up to the top, which means the policy can’t be short-sighted and needs to consider all the actions it took to build momentum and finally reach the goal.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Key considerations:&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;The state space is continuous, it would be inefficient to represent the state-action values (q-values) in traditional tabular form.&lt;/li&gt;
-  &lt;li&gt;This problem does not require a global optimal solution, we consider the problem solved after reaching a reward of larger than -100. This means that we can trade-off the accuracy of the algorithm in exchange for a more efficient training process while still finding a near-global optimal policy.&lt;/li&gt;
-  &lt;li&gt;Dense rewards. There is no final reward, rather the reward is given at every time step, and represents how far/close the agent is from the goal, so the feedback is very “real-time”.&lt;/li&gt;
-  &lt;li&gt;If the problem is using an on-policy algorithm, then we should consider adding temporal difference (baseline) to reduce the variance of the gradient estimation while ensuring the bias is not increased.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;32-problem-parameterization&quot;&gt;3.2 Problem Parameterization&lt;/h3&gt;
-
-&lt;p&gt;I initially started with simple radial-basis functions with 10 centers for each of the state dimensions, which resulted in &lt;script type=&quot;math/tex&quot;&gt;10^6&lt;/script&gt; size state space. This drastically slowed down the training of my agent and the progress of this project, so I switched to use a neural network to parameterize both the value function and policy function.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Key considerations:&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Since this problem is in a continuous space, I had to use a function approximator to approximate the state space which can then be used to train the agent.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;33-policy&quot;&gt;3.3 Policy&lt;/h3&gt;
-
-&lt;p&gt;I initially attempted to use a Gaussian function with varying &lt;script type=&quot;math/tex&quot;&gt;\sigma&lt;/script&gt;, but it was very inefficient and ineffective to hand-tweak the &lt;script type=&quot;math/tex&quot;&gt;\sigma&lt;/script&gt; and parameterize the Gaussian mean, so I eventually resorted to a neural network.&lt;/p&gt;
-
-&lt;h4 id=&quot;key-consideration&quot;&gt;Key consideration:&lt;/h4&gt;
-
-&lt;p&gt;The relationship between actions and state space is non-linear&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;34-neural-network-architecture&quot;&gt;3.4 Neural Network Architecture&lt;/h3&gt;
-
-&lt;p&gt;By incorporating the Rectified-Linear unit (ReLU) activation function, we can represent the non-linear relationship between the state space, the policy, and the value of that state. Please refer to &lt;strong&gt;[4.3 Neural Network Complexity]&lt;/strong&gt; section for the reasoning behind the number of neurons.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/acrobot_actor_nn.png&quot; alt=&quot;actor_NN&quot; /&gt;&lt;/p&gt;
-
-&lt;center&gt;&lt;b&gt;Actor Neural Network&lt;/b&gt;&lt;/center&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/acrobot_critic_nn.png&quot; alt=&quot;critic_NN&quot; /&gt;&lt;/p&gt;
-
-&lt;center&gt;&lt;b&gt;Critic Neural Network&lt;/b&gt;&lt;/center&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;35-hyperparameters&quot;&gt;3.5 Hyperparameters&lt;/h3&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Actor’s (Policy) Learning Rate (&lt;script type=&quot;math/tex&quot;&gt;\alpha_{a}&lt;/script&gt;):&lt;/strong&gt; &lt;script type=&quot;math/tex&quot;&gt;1 \times 10^{-4}&lt;/script&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Critic’s (Value) Learning Rate (&lt;script type=&quot;math/tex&quot;&gt;\alpha_{c}&lt;/script&gt;):&lt;/strong&gt; &lt;script type=&quot;math/tex&quot;&gt;5 \times 10^{-3}&lt;/script&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Discount Rate (&lt;script type=&quot;math/tex&quot;&gt;\gamma&lt;/script&gt;):&lt;/strong&gt; 0.9&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Neural Network Weight Initialization:&lt;/strong&gt; Normal Distribution with zero mean and 0.1 standard deviation&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Neural Network Bias Initialization:&lt;/strong&gt; 0.1 constant&lt;/li&gt;
-  &lt;li&gt;128/64 Neurons in the first/second hidden layer respectively for both the policy network and the value network&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;4-experiment--findings&quot;&gt;4. Experiment &amp;amp; Findings&lt;/h2&gt;
-
-&lt;h3 id=&quot;41-performance&quot;&gt;4.1 Performance&lt;/h3&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;User&lt;/th&gt;
-      &lt;th&gt;Best 100-episode performance&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;mallochio&lt;/td&gt;
-      &lt;td&gt;-42.37 ± 4.83&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;marunowskia&lt;/td&gt;
-      &lt;td&gt;-59.31 ± 1.23&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;MontrealAI&lt;/td&gt;
-      &lt;td&gt;-60.82 ± 0.06&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/Bhaney44&quot;&gt;BS Haney&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;-61.8&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/FelixNica&quot;&gt;Felix Nica&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;-63.13 ± 2.65&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;Daniel Barbosa&lt;/td&gt;
-      &lt;td&gt;-67.18&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://gihub.com/khordoo&quot;&gt;Mahmood Khordoo&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;-68.63&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;lirnli&lt;/td&gt;
-      &lt;td&gt;-72.09 ± 1.15&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/Tiger767&quot;&gt;Tiger37&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;-74.49 ± 10.87&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;tsdaemon&lt;/td&gt;
-      &lt;td&gt;-77.87 ± 1.54&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;a7b23&lt;/td&gt;
-      &lt;td&gt;-80.68 ± 1.18&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;DaveLeongSingapore&lt;/td&gt;
-      &lt;td&gt;-84.02 ± 1.46&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;Sanket Thakur&lt;/td&gt;
-      &lt;td&gt;-89.29&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;loicmarie&lt;/td&gt;
-      &lt;td&gt;-99.18 ± 2.60&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;simonoso&lt;/td&gt;
-      &lt;td&gt;-113.66 ± 5.15&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;alebac&lt;/td&gt;
-      &lt;td&gt;-427.26 ± 15.02&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;mehdimerai&lt;/td&gt;
-      &lt;td&gt;-500.00 ± 0.00&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;Compared to the  leaderboard, our last 100 episode (total 1000 episodes) average reward is &lt;strong&gt;-74.9&lt;/strong&gt;, with raw rewards below:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;EP[150]: -275.0
-EP[160]: -231.0
-EP[170]: -243.0
-EP[180]: -209.0
-EP[190]: -277.0
-EP[200]: -268.0
-EP[210]: -357.0
-EP[220]: -115.0
-EP[230]: -101.0
-EP[240]: -98.0
-EP[250]: -141.0
-EP[260]: -86.0
-...
-EP[910]: -83.0
-EP[920]: -77.0
-EP[930]: -70.0
-EP[940]: -80.0
-EP[950]: -80.0
-EP[960]: -132.0
-EP[980]: -82.0
-EP[990]: -76.0
-EP[1000]: -69.0
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;This shows that with a baseline agent, with only a simple 2-layer neural network to approximate the policy and value functions, the performance is relatively good (about average on the leaderboard). The agent is also able to reach &amp;gt; -200 rewards at around 220 episodes and convergences to &amp;gt; -100 rewards after 240 episodes. The next section will depict the reward/episode relationship, which shows the fast convergence of this algorithm.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;42-training-duration&quot;&gt;4.2 Training Duration&lt;/h3&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/acrobot_rewards_1000EP_128_64.png&quot; alt=&quot;acrobot_rewards_1000EP_128_64&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/acrobot_rewards_500EP_128_64.png&quot; alt=&quot;acrobot_rewards_500EP_128_64&quot; /&gt;&lt;/p&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;# Episodes&lt;/th&gt;
-      &lt;th&gt;Training Time&lt;/th&gt;
-      &lt;th&gt;Avg Reward (last 100 episodes)&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;1000&lt;/td&gt;
-      &lt;td&gt;404 seconds&lt;/td&gt;
-      &lt;td&gt;-74.9&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;500&lt;/td&gt;
-      &lt;td&gt;256 seconds&lt;/td&gt;
-      &lt;td&gt;-82.3&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;250&lt;/td&gt;
-      &lt;td&gt;151 seconds&lt;/td&gt;
-      &lt;td&gt;-90.5&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;We can see that even with 500 episodes of training, the agent is able to converge to &amp;gt; -100 rewards at around 60 episodes. The table shows that, with this approach, training for 500 episodes is sufficient for a baseline performance, and further training has only marginal gains in terms of improving average reward. Perhaps, this shows that performance &lt;em&gt;could be&lt;/em&gt; bottlenecked by our simple 2-layer neural network’s function approximation ability.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;43-neural-network-complexity&quot;&gt;4.3 Neural Network Complexity&lt;/h3&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/acrobot_rewards_1000EP_32_16.png&quot; alt=&quot;acrobot_rewards_1000EP_32_16&quot; /&gt;&lt;/p&gt;
-
-&lt;center&gt;&lt;b&gt;16/32 Neurons&lt;/b&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/acrobot_rewards_1000EP_128_64.png&quot; alt=&quot;acrobot_rewards_1000EP_128_64&quot; /&gt;&lt;/p&gt;
-
-&lt;center&gt;&lt;b&gt;64/128 Neurons&lt;/b&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/acrobot_rewards_1000EP_256_128.png&quot; alt=&quot;acrobot_rewards_1000EP_256_128&quot; /&gt;&lt;/p&gt;
-
-&lt;center&gt;&lt;b&gt;128/256 Neurons&lt;/b&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;If we have too many neurons per layer, it will likely to overfit the function, whether that’s the value function or the policy. Translated into rewards, the neural network will try to learn a more complex value function and policy, where in reality, the “true” function is not that complex, resulting in the agent taking worse actions, and leading to the big gaps and unstable rewards, shown in in the 128/256 neuron case. If we have too few neurons, such as 32 and 16 in layer1 and layer2 respectively, the neural network will not be complex enough to approximate the value function and the policy, which is reflected in the first plot, showing slower learning and more variance in the reward/episode. The best number of neurons is 128 and 64 in layer1 and layer2 respectively, shown in the second plot.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;44-discount-rate&quot;&gt;4.4 Discount Rate&lt;/h3&gt;
-
-&lt;p&gt;&lt;strong&gt;No Discount Rate&lt;/strong&gt;
-&lt;img src=&quot;/blog/assets/images/rl/acrobot_rewards_1000EP_128_64_no_discount.png&quot; alt=&quot;acrobot_rewards_1000EP_128_64_no_discount&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;With Discount Rate&lt;/strong&gt;
-&lt;img src=&quot;/blog/assets/images/rl/acrobot_rewards_1000EP_128_64.png&quot; alt=&quot;acrobot_rewards_1000EP_128_64&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Since I assumed the algorithm to be operating in infinite time horizon, adding in a discount rate helps with the reward estimation. Intuitively, the task of reaching the goal can be accomplished within a couple of timesteps, but during the training process, the agent will accumulate a lot of failed attempts in building momentum. Without a discount rate, these failed attempts will be will be equally weighted when computing the value for this episode.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;5-next-steps&quot;&gt;5. Next Steps&lt;/h2&gt;
-
-&lt;p&gt;Since we’re using a simple neural network to represent both the policy and value function for our actor-critic algorithm, there could be potential improvements if we increase the complexity of these networks. Perhaps, with a more complex non-linear function approximator, there could be improvement in performance. At the same time, training for a longer period might be necessary to fully adjust the weights of the neural network.&lt;/p&gt;
-
-&lt;p&gt;It is always a good thing to try out other value functions such as deep Q-learning, combined with the actor-critic approach.&lt;/p&gt;</content><author><name></name></author><summary type="html">Code</summary></entry><entry><title type="html">OpenAI Gym - Pendulum-v0</title><link href="http://henrypan.com/blog/reinforcement-learning/2019/11/05/pendulum.html" rel="alternate" type="text/html" title="OpenAI Gym - Pendulum-v0" /><published>2019-11-05T13:00:00-08:00</published><updated>2019-11-05T13:00:00-08:00</updated><id>http://henrypan.com/blog/reinforcement-learning/2019/11/05/pendulum</id><content type="html" xml:base="http://henrypan.com/blog/reinforcement-learning/2019/11/05/pendulum.html">&lt;h2 id=&quot;code&quot;&gt;Code&lt;/h2&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://github.com/workofart/openai-gym-baselines/tree/master/Pendulum-v0&quot;&gt;Here&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;1-goal&quot;&gt;1. Goal&lt;/h2&gt;
-&lt;p&gt;The problem setting is to solve the &lt;a href=&quot;https://gym.openai.com/envs/MountainCarContinuous-v0/&quot;&gt;Inverted Pendulum&lt;/a&gt; problem in OpenAI gym. Try to keep a frictionless pendulum standing up.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/openai-gym-baselines/raw/master/Pendulum-v0/test-run.gif&quot; alt=&quot;test-run&quot; style=&quot;zoom: 67%;&quot; /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;2-environment&quot;&gt;2. Environment&lt;/h2&gt;
-&lt;p&gt;The pendulum environment has a continuous state space as follows (copied from &lt;a href=&quot;https://github.com/openai/gym/wiki/Pendulum-v0&quot;&gt;wiki&lt;/a&gt;):&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;state&quot;&gt;State&lt;/h4&gt;
-
-&lt;p&gt;Type: Box(3)&lt;/p&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Num&lt;/th&gt;
-      &lt;th&gt;State&lt;/th&gt;
-      &lt;th&gt;Observation&lt;/th&gt;
-      &lt;th&gt;Min&lt;/th&gt;
-      &lt;th&gt;Max&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;Angle1&lt;/td&gt;
-      &lt;td&gt;cos(theta)&lt;/td&gt;
-      &lt;td&gt;-1.0&lt;/td&gt;
-      &lt;td&gt;1.0&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;Angle2&lt;/td&gt;
-      &lt;td&gt;sin(theta)&lt;/td&gt;
-      &lt;td&gt;-1.0&lt;/td&gt;
-      &lt;td&gt;1.0&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;2&lt;/td&gt;
-      &lt;td&gt;Velocity&lt;/td&gt;
-      &lt;td&gt;theta dot&lt;/td&gt;
-      &lt;td&gt;-8.0&lt;/td&gt;
-      &lt;td&gt;8.0&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;actions&quot;&gt;Actions&lt;/h4&gt;
-
-&lt;p&gt;Type: Box(1)&lt;/p&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Num&lt;/th&gt;
-      &lt;th&gt;Action&lt;/th&gt;
-      &lt;th&gt;Min&lt;/th&gt;
-      &lt;th&gt;Max&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;Joint effort&lt;/td&gt;
-      &lt;td&gt;-2.0&lt;/td&gt;
-      &lt;td&gt;2.0&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;reward&quot;&gt;Reward&lt;/h4&gt;
-
-&lt;p&gt;The precise equation for reward:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;-(theta^2 + 0.1*theta_dt^2 + 0.001*action^2)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Theta is normalized between -pi and pi. Therefore, the lowest reward is &lt;code class=&quot;highlighter-rouge&quot;&gt;-(pi^2 + 0.1*8^2 + 0.001*2^2) = -16.2736044&lt;/code&gt;, and the highest reward is &lt;code class=&quot;highlighter-rouge&quot;&gt;0&lt;/code&gt;. In essence, the goal is to remain at zero angle (vertical), with the least rotational velocity, and the least effort.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;starting-state&quot;&gt;Starting State&lt;/h4&gt;
-
-&lt;p&gt;Random angle from &lt;script type=&quot;math/tex&quot;&gt;-\pi&lt;/script&gt; to &lt;script type=&quot;math/tex&quot;&gt;\pi&lt;/script&gt;, and random velocity between &lt;code class=&quot;highlighter-rouge&quot;&gt;-1&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;1&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;episode-termination&quot;&gt;Episode Termination&lt;/h4&gt;
-
-&lt;p&gt;There is no specified termination. Adding a maximum number of steps might be a good idea.&lt;/p&gt;
-
-&lt;p&gt;NOTE: Your environment object could be wrapped by the TimeLimit wrapper, if created using the “gym.make” method. In that case it will terminate after 200 steps.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;solved-condition&quot;&gt;Solved Condition&lt;/h4&gt;
-
-&lt;p&gt;There are no specific requirements, see the &lt;strong&gt;experiments section&lt;/strong&gt; for a comparison of performance with the leaderboard.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;3-approach&quot;&gt;3. Approach&lt;/h2&gt;
-&lt;p&gt;The approach uses the one-step &lt;em&gt;actor-critic&lt;/em&gt; (episodic) algorithm with &lt;em&gt;temporal difference&lt;/em&gt; for estimating the advantage function for the critic. The policy will be a continuous one, namely the gaussian function.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;31-discretization&quot;&gt;3.1 Discretization&lt;/h3&gt;
-
-&lt;p&gt;Since the state space is continuous and is comprised of angle of the pendulum and the velocity we will discretize them separately using a radial basis function (RBF) as follows:&lt;/p&gt;
-
-&lt;p&gt;Angle1 and Angle2 will &lt;em&gt;each&lt;/em&gt; be discretized into 15 radial basis kernels&lt;/p&gt;
-
-&lt;p&gt;Pendulum velocity will be discretized into 15 radial basis kernels.&lt;/p&gt;
-
-&lt;p&gt;Essentially, each “transformed” state will be computed by measuring how far the raw state is from each of the 15 radial basis kernel centers.&lt;/p&gt;
-
-&lt;p&gt;Therefore, in total, there will be &lt;script type=&quot;math/tex&quot;&gt;15^3=3375&lt;/script&gt; states.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;32-exploration-vs-exploitation&quot;&gt;3.2 Exploration vs Exploitation&lt;/h3&gt;
-
-&lt;p&gt;To overcome the exploration-exploitation dilemma, we will be slowly decreasing the standard deviation of the gaussian function. This will allow the agent’s action to vary a lot initially for exploration. At later stages of training, since the standard deviation is smaller, the actions will tend to be closer to the estimated gaussian mean, thus exploiting the learnt policy weights for a more accurate action selection.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;33-gaussian-policy&quot;&gt;3.3 Gaussian Policy&lt;/h3&gt;
-
-&lt;p&gt;To generate continuous actions for this problem, the gaussian policy is a simple and good baseline to start off with.&lt;/p&gt;
-
-&lt;p&gt;&lt;script type=&quot;math/tex&quot;&gt;\Large
-\pi(a \mid s, \theta) = \frac{1}{\sigma \sqrt{2\pi}} e^{-\frac{(a - \mu(s, \theta))^2}{2\sigma^2}}&lt;/script&gt;
-We can see that there are three variables that we need to provide for the policy to generate an action:
-&lt;script type=&quot;math/tex&quot;&gt;\mu = \text{The mean given the state and weights, this will be approximated by a function approximator}\\
-\sigma = \text{The standard deviation parameter for this policy} \\
-\theta = \text{The weights of the policy that will be trained}&lt;/script&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;34-linear-value-function&quot;&gt;3.4 Linear Value Function&lt;/h3&gt;
-
-&lt;p&gt;Not to complicate our approach, our value function is defined to be a function approximator that has the same number of parameters as the number of states, which is 3375. The prediction of the value given the state is just a dot product between the current weights and the given state.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;35-training&quot;&gt;3.5 Training&lt;/h3&gt;
-
-&lt;p&gt;As the name suggest, the agent is trained one step at a time, which means the learning happens after every timestep (max 200 timestep make up one episode).&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Policy (Actor) and Value (Critic) Function Weight Update&lt;/strong&gt;&lt;/p&gt;
-
-&lt;script type=&quot;math/tex; mode=display&quot;&gt;% &lt;![CDATA[
-\Large
-\begin{align*}
-\alpha_v &amp;= \text{Value function learning rate}\\
-\alpha_p &amp;= \text{Policy function learning rate}\\
-\hat{v} &amp;= \text{Estimated value for the given state} \\
-\theta_v &amp;= \text{Value function parameterization weights}\\
-\theta_p &amp;= \text{Policy function parameterization weights}\\
-\delta &amp;= \text{Advantage}\\
-\gamma &amp;= \text{Discount rate}\\
-I &amp;= \text{Policy parameter scaling factor, initially 1} \\
-R &amp;= \text{Reward}\\ \\
-
-\delta &amp;\leftarrow R + \gamma \hat{v}(S', \theta_v) - \hat{v}(S, \theta_v)\\
-\theta_v &amp;\leftarrow \theta_v + \alpha_v \delta \triangledown \hat{v}(S, \theta_v) \\
-\theta_p &amp;\leftarrow \theta_p + \alpha_p I \delta \triangledown \ln{\pi(A \mid S, \theta_p)} \\
-I &amp;\leftarrow \gamma I \\
-\end{align*} %]]&gt;&lt;/script&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;36-hyperparameters&quot;&gt;3.6 Hyperparameters&lt;/h3&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Discount rate (&lt;script type=&quot;math/tex&quot;&gt;\gamma&lt;/script&gt;): 0.99&lt;/li&gt;
-  &lt;li&gt;Actor learning rate (&lt;script type=&quot;math/tex&quot;&gt;\alpha_v&lt;/script&gt;): &lt;script type=&quot;math/tex&quot;&gt;1e^{-4}&lt;/script&gt;&lt;/li&gt;
-  &lt;li&gt;Critic learning rate (&lt;script type=&quot;math/tex&quot;&gt;\alpha_p&lt;/script&gt;): &lt;script type=&quot;math/tex&quot;&gt;5e^{-3}&lt;/script&gt;&lt;/li&gt;
-  &lt;li&gt;Gaussian Policy standard deviation (&lt;script type=&quot;math/tex&quot;&gt;\sigma_p&lt;/script&gt;): 0.5 decreasing to 0.1 linearly over all training episodes&lt;/li&gt;
-  &lt;li&gt;Radial Basis Function Kernel Width (&lt;script type=&quot;math/tex&quot;&gt;\sigma_{rbf}&lt;/script&gt;): 0.1&lt;/li&gt;
-  &lt;li&gt;Total number of RBF kernels: 15 for each dimension of the state.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;4-experiment--findings&quot;&gt;4. Experiment &amp;amp; Findings&lt;/h2&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;# Episodes&lt;/th&gt;
-      &lt;th&gt;Training Time&lt;/th&gt;
-      &lt;th&gt;Avg Reward (last 100 episodes)&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;2000&lt;/td&gt;
-      &lt;td&gt;213 seconds&lt;/td&gt;
-      &lt;td&gt;-146&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;1000&lt;/td&gt;
-      &lt;td&gt;117 seconds&lt;/td&gt;
-      &lt;td&gt;-151&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;500&lt;/td&gt;
-      &lt;td&gt;76 seconds&lt;/td&gt;
-      &lt;td&gt;-215&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;200&lt;/td&gt;
-      &lt;td&gt;23.55 seconds&lt;/td&gt;
-      &lt;td&gt;-1062&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/openai-gym-baselines/raw/master/Pendulum-v0/500_ep.png&quot; alt=&quot;500ep&quot; style=&quot;zoom: 67%;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/openai-gym-baselines/raw/master/Pendulum-v0/2000_ep.png&quot; alt=&quot;2000ep&quot; style=&quot;zoom: 67%;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;We can see that there is a significant improvement in performance after training for 1000 episodes. And by looking at the rewards graph, for the 2000 episode training instance, it has converged to &amp;gt; -200 rewards at around 500 episodes. This means that perhaps a better initial and decay value for &lt;script type=&quot;math/tex&quot;&gt;\sigma_p&lt;/script&gt; can be chosen to speed up the convergence rate in shorter training sessions.&lt;/p&gt;
-
-&lt;p&gt;It also shows that having 15 RBF kernels for each state dimension is enough for discretizing the state space. Since this hyperparameter directly affects the training speed and memory usage during training, it is often necessary to revisit this when it becomes a bottleneck.&lt;/p&gt;
-
-&lt;p&gt;Compared to the leaderboard below, our performance is within the range of the average users.&lt;/p&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;User&lt;/th&gt;
-      &lt;th&gt;Best 100-episode performance&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/msinto93&quot;&gt;msinto93&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;-123.11 ± 6.86&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/msinto93&quot;&gt;msinto93&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;-123.79 ± 6.90&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/heerad&quot;&gt;heerad&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;-134.48 ± 9.07&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/Bhaney44&quot;&gt;BS Haney&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;-135&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/ThyrixYang&quot;&gt;ThyrixYang&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;-136.16 ± 11.97&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/lirnli&quot;&gt;lirnli&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;-152.24 ± 10.87&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;5-next-steps&quot;&gt;5. Next Steps&lt;/h2&gt;
-
-&lt;p&gt;Fine tune the initial and decay value for &lt;script type=&quot;math/tex&quot;&gt;\sigma_p&lt;/script&gt; and see its effect on the convergence rate and overall performance.&lt;/p&gt;
-
-&lt;p&gt;Remember that we’re still using a very simple linear function approximator for our value function. It works pretty well even with this simple baseline setup, which makes me wonder how much of an improvement will we have if we try something more powerful.&lt;/p&gt;
-
-&lt;p&gt;Try to shrink the state discretization to less RBF kernels, and see if there’s a significant reduction in training efficiency or effectiveness.&lt;/p&gt;
-
-&lt;p&gt;Overall, this was a very shallow dive into actor-critic, and there are far more intricacies to this method. I will try to explore other alternatives with the OpenAI gym. Stay tuned.&lt;/p&gt;</content><author><name></name></author><summary type="html">Code</summary></entry><entry><title type="html">OpenAI Gym - MountainCar-v0</title><link href="http://henrypan.com/blog/reinforcement-learning/2019/11/04/mountain-car.html" rel="alternate" type="text/html" title="OpenAI Gym - MountainCar-v0" /><published>2019-11-04T15:00:00-08:00</published><updated>2019-11-04T15:00:00-08:00</updated><id>http://henrypan.com/blog/reinforcement-learning/2019/11/04/mountain-car</id><content type="html" xml:base="http://henrypan.com/blog/reinforcement-learning/2019/11/04/mountain-car.html">&lt;h2 id=&quot;code&quot;&gt;Code&lt;/h2&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://github.com/workofart/openai-gym-baselines/tree/master/MountainCarContinuous-v0&quot;&gt;Here&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;1-goal&quot;&gt;1. Goal&lt;/h2&gt;
-&lt;p&gt;The problem setting is to solve the &lt;a href=&quot;https://gym.openai.com/envs/MountainCarContinuous-v0/&quot;&gt;Continuous MountainCar&lt;/a&gt; problem in OpenAI gym.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/openai-gym-baselines/raw/master/MountainCarContinuous-v0/test-run.gif&quot; alt=&quot;test-run&quot; /&gt;
-&lt;br /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;2-environment&quot;&gt;2. Environment&lt;/h2&gt;
-
-&lt;p&gt;The mountain car follows a continuous state space as follows(copied from &lt;a href=&quot;https://github.com/openai/gym/wiki/MountainCarContinuous-v0&quot;&gt;wiki&lt;/a&gt;):&lt;/p&gt;
-
-&lt;p&gt;The acceleration of the car is controlled via the application of a force which takes values in the range [1, 1]. The states are the position of the car in the horizontal axis on the range [1.2, 0.6] and its velocity on the range [0.07, 0.07]. The goal is to get the car to accelerate up the hill and get to the flag.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;state&quot;&gt;State&lt;/h4&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Num&lt;/th&gt;
-      &lt;th&gt;Observation&lt;/th&gt;
-      &lt;th&gt;Min&lt;/th&gt;
-      &lt;th&gt;Max&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;Car Position&lt;/td&gt;
-      &lt;td&gt;-1.2&lt;/td&gt;
-      &lt;td&gt;0.6&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;Car Velocity&lt;/td&gt;
-      &lt;td&gt;-0.07&lt;/td&gt;
-      &lt;td&gt;0.07&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;Note that velocity has been constrained to facilitate exploration, but this constraint might be relaxed in a more challenging version.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;actions&quot;&gt;Actions&lt;/h4&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Num&lt;/th&gt;
-      &lt;th&gt;Action&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;Push car to the left (negative value) or to the right (positive value)&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;reward&quot;&gt;Reward&lt;/h4&gt;
-
-&lt;p&gt;Reward is &lt;code class=&quot;highlighter-rouge&quot;&gt;100&lt;/code&gt; for reaching the target of the hill on the right hand side, minus the squared sum of actions from start to goal.&lt;/p&gt;
-
-&lt;p&gt;This reward function raises an exploration challenge, because if the agent does not reach the target soon enough, it will figure out that it is better not to move, and won’t find the target anymore.&lt;/p&gt;
-
-&lt;p&gt;Note that this reward is unusual with respect to most published work, where the goal was to reach the target as fast as possible, hence favouring a bang-bang strategy.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;starting-state&quot;&gt;Starting State&lt;/h4&gt;
-
-&lt;p&gt;Position between &lt;code class=&quot;highlighter-rouge&quot;&gt;-0.6&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;-0.4&lt;/code&gt;, null velocity.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;episode-termination&quot;&gt;Episode Termination&lt;/h4&gt;
-
-&lt;p&gt;Position equal to &lt;code class=&quot;highlighter-rouge&quot;&gt;0.5&lt;/code&gt;. A constraint on velocity might be added in a more challenging version.&lt;/p&gt;
-
-&lt;p&gt;The episode will terminate either when the car has reached the goal OR when the total number of time steps reached 1000 regardless of reaching the goal or not.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;solved-requirements&quot;&gt;Solved Requirements&lt;/h4&gt;
-
-&lt;p&gt;Get a reward over &lt;code class=&quot;highlighter-rouge&quot;&gt;90&lt;/code&gt;. This value might be tuned.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;3-approach&quot;&gt;3. Approach&lt;/h2&gt;
-
-&lt;p&gt;The approach uses the &lt;em&gt;policy gradient&lt;/em&gt; algorithm with a baseline to reduce variance. Even though the state space is continuous, in this attempt, we will be using a discrete softmax policy. In other words, the continuous state space will be discretized into buckets of states that will be fed to the agent that will output a discrete action either &lt;code class=&quot;highlighter-rouge&quot;&gt;[-1, 0, 1]&lt;/code&gt;, which is &lt;code class=&quot;highlighter-rouge&quot;&gt;[left, no-action, right]&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;31-discretization&quot;&gt;3.1 Discretization&lt;/h3&gt;
-
-&lt;p&gt;Since there are two dimensions in the state space, namely position and velocity. We will discretize them separately into &lt;strong&gt;150&lt;/strong&gt; buckets and &lt;strong&gt;120&lt;/strong&gt; buckets for position and velocity respectively.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;32-exploration-vs-exploitation&quot;&gt;3.2 Exploration vs Exploitation&lt;/h3&gt;
-
-&lt;p&gt;To overcome the exploration-exploitation dilemma, we will be using the epsilon-greedy approach to slowly decrease the randomization factor overtime. This will ensure that our agent will have a wide variety of state-action training samples and in the later part of the training, it will allow the agent to follow it’s own “trained strategy” as opposed to random actions.&lt;/p&gt;
-
-&lt;p&gt;Technically, in the code, we will be using a &lt;strong&gt;temperature&lt;/strong&gt; term to smooth the probability of actions, and &lt;strong&gt;epsilon&lt;/strong&gt; to decide between whether to take a random action or the predicted action output from the policy.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;33-training&quot;&gt;3.3 Training&lt;/h3&gt;
-
-&lt;p&gt;&lt;strong&gt;Monte Carlo&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;The training process follows a &lt;em&gt;Monte Carlo&lt;/em&gt; method. This means the training only takes place after an entire episode is completed, and replays the accumulated state/action/reward/next state for training. This is at one end of the spectrum, the other end of the spectrum is called &lt;em&gt;1-Step Temporal Difference&lt;/em&gt; learning. So Monte Carlo is essentially a &lt;em&gt;&lt;script type=&quot;math/tex&quot;&gt;\infty&lt;/script&gt;-step Temporal Difference&lt;/em&gt; learning. There is a balance between when you want to train the agent. Training it too early could render very messy results and thus might be harder to converge. Training it too late might prolong the training duration for convergence. &lt;strong&gt;The criteria for choosing the method depends heavily on the problem itself.&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/td_vs_montecarlo.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;center&gt;[1] Richard S. Sutton and Andrew G. Barto. 2018. *Reinforcement Learning: An Introduction*. A Bradford Book, Cambridge, MA, USA.&lt;/center&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Policy Gradient Weight Update&lt;/strong&gt;
-&lt;script type=&quot;math/tex&quot;&gt;\alpha_v = \text{Value function learning rate}\\
-\alpha_p = \text{Policy function learning rate}\\
-\hat{v} = \text{Estimated value for the given state} \\
-\theta_v = \text{Value function parameterization weights}\\
-\theta_p = \text{Policy function parameterization weights}\\
-\delta = \text{Advantage}\\
-\gamma = \text{Discount rate}\\\
-G = \text{Discounted Rewards}&lt;/script&gt;&lt;/p&gt;
-
-&lt;script type=&quot;math/tex; mode=display&quot;&gt;\Large
-\delta \leftarrow G - \hat{v}(S, \theta_{v})\\
-\Large
-\theta_{v} \leftarrow \theta_{v} + \alpha_v \delta \triangledown \hat{v}(S, \theta_{v}) \\
-\Large
-\theta_{p} \leftarrow \theta_{p} + \alpha_p \delta \gamma \triangledown \ln{\pi(A \mid S, \theta_p)}\\&lt;/script&gt;
-
-&lt;p&gt;&lt;strong&gt;Gradient Calculation for Softmax Policy&lt;/strong&gt;
-&lt;script type=&quot;math/tex&quot;&gt;a = \text{action}\\
-a' = \text{selected action by policy}\\
-w = \text{policy weights}\\
-\tau = \text{temperature for epsilon-greedy}\\
-s = \text{current state} \\
-\pi(a \mid s) = \text{policy outputs an action given the current state} \\
-\Large
-\quad \quad \quad = \frac{e^{w_{s,a}}}{\sum_{a'}e^{w_{s,a'}}}&lt;/script&gt;&lt;/p&gt;
-
-&lt;script type=&quot;math/tex; mode=display&quot;&gt;% &lt;![CDATA[
-\Large
-\begin{align*}
-    \triangledown_w \log \pi(a \mid s) &amp;= \frac{\partial \log \frac{e^{w_{s,a}} / \tau}{\sum_{a'}e^{w_{s,a'}} / \tau}}{\partial w} \\
-    \newline \\
-    \text{(Take logs)} \; &amp;= \frac{\partial \log \big(e^{w_{s,a}} / \tau\big) - \partial \log \big (\sum_{a'}e^{w_{s,a'}} / \tau \big)} {\partial w}\\
-    \newline \\
-    \text{(Chain &amp; Log rule)} &amp;= \frac{e^{w_{s, a}} / \tau  w_{s,a} / \tau}{e^{w_{s,a}} / \tau \ln{e}} - \frac{\sum_{a'} w_{s,a'} / \tau \; e^{w_{s,a'}/ \tau}}{\sum_{a'}e^{w_{s,a'}}/ \tau}\\
-    \newline \\
-    \text{(Simplify first equation)} \; &amp;= w_{s,a} / \tau - \frac{\sum_{a'} w_{s,a'} / \tau \; e^{w_{s,a'}/ \tau}}{\sum_{a'}e^{w_{s,a'}}/ \tau}\\
-    \newline \\
-    % \text{(Second equation substitute } \pi(a \mid s) \text{)} \; &amp;= w_{s,a} / \tau - \sum_{a'} w_{s,a'} / \tau \; \pi(a' \mid s)\\
-    \text{(If Action = $a^\prime$) } &amp;= (1 - \frac{e^{w_{s, a}}}{\sum_{a'}e^{w_{s,a'}}}) / \tau \\
-    &amp;= \frac{1 - \pi(a \mid s)}{\tau} \\
-    \text{(If Action  $\neq a^\prime$) } &amp;= -(\frac{e^{w_{s, a}}}{\sum_{a'}e^{w_{s,a'}}}) / \tau \\
-    &amp;= - \frac{\pi(a \mid s)}{\tau} \\
-\end{align*} %]]&gt;&lt;/script&gt;
-
-&lt;h3 id=&quot;34-hyperparameters&quot;&gt;3.4 Hyperparameters&lt;/h3&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Discount rate (&lt;script type=&quot;math/tex&quot;&gt;\gamma&lt;/script&gt;): 0.999&lt;/li&gt;
-  &lt;li&gt;Value function learning rate (&lt;script type=&quot;math/tex&quot;&gt;\alpha_v&lt;/script&gt;): &lt;script type=&quot;math/tex&quot;&gt;1e^{-2}&lt;/script&gt;&lt;/li&gt;
-  &lt;li&gt;Policy function learning rate (&lt;script type=&quot;math/tex&quot;&gt;\alpha_p&lt;/script&gt;): &lt;script type=&quot;math/tex&quot;&gt;1e^{-3}&lt;/script&gt;&lt;/li&gt;
-  &lt;li&gt;Temperature (&lt;script type=&quot;math/tex&quot;&gt;\tau&lt;/script&gt;): 1 decreasing to 0.5 linearly over all training episodes&lt;/li&gt;
-  &lt;li&gt;Discretization for position state: 150 buckets&lt;/li&gt;
-  &lt;li&gt;Discretization for velocity state: 120 buckets&lt;/li&gt;
-  &lt;li&gt;Epsilon-greedy (&lt;script type=&quot;math/tex&quot;&gt;\epsilon&lt;/script&gt;): 1 decreasing to 0.1 linearly over all training episodes&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;4-experiment--findings&quot;&gt;4. Experiment &amp;amp; Findings&lt;/h2&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;# Episodes&lt;/th&gt;
-      &lt;th&gt;Training Time&lt;/th&gt;
-      &lt;th&gt;Min. Reward&lt;/th&gt;
-      &lt;th&gt;Max Reward&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;2500&lt;/td&gt;
-      &lt;td&gt;473 seconds&lt;/td&gt;
-      &lt;td&gt;31.7&lt;/td&gt;
-      &lt;td&gt;90.6&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;1500&lt;/td&gt;
-      &lt;td&gt;327 seconds&lt;/td&gt;
-      &lt;td&gt;31.5&lt;/td&gt;
-      &lt;td&gt;89.9&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;1000&lt;/td&gt;
-      &lt;td&gt;254 seconds&lt;/td&gt;
-      &lt;td&gt;31.2&lt;/td&gt;
-      &lt;td&gt;89.3&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;500&lt;/td&gt;
-      &lt;td&gt;154 seconds&lt;/td&gt;
-      &lt;td&gt;30.2&lt;/td&gt;
-      &lt;td&gt;86.7&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;200&lt;/td&gt;
-      &lt;td&gt;77 seconds&lt;/td&gt;
-      &lt;td&gt;31.1&lt;/td&gt;
-      &lt;td&gt;84.6&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;41-introducing-baseline-to-reduce-variance&quot;&gt;4.1 Introducing baseline to reduce variance&lt;/h3&gt;
-
-&lt;center&gt;&lt;b&gt;Without Baseline&lt;/b&gt;&lt;/center&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/openai-gym-baselines/raw/master/MountainCarContinuous-v0/without_baseline.png&quot; alt=&quot;without_baseline&quot; style=&quot;zoom: 67%;&quot; /&gt;&lt;/p&gt;
-
-&lt;center&gt;Training took: 280.78 seconds&lt;/center&gt;
-
-&lt;hr /&gt;
-
-&lt;center&gt;&lt;b&gt;With Baseline&lt;/b&gt;&lt;/center&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/openai-gym-baselines/raw/master/MountainCarContinuous-v0/with_baseline.png&quot; alt=&quot;with_baseline&quot; style=&quot;zoom:67%;&quot; /&gt;&lt;/p&gt;
-
-&lt;center&gt;Training took: 253.72 seconds&lt;/center&gt;
-
-&lt;p&gt;The above comparison experiment is to show the effects of having a baseline on the agent’s performance. We can easily see from the rewards graph, the agent &lt;strong&gt;with baseline&lt;/strong&gt; has a smaller variance in the rewards. This translates to a faster convergence rate.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;42-discrete-vs-continuous-actions&quot;&gt;4.2 Discrete vs Continuous Actions&lt;/h3&gt;
-
-&lt;p&gt;This problem (MountainCarContinuous-v0) was intended to be solved using a continuous action policy. However, I didn’t use continuous actions because I wanted to see how well a discrete-action agent could perform on this simple task. In conclusion, the number of episodes until convergence is quite good. The overall max reward reaches the goal of 90 at around ~1000 episodes.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;43-performance&quot;&gt;4.3 Performance&lt;/h3&gt;
-
-&lt;p&gt;Let’s look at the leaderboard of this problem and &lt;strong&gt;MountainCar-v0&lt;/strong&gt;, which is a discrete version of the problem.&lt;/p&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;MountainCar-v0&lt;/th&gt;
-      &lt;th&gt; &lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;strong&gt;User&lt;/strong&gt;&lt;/td&gt;
-      &lt;td&gt;&lt;strong&gt;Episodes before solve&lt;/strong&gt;&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/ZhiqingXiao&quot;&gt;Zhiqing Xiao&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;0 (use close-form preset policy)&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/StepNeverStop&quot;&gt;Keavnn&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;47&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/ZhiqingXiao&quot;&gt;Zhiqing Xiao&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;75&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/roboticist-by-day&quot;&gt;Mohith Sakthivel&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;90&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/amohamed11&quot;&gt;Anas Mohamed&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;341&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/harshitandro&quot;&gt;Harshit Singh Lodha&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;643&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/CM-Data&quot;&gt;Colin M&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;944&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/jing582&quot;&gt;jing582&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;1119&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/DaveLeongSingapore&quot;&gt;DaveLeongSingapore&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;1967&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/Pechckin&quot;&gt;Pechckin&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;30&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/amitkvikram&quot;&gt;Amit&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;1000-1200&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/elcrion/mountain_car&quot;&gt;Gleb I&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;100&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;MountainCarContinuous-v0&lt;/th&gt;
-      &lt;th&gt; &lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;User&lt;/td&gt;
-      &lt;td&gt;Episodes before solve&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/Ashioto&quot;&gt;Ashioto&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/StepNeverStop&quot;&gt;Keavnn&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;11&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/camigord&quot;&gt;camigord&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;18&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/tobiassteidle&quot;&gt;Tobias Steidle&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;32&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/lirnli&quot;&gt;lirnli&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;33&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/Khev/RL-practice-keras/blob/master/DDPG/writeup_for_openai.ipynb&quot;&gt;khev&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;130&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/sanketsans/openAIenv/tree/master/CEM/mountainCar_Cont&quot;&gt;Sanket Thakur&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;140&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/Pechckin&quot;&gt;Pechckin&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;a href=&quot;https://github.com/nikhilbarhate99&quot;&gt;Nikhil Barhate&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;200 (HAC)&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;This shows that our discrete policy is a good baseline to start with before we dive into continuous actions. With continuous actions, debugging might be slightly harder as the policy function will be slightly more complicated, perhaps using a neural network approximating the policy function.&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;5-next-steps&quot;&gt;5. Next Steps&lt;/h2&gt;
-
-&lt;p&gt;An obvious next step would be to try out continuous actions on this same problem and see how much more “efficient” and “effective” training can be. Intuitively, with continuous actions, you would expect a more fine-grain control of the car, and thus less “bouncing” around. Think driving with full petal and full brake, it’s not a very effective way to drive, is it?&lt;/p&gt;
-
-&lt;p&gt;Another thing that could be interesting to try out is to change the “n” in the &lt;em&gt;n-step Temporal Difference (TD)&lt;/em&gt; learning and see the effects with regards to performance, convergence rate, reward variance. Right now we are using &lt;em&gt;Monte Carlo&lt;/em&gt;, which is essentially a &lt;script type=&quot;math/tex&quot;&gt;\infty&lt;/script&gt;-step TD method.&lt;/p&gt;
-
-&lt;p&gt;The current approach uses policy gradient as the approach to train the agent. There are some limitations in policy-based methods. There are other reinforcement learning algorithms that can be used to tackle this problem such as Deep Q-Learning, and Actor-Critic. I will be tackling another OpenAI Gym problem (&lt;a href=&quot;https://github.com/openai/gym/wiki/Pendulum-v0&quot;&gt;Pendulum-v0&lt;/a&gt;) using actor-critic. Stay tuned for my next post.&lt;/p&gt;</content><author><name></name></author><summary type="html">Code</summary></entry><entry><title type="html">BrawlStars AI Series (Part 2) - Reinforcement Learning</title><link href="http://henrypan.com/blog/reinforcement-learning/2019/04/24/Brawlstars-RL.html" rel="alternate" type="text/html" title="BrawlStars AI Series (Part 2) - Reinforcement Learning" /><published>2019-04-24T22:00:00-07:00</published><updated>2019-04-24T22:00:00-07:00</updated><id>http://henrypan.com/blog/reinforcement-learning/2019/04/24/Brawlstars-RL</id><content type="html" xml:base="http://henrypan.com/blog/reinforcement-learning/2019/04/24/Brawlstars-RL.html">&lt;p&gt;&lt;strong&gt;First and foremost, I must say, perception is harder than planning.&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;This part, I will be attempting to apply reinforcement learning (RL) towards creating an agent that can play Brawlstars. The goal of the project is similar to &lt;a href=&quot;...&quot;&gt;part 1&lt;/a&gt; —be a decent player and excert human-like behaviors. My personal goal is to learn various reinforcement learning techniques and apply them towards a practical problem.&lt;/p&gt;
-
-&lt;p&gt;This is a challenging problem because：&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;I will &lt;em&gt;&lt;strong&gt;not&lt;/strong&gt;&lt;/em&gt; be using any Brawlstars APIs to retrieve information about the game state, everything we humans can see, will be everything the agent can see.&lt;/li&gt;
-  &lt;li&gt;I will &lt;em&gt;&lt;strong&gt;not&lt;/strong&gt;&lt;/em&gt; be telling the agent about the game rules, what each game element means (shooting the wall), or about the objective of killing the opposing characters. I will only provide rewards just as if humans are playing the game and sees their stars increase at the top of their character when they kill their opponents.&lt;/li&gt;
-  &lt;li&gt;Training is done in real-time as there is &lt;strong&gt;&lt;em&gt;no&lt;/em&gt;&lt;/strong&gt; simulator that can allow the agent to train faster than the actual time. Thus, it will be significantly slower than training an agent to play chess or go where a simulator is available.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;In any RL problem definition, there are 3 components:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;&lt;strong&gt;Action&lt;/strong&gt;: Forward, backward, left, right, stand still (no-op), normal attack, super attack&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Environment&lt;/strong&gt;: The fixed map consists of 6 players (including the agent, 2 of which are allies, 3 enemies). Each of the other 5 players are controlled by Brawlstars built-in game AI.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Reward&lt;/strong&gt;: There is a star icon above the player’s avatar denoting the player’s stars, this can be increased when killing opponents and reset to 2 stars when the agent is killed.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2 id=&quot;1-perception&quot;&gt;1. Perception&lt;/h2&gt;
-
-&lt;p&gt;For perception, we are concerned with modeling the environment. In the context of Brawlstars, since we don’t have any access to backend APIs to retrieve information about the position, state and action of players, we will need to go the human route of capturing these information from the screen.
-We will convert the raw pixels into a feature vector and quantify the stars (reward) and player position.&lt;/p&gt;
-
-&lt;h3 id=&quot;11-current-player-position&quot;&gt;1.1 Current Player Position&lt;/h3&gt;
-
-&lt;h4 id=&quot;green-circle&quot;&gt;Green Circle&lt;/h4&gt;
-&lt;p&gt;Initially, I used the green circle beneath the player to detect its position. By performing supervised training on the set of labeled images for all game modes, I was able to get a rough object detection classifier working. However, the circle get’s easily distracted by other background elements or even other player’s elements. Considering the number of labeled images I could manually create, I should have only focused on one game mode (and map) so the variation wouldn’t be that high. Nevertheless, this approach was not very accurate.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/workofart/brawlstars-ai/master/object_detection/img/green_circle.png&quot; alt=&quot;Green Circle&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;Sorry for the green background, it must have been compression.&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/brawlstars-ai/raw/master/object_detection/demo/player_detection.png&quot; alt=&quot;Green Circle 2&quot; /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;player-name&quot;&gt;Player Name&lt;/h4&gt;
-&lt;p&gt;Then I realized the player’s name is always in front of every other element, at least 90% of the time (the rest 10% is when explosion elements take over the screen). I extracted out my player’s name and used template matching for detecting the player’s position.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/workofart/brawlstars-ai/master/object_detection/img/name.png&quot; alt=&quot;Name_Template&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;Sorry for the green background, it must have been compression.&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/workofart/brawlstars-ai/master/object_detection/demo/name_detection.png&quot; alt=&quot;Name Detection&quot; /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;12-stars-reward&quot;&gt;1.2 Stars (Reward)&lt;/h3&gt;
-
-&lt;h4 id=&quot;player-stars&quot;&gt;Player Stars&lt;/h4&gt;
-&lt;p&gt;This is the most direct form of reward. You kill one opponent, you gain one star. The max stars is capped at 7. If you die, your stars get reset to 2.&lt;/p&gt;
-
-&lt;p&gt;For initial training, I used player stars as the sole reward. (i.e. x stars = x reward)&lt;/p&gt;
-
-&lt;h4 id=&quot;team-stars&quot;&gt;Team Stars&lt;/h4&gt;
-&lt;p&gt;This is a high-abstraction reward, since not only will the performance of the agent but also the other 2 teammates will directly affect the number of team stars. &lt;em&gt;Note that dying will not decrease the number of team stars.&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;I created the reference digits [0-9] to be used for template matching.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/brawlstars-ai/raw/master/digits/digits.png&quot; alt=&quot;RefDigits&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/brawlstars-ai/raw/master/object_detection/demo/player_team_stars_v2.gif&quot; alt=&quot;Player Team Star Detection&quot; /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;2-planning&quot;&gt;2. Planning&lt;/h2&gt;
-
-&lt;p&gt;After I have made some progress on the perception problem, we know where our current player is, as well as the number of player and team stars we have. This section is dedicated to solving the planning problem to a certain degree.&lt;/p&gt;
-
-&lt;p&gt;I used &lt;em&gt;&lt;strong&gt;Double Deep Q Network w/ Experience Replay&lt;/strong&gt;&lt;/em&gt; to approximate value functions to identify the value of performing a certain action in any given state. As for why not vanilla Q-learning, you can read up &lt;a href=&quot;https://datascience.stackexchange.com/questions/20535/what-is-experience-replay-and-what-are-its-benefits&quot;&gt;Experience Replay&lt;/a&gt; and &lt;a href=&quot;https://arxiv.org/abs/1509.06461&quot;&gt;Double Q-Learning&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;As for why Q-learning (or value-based approach): The intuition here is that since the game board is fixed, the objective is fairly straight-forward, there will be lots of cases where the same state will be given (same enemy at the same distance away from current player) and the same action (attack or super attack) will need to be performed to increase the reward (gain stars). Therefore, having a value for each state-action pair will be helpful.&lt;/p&gt;
-
-&lt;h3 id=&quot;21-agent&quot;&gt;2.1 Agent&lt;/h3&gt;
-&lt;p&gt;The agent acts based on the output q-value. The q-value represents the value of a particular state-action pair. Out of all the possible actions, it picks the one that has the highest q-value, separately for action and movement. An epsilon value dictates the trade-off between exploration and exploitation to ensure that we are still exploring the environment. The agent also perceives the state, rewards and stores them into the “Experience Buffer” for further sampling and replay for training the “Brain”.&lt;/p&gt;
-
-&lt;p&gt;Hyper Parameters:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Learning Rate&lt;/li&gt;
-  &lt;li&gt;Initial Epsilon&lt;/li&gt;
-  &lt;li&gt;Final Epsilon&lt;/li&gt;
-  &lt;li&gt;Epsilon Decay&lt;/li&gt;
-  &lt;li&gt;Gamma (Discount factor for Q value)&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;22-brain&quot;&gt;2.2 Brain&lt;/h3&gt;
-&lt;p&gt;Initially, I use 4 simple two-layer neural network (NN) to represent the brain and to approximate the q-values for the following:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;Movement (Target q-network, Q-network)&lt;/li&gt;
-  &lt;li&gt;Attack (Target q-network, Q-network)&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;&lt;strong&gt;Why 4, not just 2?&lt;/strong&gt; This is to avoid the &lt;a href=&quot;https://papers.nips.cc/paper/3964-double-q-learning&quot;&gt;overestimation of Q-values&lt;/a&gt; problem, I used two NNs per action type, one being the target network and the other is the main q-network&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;Input:&lt;/em&gt; The features extracted from MobileNet&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;Output:&lt;/em&gt; Approximated Q-values (state-action values)&lt;/p&gt;
-
-&lt;p&gt;[Diagram of the Network Architecture]&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;state_input -&amp;gt; relu activation -&amp;gt; drop out -&amp;gt; relu activation -&amp;gt; drop out
-             |_________ Layer 1 ____________|_________ Layer 2 _________|
--&amp;gt; q-value
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;3-error-analysis&quot;&gt;3. Error Analysis&lt;/h2&gt;
-
-&lt;p&gt;After watching the agent play during it’s training process. I’ve noticed several problems that are &lt;em&gt;very&lt;/em&gt; obvious to the human eye, but not quite obvious to the agent and may take a very long time for the agent to improve. Below are some of these problems:&lt;/p&gt;
-
-&lt;p&gt;Initially, the agent spams the movement and attack keys randomly, which is expected due to the EpsilonGreedy approach starting with 100% randomness slowly decaying to around 5% at the end of the training process. However, the obvious problem is how fast the agent can learn to navigate properly (not walking into walls) versus how slow the agent can learn to &lt;em&gt;not&lt;/em&gt; constantly waste its ammo. It would be helpful to somehow build in the concept/model of ammo into its state so the relationship between ammo and attack actions can be better coordinated.&lt;/p&gt;
-
-&lt;p&gt;E.g. At around 140 Episodes, the agent is still firing its attacks pretty much whenever it’s available (once very 0.7-0.8s). But it’s able to walk continuously in a straight path, suddenly stopping (pressing no keys) and be able to take different straight path towards the enemy targets.&lt;/p&gt;
-
-&lt;h2 id=&quot;4-challenges--future-steps&quot;&gt;4. Challenges &amp;amp; Future Steps&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;The current agent’s training speed is bounded by the game play speed. In other words, there’s no simulator that can speed up the training process, and I can’t alter the game speed by any means. So one second of game play = one second of actual training time. This has always been a constraint in my own learning as well, since the slower the training goes, the slower I can identify problems in my approach.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Since the sequence of frames (states) and actions are both important for the agent to learn. Some sequences have more value of learning where there’s lots of game mechanics involved, than others where the agent is just waiting for resurrection after being killed. A prioritized experience replay buffer would help to address this challenge.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Since this game is a online game, and I don’t have a fixed game that I can experiment, as the game keeps updating overtime, it would be equivalent to shooting a moving target if I keep maintaining this. Therefore, I decided to discontinue this project. This project was based on Brawlstars version 16.176. It was overall a great experience to try to apply machine learning on a game I enjoy playing personally, I really learnt a lot.&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;On to the next challenge.&lt;/p&gt;
-
-&lt;p&gt;- Henry&lt;/p&gt;</content><author><name></name></author><summary type="html">First and foremost, I must say, perception is harder than planning.</summary></entry><entry><title type="html">BrawlStars AI Series (Part 1)</title><link href="http://henrypan.com/blog/machine-learning/2019/04/19/Brawlstars-AI.html" rel="alternate" type="text/html" title="BrawlStars AI Series (Part 1)" /><published>2019-04-19T22:00:00-07:00</published><updated>2019-04-19T22:00:00-07:00</updated><id>http://henrypan.com/blog/machine-learning/2019/04/19/Brawlstars-AI</id><content type="html" xml:base="http://henrypan.com/blog/machine-learning/2019/04/19/Brawlstars-AI.html">&lt;p&gt;Brawlstars: &lt;a href=&quot;https://supercell.com/en/games/brawlstars/&quot;&gt;https://supercell.com/en/games/brawlstars/&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;1-motivation&quot;&gt;1. Motivation&lt;/h2&gt;
-&lt;p&gt;I’ve personally being playing Brawlstars for over 3 months, and it’s a simple game to start considering the limited key combinations that it has. However, it’s fairly hard to master, considering the different mechanics each character has and the different maps in which each character’s play style can be affected by.&lt;/p&gt;
-
-&lt;h2 id=&quot;2-goals&quot;&gt;2. Goals&lt;/h2&gt;
-&lt;p&gt;For this project, I want to train an agent that will be able to play Brawlstars decently (be able to consistently beat built-in AI, and be able to play in Player-vs-Player (PVP) games “like” a human player. During the process, my personal goal is to brush up on topics in computer vision and deep learning.&lt;/p&gt;
-
-&lt;h2 id=&quot;3-starting-point&quot;&gt;3. Starting Point&lt;/h2&gt;
-&lt;p&gt;As for the game, I will start with the “Bounty” game mode and the “Temple Ruins” map as the fixed map, with “Shelly” being the character to train on.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Map&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://vignette.wikia.nocookie.net/brawlstars/images/3/3e/Temple_Ruins-Map.png/revision/latest/scale-to-width-down/310?cb=20190714193752&quot; alt=&quot;Map&quot; width=&quot;180&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Character&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;More info: &lt;a href=&quot;https://brawlstars.fandom.com/wiki/Shelly&quot;&gt;https://brawlstars.fandom.com/wiki/Shelly&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://vignette.wikia.nocookie.net/brawlstars/images/5/5e/Shelly_Skin-Default.png/revision/latest?cb=20191220032258&quot; alt=&quot;Shelly&quot; width=&quot;100&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Game Mode&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Bounty: &lt;a href=&quot;https://brawlstars.fandom.com/wiki/Bounty&quot;&gt;https://brawlstars.fandom.com/wiki/Bounty&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Considerations&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;
-    &lt;p&gt;Ultimately, I will want to explore Reinforcement learning (RL), and one of the hardest things is reward definition. (Refer to my post about defining reward in stock trading using RL). The “Bounty” game mode allows for straight-forward reward definition by the number of stars each player gains by killing the opposing players.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;“Shelly” has a simple set of attack mechanics. Her normal attack is short-to-medium range, and her super attack is the same range with more damage.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Using a fixed map allows me to eliminate a lot of the variation in agent performance due to map mechanics or other factors that is derived from the map.&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2 id=&quot;3-related-work&quot;&gt;3. Related Work&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&quot;https://github.com/ChintanTrivedi/DeepGamingAI_FIFA&quot;&gt;FIFA AI&lt;/a&gt; For inspiring me to try out LSTM for action determination in supervised learning.&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://github.com/Sentdex/pygta5&quot;&gt;PyGTA5&lt;/a&gt; For the initial direction with regards to perception and supervised learning training data generation.&lt;/p&gt;
-
-&lt;h2 id=&quot;4-project-focusscope&quot;&gt;4. Project Focus/Scope&lt;/h2&gt;
-&lt;p&gt;In the first part of this series of projects, I will be exploring the possibility of using supervised learning to train an agent to play Brawlstars. In the process, I will evaluate different feature extractors and identify other areas of improvements.&lt;/p&gt;
-
-&lt;p&gt;The second part of the project is to use reinforcement learning to let the agent play Brawlstars on its own and learn from it’s own mistakes. In this process, I will evaluate various RL techniques to improvement the agent’s decision-making abilities.&lt;/p&gt;
-
-&lt;h2 id=&quot;5-showcase&quot;&gt;5. Showcase&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&quot;https://github.com/workofart/brawlstars-ai&quot;&gt;Code &amp;amp; Gameplay Snapshot&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;6-supervised-learning&quot;&gt;6. Supervised Learning&lt;/h2&gt;
-
-&lt;h3 id=&quot;61-creating-training-data&quot;&gt;6.1 Creating training data&lt;/h3&gt;
-&lt;p&gt;As the name suggests, supervised learning requires training data with labeled ground truth. As for this project, I will be the person creating the training data by playing the game. The &lt;em&gt;screen information&lt;/em&gt; and my &lt;em&gt;key presses&lt;/em&gt; will be recorded into training data, which will be fed into the agent during the training process.&lt;/p&gt;
-
-&lt;h3 id=&quot;62-features&quot;&gt;6.2 Features&lt;/h3&gt;
-
-&lt;h4 id=&quot;621-raw-pixels-as-features&quot;&gt;6.2.1 Raw Pixels as Features&lt;/h4&gt;
-&lt;p&gt;Feeding in raw pixels doesn’t yield too good of a result, because it’s difficult to make sense of individual pixels and translate them into concrete meaning. For example, it’s hard for the agent to infer from raw pixels which set of pixels corresponds to the its own player, allies or enemies.&lt;/p&gt;
-
-&lt;p&gt;For my training instance, I used 1 hour of game play data played only on the fixed map “Temple Ruins”.&lt;/p&gt;
-
-&lt;h4 id=&quot;622-using-mobilenet-as-the-feature-extractor&quot;&gt;6.2.2 Using MobileNet as the feature extractor&lt;/h4&gt;
-
-&lt;p&gt;After seeing the performance of raw pixels, I decided to try out some feature extractors that could help with the performance of the agent for Supervised Learning. I chose Mobilenet as the feature extractor for its balance between high accuracy and fast speed.&lt;/p&gt;
-
-&lt;p&gt;For my training instance, I used 1 hour of data played only on the fixed map “Temple Ruins”.&lt;/p&gt;
-
-&lt;h3 id=&quot;63-action-determination&quot;&gt;6.3 Action Determination&lt;/h3&gt;
-
-&lt;h4 id=&quot;631-alexnet-convolutional-neural-network&quot;&gt;6.3.1 AlexNet (Convolutional Neural Network)&lt;/h4&gt;
-&lt;p&gt;&lt;strong&gt;Motivation:&lt;/strong&gt; As a starting point, AlexNet is fairly robust for image feature extraction and classification.&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;Input&lt;/em&gt;: Raw Pixels&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;Output&lt;/em&gt;: A one-hot array of 6 elements. Representing (left, right, forward, backward, attack, superattack) Basically, the neural network will try to classify “snapshot” of the game screen into one of 6 actions.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://cdn-images-1.medium.com/max/1600/0*xPOQ3btZ9rQO23LK.png&quot; alt=&quot;AlexNet&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Paper Reference: &lt;em&gt;https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf&lt;/em&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;632-long-short-term-memory&quot;&gt;6.3.2 Long short-term memory&lt;/h4&gt;
-&lt;p&gt;&lt;strong&gt;Motivation:&lt;/strong&gt; Because this is a game with animation composed of frames of game screen. It is intuitive to think that a sequence of frames will provide more information than one snapshot of the game screen. This is the main motivation for choosing LSTM. The intuition behind separating into 2 LSTMs is because the movement actions and attack actions are not necessarily mutually exclusive—one can, and ought to, move and attack at the same time.&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;Input&lt;/em&gt;: Features extracted by MobileNet from after the last convolutional layer and right before the softmax.&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;Output&lt;/em&gt;: A one-hot array representing the actions to take&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;LSTM1&lt;/strong&gt; - A one-hot array of 5 elements. Representing (left, right, forward, backward, no-op)&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;LSTM2&lt;/strong&gt; - A one-hot array of 3 elements. Representing (attack, superattack, no-op)&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;Note that each set of actions includes no-op (no action) compared to the AlexNet approach.&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;&lt;a href=&quot;https://github.com/workofart/brawlstars-ai/blob/master/net/lstm.py&quot;&gt;NN Architecture&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Input - LSTM Layer 1 - Dropout - LSTM Layer 2 - Dropout
-- Fully Connected Layer - Softmax Activation
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Training blew up my home desktop due to the amount of memory the feature space occupys at the peak. I had to use Google Cloud’s VM with 32GB of ram to train this.&lt;/p&gt;
-
-&lt;h2 id=&quot;7-challenges&quot;&gt;7. Challenges&lt;/h2&gt;
-
-&lt;h3 id=&quot;71-data&quot;&gt;7.1 Data&lt;/h3&gt;
-
-&lt;p&gt;The challenge with supervised learning is always with data gathering. In this case, I can’t gather a huge amount of gameplay data for the agent to be trained to play well. Also, the generalization ability of supervised learning is questionable. Does the agent play well on other maps? Other characters? I believe incorporating reinforcement learning into the equation will allow the agent to develop a more robust and general strategy for playing this game. Also, by using RL, I personally wouldn’t need to “waste time” playing the game to generate training data.&lt;/p&gt;
-
-&lt;h3 id=&quot;72-features&quot;&gt;7.2 Features&lt;/h3&gt;
-
-&lt;p&gt;Since there was no game “hacking” involved or game data available for the agent to use, getting the features to be passed into the agent for supervised learning was challenging. I had to visualize the CNN intermediary layers to understand if the CNN was useful in detecting and classifying elements of the game. This was important because even if the agent’s decision-making abilities (planning) were superb, giving misleading information (bad perception) might still lead to chaos.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Snapshot of Intermediate CNN Layers&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;This is visualized using the second-last &lt;strong&gt;(CONV-5-1)&lt;/strong&gt; block (out of 5 blocks) of the &lt;a href=&quot;https://arxiv.org/abs/1409.1556&quot;&gt;Very Deep Convolutional Networks for Large-Scale Image Recognition (VGG)&lt;/a&gt; architecture.
-&lt;img src=&quot;https://neurohive.io/wp-content/uploads/2018/11/vgg16.png&quot; alt=&quot;VGG16&quot; /&gt;
-Reference: https://neurohive.io/en/popular-networks/vgg16/&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://github.com/workofart/brawlstars-ai/raw/master/vgg_block5_conv1_18x18.png&quot; alt=&quot;CNNVIZ&quot; /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;8-statistics-and-performance&quot;&gt;8. Statistics and Performance&lt;/h2&gt;
-
-&lt;p&gt;&lt;strong&gt;The input screen dimension:&lt;/strong&gt; 1280 x 715 (cut off some pixels from the title bar)&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Supervised Learning&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Trained on Raw Pixels fed into Alexnet for decision output with the following hyperparameters:
-    &lt;ul&gt;
-      &lt;li&gt;EPOCHS=500&lt;/li&gt;
-      &lt;li&gt;Learning Rate=3e-5&lt;/li&gt;
-      &lt;li&gt;Resize_Width=80&lt;/li&gt;
-      &lt;li&gt;Resize_Height=60&lt;/li&gt;
-      &lt;li&gt;Batch size=12&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;Trained on MobileNet extracted features fed into 2 LSTMs for decision output with the following hyperparameters:
-    &lt;ul&gt;
-      &lt;li&gt;Mobilenet&lt;/li&gt;
-      &lt;li&gt;Learning Rate=3e-5&lt;/li&gt;
-      &lt;li&gt;Batch size=8&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;The best way to evaluate performance in this game is by keeping track of the average number of stars the player possess throughout the game. This is a high-level reward/goal because it encompasses short-term goals of killing the oponent and gaining an additional star each time and a long-term goal of not dying and resetting the player’s stars to 2.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Human Benchmark (Measured by myself):&lt;/strong&gt;
-For the given setting, I can, on average, possess 5 stars throughout the game. With aggresive playstyle taking the initial 30 seconds, and conservative playstyle dominating the last 30 seconds, to preserve the 7 max stars on the player.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Agent Performance:&lt;/strong&gt;
-For the given setting, in the supervised learning approach, the results weren’t impressive. The agent does avoid running into the wall, but attacks randomly at no target.&lt;/p&gt;
-
-&lt;h2 id=&quot;9-error-analysis--future-steps&quot;&gt;9. Error Analysis + Future Steps&lt;/h2&gt;
-
-&lt;p&gt;I wasn’t surprised that supervised learning in a dynamic multi-agent environment would not go well. Unless I have near infinite amount of training data, I wouldn’t be able to train a decent agent.&lt;/p&gt;
-
-&lt;p&gt;Next, I will attempt to tackle this problem from a more fundamental level, starting from perception. Currently, I simply “dump” the pixels as input to a feature extractor, and hope that it will be able to transfer-learn some useful features.&lt;/p&gt;
-
-&lt;p&gt;Then, I am going to apply reinforcement learning on this problem to tackle the planning part of it. I will be framing the environment, constructing the agent’s brain, and designing rewards.&lt;/p&gt;
-
-&lt;p&gt;If you’re interested, please check my next post &lt;a href=&quot;http://www.henrypan.com/blog/reinforcement-learning/2019/04/25/Brawlstars-RL.html&quot;&gt;here&lt;/a&gt;. Thanks!&lt;/p&gt;
-
-&lt;p&gt;- Henry&lt;/p&gt;</content><author><name></name></author><summary type="html">Brawlstars: https://supercell.com/en/games/brawlstars/</summary></entry><entry><title type="html">Creating a Policy Gradient (PG) Agent to Trade</title><link href="http://henrypan.com/blog/reinforcement-learning/2019/04/03/pg-trading.html" rel="alternate" type="text/html" title="Creating a Policy Gradient (PG) Agent to Trade" /><published>2019-04-03T22:55:00-07:00</published><updated>2019-04-03T22:55:00-07:00</updated><id>http://henrypan.com/blog/reinforcement-learning/2019/04/03/pg-trading</id><content type="html" xml:base="http://henrypan.com/blog/reinforcement-learning/2019/04/03/pg-trading.html">&lt;p&gt;This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share some findings along the way. The goal of the series is to learn RL by applying it on an actual problem that I can relate to.&lt;/p&gt;
-
-&lt;h2 id=&quot;policy-gradient&quot;&gt;Policy Gradient&lt;/h2&gt;
-
-&lt;p&gt;Policy gradient is a policy-based approach, where the goal of the training process is to develop a policy that maximizes the reward the agent receives overtime. The other approach is value-based, which basically tries to develop a value function that outputs the value (goodness) of choosing a particular action in given a state.&lt;/p&gt;
-
-&lt;h2 id=&quot;problem-setting&quot;&gt;Problem Setting&lt;/h2&gt;
-&lt;blockquote&gt;
-  &lt;p&gt;High-level overview&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h3 id=&quot;agent&quot;&gt;Agent&lt;/h3&gt;
-&lt;p&gt;At the start of each time step in each episode, the agent is presented with a state (see environment section for details on the state). The agent initially randomly selects different actions (buy, sell, hold) and observes its outcomes to determine which actions it should choose or avoid later. At the end of each episode, the agent is trained on the entire dataset to improve its policy.&lt;/p&gt;
-
-&lt;h3 id=&quot;environment&quot;&gt;Environment&lt;/h3&gt;
-&lt;p&gt;The environment consists of &lt;em&gt;states&lt;/em&gt; and &lt;em&gt;actions&lt;/em&gt;. Each &lt;em&gt;state&lt;/em&gt; is a set of prices (high/low/current) at any given point in time. There’s an option to use 10-second raw data or 1-minute data. I’ll be sticking to 1-minute intervals as there’s less noise compared to the 10-second data which looks like ping-pong and we’re not going for high-frequency trading (HFT) here. There are three possible &lt;em&gt;actions&lt;/em&gt;: buy, sell or hold.&lt;/p&gt;
-
-&lt;h3 id=&quot;reward&quot;&gt;Reward&lt;/h3&gt;
-&lt;p&gt;This is the hardest to design. Naively, I used the unrealized profit/loss (market value) of the entire portfolio (including cash) as the reward. Note that there’s no point in scaling up/down the reward as the significance gets taken into account by the market value anyways. In the later part of the series, I will go into details on the different reward functions that I’ve designed for trading.&lt;/p&gt;
-
-&lt;h2 id=&quot;technical-details&quot;&gt;Technical Details&lt;/h2&gt;
-
-&lt;h3 id=&quot;policy-network-design&quot;&gt;Policy Network Design&lt;/h3&gt;
-&lt;p&gt;In policy gradient, we are trying to approximate a good policy using a neural network. As a result, I implemented a simple 3-layer neural network.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/pg_architecture.png&quot; width=&quot;800&quot; /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;training&quot;&gt;Training&lt;/h3&gt;
-
-&lt;p&gt;Note that in policy gradient, there is no traditional loss for a given sample. We use our reward to help us come up with a loss for a particular sample, and help update our neural network weights.&lt;/p&gt;
-
-&lt;p&gt;E.g. If we chose action 1 in our forward propagation pass, the update rule will update the weights of the neural network so that action 1 can be more/less likely to be chosen in the next iteration. This is dependent on our reward. If reward (V&lt;sub&gt;t&lt;/sub&gt;) is high, the update value (∇) will increase, and vice versa. See the formal update rule below:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/reinforce_pseudocode.png&quot; width=&quot;400&quot; /&gt;&lt;/p&gt;
-&lt;h5 id=&quot;reference-httpwww0csuclacukstaffdsilverwebteaching_filespgpdf&quot;&gt;Reference: http://www0.cs.ucl.ac.uk/staff/d.silver/web/Teaching_files/pg.pdf&lt;/h5&gt;
-
-&lt;h3 id=&quot;key-considerations&quot;&gt;Key Considerations&lt;/h3&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;em&gt;How many neurons per hidden layer.&lt;/em&gt; I’ve noticed that using very small number of neurons in the second-last layer will result in nothing being learned, regardless of which activation function we use in between. Once I’ve increased the number of neurons in the second-last layer to 16, the loss started to decrease.&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;Activation function for each layer of the NN.&lt;/em&gt; Since the policy is trying to decide between 3 different actions. We can treat this problem as a multi-classification problem. As a result, I used the expotential linear unit for intermediary hidden layers, and the softmax function in the output layer.&lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;em&gt;Discount factor for future rewards.&lt;/em&gt; The intuitive thought would be to think of this from a investment/time perspective, in other words, the time value of money. Since we’re dealing with 1-minute increments of rewards, the risk-free interest rate (treasury rate) for 1 year is around 2.4%, the 1-minute rate would calculated to be:&lt;/p&gt;
-
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  0.024 / 365 / 24 / 60 = .000000046 = 4.6e-8
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-    &lt;p&gt;Therefore, the discount factor should be 1 - 4.6e-8 = 0.999999954.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;Learning rate.&lt;/em&gt; This is a hyperparameter that we should tune. However, for the purpose of this short tutorial on PG, I will use a learning rate of &lt;code class=&quot;highlighter-rouge&quot;&gt;4e-5&lt;/code&gt; that I found to be good without going into the details.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;key-challenges&quot;&gt;Key Challenges&lt;/h3&gt;
-
-&lt;h4 id=&quot;challenge-1&quot;&gt;Challenge 1&lt;/h4&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/dead_relu_loss.png&quot; width=&quot;300&quot; /&gt;
-&lt;img src=&quot;/blog/assets/images/rl/dead_relu_reward.png&quot; width=&quot;300&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;During training, I’ve noticed that the training loss is stuck at 0 for many episodes. After some investigation, I realized that it was because the activation function I chose to be ReLU behaved in a interesting way when the learning rate was too high. In other words, some of the neurons were “permanently dead” after passing through the ReLU activation function. This meant that learning stopped for those neurons, and thus the entire training session was useless. Formally, this is called the “Dying ReLU” problem, and I can’t believe I personally encoutered it. I overcame the challenge by using expotential linear unit (ELU) instead.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/elu_graph.png&quot; width=&quot;300&quot; /&gt;&lt;/p&gt;
-
-&lt;h6 id=&quot;source-httpsmediumcomtinyminda-practical-guide-to-relu-b83ca804f1f7&quot;&gt;Source: https://medium.com/tinymind/a-practical-guide-to-relu-b83ca804f1f7&lt;/h6&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;A “dead” ReLU always outputs the same value (zero as it happens, but that is not important) for any input. Probably this is arrived at by learning a large negative bias term for its weights.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;In turn, that means that it takes no role in discriminating between inputs. For classification, you could visualise this as a decision plane outside of all possible input data.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;Once a ReLU ends up in this state, it is unlikely to recover, because the function gradient at 0 is also 0, so gradient descent learning will not alter the weights. “Leaky” ReLUs with a small positive gradient for negative inputs (y=0.01x when x &amp;lt; 0 say) are one attempt to address this issue and give a chance to recover.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h6 id=&quot;reference-httpsdatasciencestackexchangecomquestions5706what-is-the-dying-relu-problem-in-neural-networks&quot;&gt;Reference: https://datascience.stackexchange.com/questions/5706/what-is-the-dying-relu-problem-in-neural-networks&lt;/h6&gt;
-
-&lt;h4 id=&quot;challenge-2&quot;&gt;Challenge 2&lt;/h4&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/fluctuate_loss.png&quot; width=&quot;300&quot; /&gt;
-&lt;img src=&quot;/blog/assets/images/rl/fluctuate_reward.png&quot; width=&quot;300&quot; /&gt;
-&lt;img src=&quot;/blog/assets/images/rl/fluctuate_test_reward.png&quot; width=&quot;300&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;To measure the effectiveness of the agent, I constantly monitor the loss of the training as well as the “mean_reward” per episode to see if there’s a upward trend. However, the loss seem to fluctuate with (high variance) with no clear upward or downward trend.&lt;/p&gt;
-
-&lt;p&gt;To understand why this is &lt;em&gt;inherently&lt;/em&gt; a challenge for our problem let’s revisit two things:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;&lt;em&gt;How policy gradient learns the policy.&lt;/em&gt; The agent initially randomly chooses actions, and based on the reward that this action yielded at this state, the agent encourages/discourages the action chosen so it will be more/less likely to be chosen next time the agent sees the same state.&lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;em&gt;The state definition in our problem statement.&lt;/em&gt; We are defining each state to be a set of prices at &lt;strong&gt;one point in time&lt;/strong&gt;. Combining this fact with (1) that the agent learns by observing the reward at a given state, we can easily see that a state doesn’t tell the agent that the price is in a downward trend or a upward trend.&lt;/p&gt;
-
-    &lt;p&gt;E.g. A price of 70 can either be part of a upward trend from 65 to 75, or a downward trend from 80 to 60. The agent initially bought at 70 (by random). Since this is in a upward trend from 65 to 75, buying at 70 yielded a reward of 5. This positive reward reinforced the agent to take the “buy” action whenever it sees state containing the price 70. However, the next time the agent encounters the same state 70, it utilizes the knowledge learned from last time and still buys, resulting in a reward of -15. This time the state 70 is part of a downward trend from 80 to 60.&lt;/p&gt;
-
-    &lt;p&gt;Perhaps if we utilize a recurrent neural network or long short-term memory network, we could incorporate the sequence information that could potentially help the agent make better decisions. But that’s for another time.&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;I can’t believe I spent 5 days on this last challenge, because I thought there was a bug in the algorithm. But I eventually revisited the fundamentals and came to this realization.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h3 id=&quot;results&quot;&gt;Results&lt;/h3&gt;
-&lt;p&gt;Due to the inherent nature of vanilla policy gradient, this problem setting wasn’t “solved” so there are no fancy profit curves accomplished by the agent. However, the learning was invaluable to me. Feel free to check out the code &lt;a href=&quot;https://github.com/workofart/work-trader/tree/master/playground/pg&quot;&gt;here&lt;/a&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;next-steps&quot;&gt;Next Steps&lt;/h3&gt;
-
-&lt;p&gt;I’ll be continuing on my journey with applying RL towards trading. The next step is to try out Q-learning. Stay tuned…&lt;/p&gt;</content><author><name></name></author><summary type="html">This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share some findings along the way. The goal of the series is to learn RL by applying it on an actual problem that I can relate to.</summary></entry><entry><title type="html">Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future</title><link href="http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction.html" rel="alternate" type="text/html" title="Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future" /><published>2019-03-20T08:50:00-07:00</published><updated>2019-03-20T08:50:00-07:00</updated><id>http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction</id><content type="html" xml:base="http://henrypan.com/blog/machine-learning/2019/03/20/ml-tut-price-prediction.html">&lt;h2 id=&quot;previous-knowledge-required&quot;&gt;Previous Knowledge Required&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Understand what is a neural network (NN) and how it works conceptually.&lt;/li&gt;
-  &lt;li&gt;Python&lt;/li&gt;
-  &lt;li&gt;Basic understanding of what derivatives/gradients are&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;goals&quot;&gt;Goals&lt;/h2&gt;
-&lt;p&gt;In this tutorial, I will go over 3 different approaches of creating a NN that can predict the prices of a particular cryptocurrency pair (ETHBTC). This include using (very-low-level) Numpy/raw Python, (low-level) Tensorflow and (high-level) Keras.&lt;/p&gt;
-
-&lt;p&gt;Since it’s similar to predicting any price/number given a sequence of historical prices/numbers, I will describe this process as general as possible. The purpose of this tutorial is more about how to create NNs from scratch and to understand how high level frameworks like Keras work underneath the hood. It’s less about the correctness of predicting the future.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Personal goal:&lt;/strong&gt; When I was studying machine learning, I thought it would be good for me to implement things at the low level first, and then slowly move up the abstraction to improve productivity. I made sure that the 3 approaches all achieved the same outcome.&lt;/p&gt;
-
-&lt;h2 id=&quot;showcase&quot;&gt;Showcase&lt;/h2&gt;
-
-&lt;p&gt;Since the outcome of the 3 approaches are the same, I’ll just show one set of the training and testing result. All three sets are in the &lt;a href=&quot;https://github.com/workofart/work-trader&quot;&gt;repo&lt;/a&gt;, and you can regenerate them if you’d like.&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;Note: The prices in the graph are normalized, but the accuracy is the same if denormalized. Again, this is just an illustration of how NN works and by no means a correct way to predict prices.&lt;/em&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;training-set&quot;&gt;Training Set&lt;/h4&gt;
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/ml/trainingset.png&quot; width=&quot;600&quot; /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;test-set&quot;&gt;Test Set&lt;/h4&gt;
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/ml/testset.png&quot; width=&quot;600&quot; /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;input-data&quot;&gt;Input Data&lt;/h2&gt;
-&lt;p&gt;82 Hours worth of BTCETH data in 10-second increments covering the following dimensions:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;Closing price&lt;/li&gt;
-  &lt;li&gt;high&lt;/li&gt;
-  &lt;li&gt;low&lt;/li&gt;
-  &lt;li&gt;volume&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Source: Binance&lt;/p&gt;
-
-&lt;h2 id=&quot;neural-network-architecture-all-3-versions&quot;&gt;Neural Network Architecture (All 3 Versions)&lt;/h2&gt;
-&lt;p&gt;&lt;a name=&quot;nn-architecture&quot;&gt;&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;3 Layers, &lt;strong&gt;Relu Activation Function&lt;/strong&gt; for first (n-1) layers, with last layer being a &lt;strong&gt;linear output&lt;/strong&gt;. The 1st hidden layer contains 16 neurons, the 2nd hidden layer contains 6 neurons. The &lt;code class=&quot;highlighter-rouge&quot;&gt;N&lt;/code&gt; denotes the number of samples.&lt;/p&gt;
-
-&lt;p&gt;Note that when counting layers, we usually don’t count the layer without tunable parameters. In this case, the input layer doesn’t have tunable parameters, which results in a 3-layer NN, as opposed to a 4-layer NN.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/ml/NN_architecture.png&quot; alt=&quot;NN&quot; /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;version-1&quot;&gt;Version 1&lt;/h2&gt;
-&lt;blockquote&gt;
-  &lt;p&gt;(Hand-coded Neural Network (without using any 3rd party framework)&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://github.com/workofart/work-trader/tree/master/v1&quot;&gt;Code&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;In this version, we need to understand the innerworkings of NNs. In other words, how propagation of neuron computations take place and how to compute gradients from a programmatic perspective. I’ve borrowed and adapted some of the homework code from &lt;a href=&quot;https://www.coursera.org/learn/neural-networks-deep-learning&quot;&gt;Andrew Ng’s Coursera Course&lt;/a&gt; on Deep Learning and Neural Networks to fit our context.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;1. Initialize parameters&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;Neuron Weights (W)&lt;/li&gt;
-  &lt;li&gt;Bias Weights (B)&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;strong&gt;2. Define hyperparameters&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Learning Rate - how much each step of gradient descent should move&lt;/li&gt;
-  &lt;li&gt;Number of training iterations&lt;/li&gt;
-  &lt;li&gt;Number of hidden layers (Layers excluding input layer)&lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Activation function for each layer&lt;/p&gt;
-
-    &lt;p&gt;The dimensions of the NN is defined on this line: &lt;code class=&quot;highlighter-rouge&quot;&gt;layers_dims = [X_train.shape[0], 16, 6, Y_train.shape[0]]&lt;/code&gt;&lt;/p&gt;
-
-    &lt;p&gt;It means the &lt;strong&gt;first input layer&lt;/strong&gt; takes in a size of &lt;code class=&quot;highlighter-rouge&quot;&gt;X_train.shape[0]&lt;/code&gt;. In our example, that would be equal to &lt;code class=&quot;highlighter-rouge&quot;&gt;4&lt;/code&gt; since there are 4 dimensions (Price, High, Low, Volume) for every data point. The &lt;strong&gt;first hidden layer&lt;/strong&gt; (2nd element in the array) contains 16 neurons, &lt;strong&gt;second hidden layer&lt;/strong&gt; contains 6 neurons, and the &lt;strong&gt;output layer&lt;/strong&gt; contains &lt;code class=&quot;highlighter-rouge&quot;&gt;Y_train.shape[0]&lt;/code&gt;, in our example that is equal to &lt;code class=&quot;highlighter-rouge&quot;&gt;1&lt;/code&gt; since we’re predicting one price at a time.&lt;/p&gt;
-
-    &lt;p&gt;To summarize, the NN looks like &lt;a href=&quot;#nn-architecture&quot;&gt;this&lt;/a&gt;&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;strong&gt;3. Define and perform training - loop for &lt;code class=&quot;highlighter-rouge&quot;&gt;num_iterations&lt;/code&gt;:&lt;/strong&gt;
-&lt;a name=&quot;nn-forward-def&quot;&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;Forward propagation&lt;/p&gt;
-
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  Usually one forward pass goes like this:
-
-  Input -&amp;gt; Matrix Multiplication (Linear) -&amp;gt; Activation Function (Non-Linear)-&amp;gt; 
-  |_____________________ Repeat this N times (N Layers) ______________________|
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-
-    &lt;p&gt;In our price prediction example (we use a linear output since we’re predicting values not classifying categories):
-  [LINEAR-&amp;gt;RELU]*(N-1)-&amp;gt;LINEAR&lt;/p&gt;
-
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  Matrix Multiplication (Linear) = Input X * Weights + Bias
-  Activation Function (Non-Linear) = Relu(Matrix Multiplication Result) = max(0, result)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Compute cost function&lt;/p&gt;
-
-    &lt;p&gt;After we have performed one pass of our forward propagation, we will have obtained the predictions (from the last layer’s activation function output) and we can compare it with the ground truth to compute the cost. Note that I’m using MSE (Mean-squared Error), that’s a common cost function for value prediction. I’ll keep the notations consistent with the code so you can refer to it if necessary.&lt;/p&gt;
-
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  AL -- predicted &quot;values&quot; vector, shape (1, number of examples)
-  Y -- true &quot;values&quot; vector, shape (1, number of examples)
-
-  cost = (np.square(AL - Y)).mean(axis=1)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Backward propagation&lt;/p&gt;
-
-    &lt;p&gt;After computing the cost, or how far off our predictions are from our true values, we can use that cost to adjust our weights in our NN. But first, we need to get the gradients of 3 things with respect to our cost: (1) Gradient of predicted Y value, (2) gradient of weights of each hidden unit, and (3) gradient of weights of the bias unit. With these gradients under our belt, we can know how to adjust our weights to minimize the cost.&lt;/p&gt;
-
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  One backward pass goes like this, the 3 gradients will be computed for each layer
-
-  Cost -&amp;gt;  Activation Function (Non-Linear)-&amp;gt; Matrix Multiplication (Linear) -&amp;gt;
-  |_____________________ Repeat this N times (N Layers) ______________________|
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Update parameters (using parameters, and grads from backprop)&lt;/p&gt;
-
-    &lt;p&gt;At this stage, we have finished one back propagation and obtained all 3 types of gradients for all of our weights needed to adjust our NN.&lt;/p&gt;
-
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  parameters[&quot;W&quot; + str(l + 1)] = parameters[&quot;W&quot; + str(l + 1)] - learning_rate * grads[&quot;dW&quot; + str(l + 1)]
-  parameters[&quot;b&quot; + str(l + 1)] = parameters[&quot;b&quot; + str(l + 1)] - learning_rate * grads[&quot;db&quot; + str(l + 1)]
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-
-    &lt;p&gt;We’re simply doing:&lt;/p&gt;
-
-    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;parameter = parameter - learning rate * gradient of that parameter&lt;/code&gt;&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;strong&gt;4. Use trained parameters to predict prices&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;We just perform a forward pass just like in training. It will produce the predicted values based on the current NN weights.&lt;/p&gt;
-
-&lt;h2 id=&quot;version-2&quot;&gt;Version 2&lt;/h2&gt;
-&lt;blockquote&gt;
-  &lt;p&gt;Keras-based Neural Network&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://github.com/workofart/work-trader/tree/master/v2&quot;&gt;Code&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;In this version, since we’re dealing with high-level Keras framework, we only need to have good idea of the architecture of the NN and how to construct it using the building blocks provided by Keras (just like lego). We don’t need to implement matrix multiplication or activation functions. We &lt;strong&gt;should&lt;/strong&gt;, however, understand &lt;em&gt;how we initialize our weights, which activation functions to choose and how to structure our NN&lt;/em&gt;. If you have time, you might even want to tweak the “icing on the cake” to prevent overfitting by applying regularization and dropout techniques. The reason I mention the “icing” here in version 2 and not in version 1 is because all of these components are lego pieces that you don’t need to implement yourself. This is why high-level frameworks provide a productivity boost over hand-coded solutions. But it’s always good to understand what’s going on under the hood to debug potential issues.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;In our example:&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;
-    &lt;p&gt;Instantiate a sequential model. This is like a container that holds the NN and its layers. Read more about &lt;a href=&quot;https://keras.io/models/sequential/&quot;&gt;Keras Sequential Models&lt;/a&gt;&lt;/p&gt;
-
-    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;&lt;span class=&quot;k&quot;&gt;model&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Sequential&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;/code&gt;&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Add a Layer to the NN, note that we don’t need separate functions for forward/backward propagation, we just think in terms of layers in the NN. Read more about &lt;a href=&quot;https://keras.io/layers/core/&quot;&gt;Keras Layers&lt;/a&gt;. The &lt;code class=&quot;highlighter-rouge&quot;&gt;16&lt;/code&gt; is the number of neurons in this layer, and we’re using &lt;code class=&quot;highlighter-rouge&quot;&gt;relu&lt;/code&gt; as the activation function. Remember the building block argument I said before, in a high-level framework, we only need to &lt;em&gt;determine&lt;/em&gt; what pieces we need to build the NN, as opposed to &lt;em&gt;implementing&lt;/em&gt; them.&lt;/p&gt;
-
-    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;model.add(Dense(16, input_dim=X_train.shape[1], activation='relu'))&lt;/code&gt;&lt;/p&gt;
-
-    &lt;blockquote&gt;
-      &lt;p&gt;Note that this is equivalent to our &lt;code class=&quot;highlighter-rouge&quot;&gt;L_model_forward()&lt;/code&gt; function and &lt;code class=&quot;highlighter-rouge&quot;&gt;L_model_backward()&lt;/code&gt; combined in &lt;strong&gt;Version 1&lt;/strong&gt; since we think in terms of &lt;em&gt;operations&lt;/em&gt; in &lt;strong&gt;Version 1&lt;/strong&gt;, and &lt;em&gt;layers&lt;/em&gt; in &lt;strong&gt;Version 2&lt;/strong&gt;&lt;/p&gt;
-    &lt;/blockquote&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Similarly, we add another layer to the NN. The output space is N by 6 dimenions, where N is the number of samples, and the 6 is the number of neurons in this layer.&lt;/p&gt;
-
-    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;model.add(Dense(6, activation='relu'))&lt;/code&gt;&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;Finally, we add our output layer to the NN. The output space (&lt;code class=&quot;highlighter-rouge&quot;&gt;Y_train.shape[1]&lt;/code&gt;) in our example is 1, since we’re only predicting one price at a time.
-    &lt;blockquote&gt;
-      &lt;p&gt;The difference in using &lt;code class=&quot;highlighter-rouge&quot;&gt;.shape[1]&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;shape[0]&lt;/code&gt; in the two versions is because in version 1, to follow Andrew Ng’s course notation, the samples are placed along columns &lt;code class=&quot;highlighter-rouge&quot;&gt;shape[1]&lt;/code&gt; and the features (input/output dimension) are rows &lt;code class=&quot;highlighter-rouge&quot;&gt;shape[0]&lt;/code&gt;. But in version 2, it’s the opposite, thus &lt;code class=&quot;highlighter-rouge&quot;&gt;Y_train.shape[1]&lt;/code&gt; here denotes the output dimension.&lt;/p&gt;
-    &lt;/blockquote&gt;
-
-    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;model.add(Dense(Y_train.shape[1]))&lt;/code&gt;&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;After the network is fully constructed, we have to tell it how to train the NN. This involves specifying the &lt;a href=&quot;https://keras.io/optimizers/&quot;&gt;optimizer&lt;/a&gt; for the NN as well as the &lt;a href=&quot;https://keras.io/losses/&quot;&gt;loss&lt;/a&gt; function&lt;/p&gt;
-
-    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;model.compile(optimizer=SGD(lr=0.03), loss='mse') # SGD = Stochastic Gradient Descent&lt;/code&gt;&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2 id=&quot;version-3&quot;&gt;Version 3&lt;/h2&gt;
-&lt;blockquote&gt;
-  &lt;p&gt;Tensorflow-based Neural Network&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://github.com/workofart/work-trader/tree/master/v3&quot;&gt;Code&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;So we’ve seen creating operations from scratch in our &lt;strong&gt;Version 1&lt;/strong&gt;, and using a high-level framework to create a “model” of our NN and just “fitting” it in &lt;strong&gt;Version 2&lt;/strong&gt;. In &lt;strong&gt;Version 3&lt;/strong&gt;, we have to switch our conceptual model of a NN a little bit again, because I have to introduce you to the concept of a &lt;a href=&quot;https://en.wikipedia.org/wiki/Tensor&quot;&gt;Tensor&lt;/a&gt;. In my definition, it’s a wrapper or a building block that can encompass a variable, a constant, an operation, or any series of operations. We can connect tensors together by referencing them.&lt;/p&gt;
-
-&lt;p&gt;Let’s quickly go through our example and I’ll explain line by line with respect to how they relate to our &lt;strong&gt;Version 1&lt;/strong&gt; and &lt;strong&gt;Version 2&lt;/strong&gt; conceptual models.&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;We will start by defining our input variables:
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; input_x = tf.placeholder('float', [None, X_train_orig.shape[1]], name='input_x')
- input_y = tf.placeholder('float', [None, Y_train_orig.shape[1]], name='input_y')
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-
-    &lt;p&gt;Note that this is a “placeholder”, which means before we feed in the actual input data, this tensor will be empty. The dimensions for this placeholder is None by &lt;code class=&quot;highlighter-rouge&quot;&gt;X/Y_train_orig.shape[1]&lt;/code&gt;, this means it’s “&lt;strong&gt;any number&lt;/strong&gt; of samples by &lt;code class=&quot;highlighter-rouge&quot;&gt;shape[1]&lt;/code&gt; of features per sample”. The &lt;code class=&quot;highlighter-rouge&quot;&gt;name&lt;/code&gt; is optional, but it helps later when we need to debug.&lt;/p&gt;
-
-    &lt;blockquote&gt;
-      &lt;p&gt;The row/column vs samples/features notations are consistent with Version 2, where &lt;code class=&quot;highlighter-rouge&quot;&gt;shape[1]&lt;/code&gt;(columns) are the features, and &lt;code class=&quot;highlighter-rouge&quot;&gt;shape[0]&lt;/code&gt;(rows) are the samples&lt;/p&gt;
-    &lt;/blockquote&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Next, we will define some of the weights of our NN, namely our hidden unit weights and bias unit weights.&lt;/p&gt;
-
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; W1 = tf.Variable(tf.random_normal([X_train_orig.shape[1], 16]))
- B1 = tf.Variable(tf.zeros([16]))
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-    &lt;p&gt;Note that these tensor types are “Variable”, which means they will “vary” during our training process. These are, by default, &lt;a href=&quot;https://www.tensorflow.org/guide/variables&quot;&gt;trainable variables&lt;/a&gt;.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;We will define our linear function and activation function together in one line:&lt;/p&gt;
-
-    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;layer1 = tf.nn.relu(tf.add(tf.matmul(input_x, W1), B1))&lt;/code&gt;&lt;/p&gt;
-
-    &lt;p&gt;I will leave out the definition for &lt;code class=&quot;highlighter-rouge&quot;&gt;layer2&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;output&lt;/code&gt; layer since they are similar in nature.&lt;/p&gt;
-
-    &lt;p&gt;If we break this down and see each computation clearly, it’s equivalent to:&lt;/p&gt;
-
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; # Matrix Multiplication to get the linear result first
-
- mat_result = tf.matmul(input_x, W1)
-	
- # Add the result to the bias units using Numpy broadcasting
-
- linear_result = tf.add(mat_result, B1)
-
- # Apply rectified linear unit activation to the linear function result
-
- layer1 = tf.nn.relu(linear_result)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-
-    &lt;p&gt;This is similar to our Version 1 definition, &lt;a href=&quot;#nn-forward-def&quot;&gt;here&lt;/a&gt;.
- Note that we’re refering &lt;code class=&quot;highlighter-rouge&quot;&gt;W1&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;B1&lt;/code&gt; varibles from our second step. This establishes the connection between tensors.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Before we can train the network, we still need to define the loss functions and define how to optimize (train) it.&lt;/p&gt;
-
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; cost = tf.reduce_mean(tf.square(output - input_y))
- optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-
-    &lt;p&gt;Note that we’re still reference other tensors &lt;code class=&quot;highlighter-rouge&quot;&gt;output&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;input_y&lt;/code&gt;, and &lt;code class=&quot;highlighter-rouge&quot;&gt;cost&lt;/code&gt;. We can use the &lt;code class=&quot;highlighter-rouge&quot;&gt;tf.reduce_mean()&lt;/code&gt; function to compute the MSE loss. And since Tensorflow has a built-in &lt;code class=&quot;highlighter-rouge&quot;&gt;AdamOptimizer&lt;/code&gt;, we can just call it. This is similar to &lt;strong&gt;Version 2’s&lt;/strong&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;optimizer=SGD()&lt;/code&gt;.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Now we have finished defining all the tensors. It’s time to actually feed in the input data and see how the data flow through all the connected tensors.&lt;/p&gt;
-
-    &lt;p&gt;Initialize all the variables that are &lt;strong&gt;not&lt;/strong&gt; placeholders, such as weights and biases&lt;/p&gt;
-
-    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;init = tf.global_variables_initializer()&lt;/code&gt;&lt;/p&gt;
-
-    &lt;p&gt;Feed in our &lt;code class=&quot;highlighter-rouge&quot;&gt;batch_x&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;batch_y&lt;/code&gt; inputs to the &lt;strong&gt;placeholders&lt;/strong&gt;. Note that the names (keys) must match the variable names &lt;code class=&quot;highlighter-rouge&quot;&gt;input_x/y&lt;/code&gt; and specify what we want to be returned: &lt;code class=&quot;highlighter-rouge&quot;&gt;optimizer&lt;/code&gt;, and &lt;code class=&quot;highlighter-rouge&quot;&gt;cost&lt;/code&gt; from step (4).&lt;/p&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; _, c = sess.run([optimizer, cost], feed_dict={
-         input_x: batch_x, 
-         input_y: batch_y, 
-     })
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/ml/tensorflow.png&quot; /&gt;&lt;/p&gt;
-&lt;h6 id=&quot;image-from-httpsplaygroundtensorfloworg&quot;&gt;Image from https://playground.tensorflow.org/&lt;/h6&gt;
-
-&lt;p&gt;As you can see now, after we feed in the input data into the NN, all the connected tensors will subsequently receive the input from the previous output and perform their computations accordingly, thus the name &lt;strong&gt;“TensorFlow”&lt;/strong&gt;.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;I will be posting another note for applying reinforcement learning to trading. Since even with predicted prices, the agent will still not know when to buy or sell (i.e. after a 1% price drop? 2%?). We don’t want to hard-code those conditions, rather we want the agent to learn them as the “policy”. Until next time…Thanks!&lt;/p&gt;</content><author><name></name></author><summary type="html">Previous Knowledge Required</summary></entry><entry><title type="html">Asynchronous Advantage Actor Critic (A3C)-Reinforcement Learning -Laymens Explanation</title><link href="http://henrypan.com/blog/reinforcement-learning/2019/02/27/a3c-rl-layments-explanation.html" rel="alternate" type="text/html" title="Asynchronous Advantage Actor Critic (A3C)-Reinforcement Learning -Laymens Explanation" /><published>2019-02-27T09:00:00-08:00</published><updated>2019-02-27T09:00:00-08:00</updated><id>http://henrypan.com/blog/reinforcement-learning/2019/02/27/a3c-rl-layments-explanation</id><content type="html" xml:base="http://henrypan.com/blog/reinforcement-learning/2019/02/27/a3c-rl-layments-explanation.html">&lt;p&gt;The A3C method in Reinforcement Learning (RL) combines both a &lt;em&gt;critic’s value function&lt;/em&gt; (how good a state is) and an &lt;em&gt;actor’s policy&lt;/em&gt; (a set of action probability for a given state). &lt;strong&gt;I promise this explanation doesn’t not contain greek letters or calculus. It only contains English alphabets and subtraction in math.&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/rl/a3c_architecture.png&quot; alt=&quot;Diagram&quot; /&gt;&lt;/p&gt;
-
-&lt;h6 id=&quot;taken-from-hands-on-reinforcement-learning-with-python-by-sudharsan-ravichandiran&quot;&gt;Taken from “Hands-On Reinforcement Learning with Python by Sudharsan Ravichandiran”&lt;/h6&gt;
-
-&lt;p&gt;Advantage in A3C is used to determine which actions were “good” and “bad”, and it is updated to encourage or discourage accordingly. Note that this also informs the agent how much better it is than expected. This is better than just using discounted rewards in vanilla Deep Q-learning. To see why, below is a formal explanation.&lt;/p&gt;
-
-&lt;p&gt;The advantage is estimated using &lt;em&gt;discounted rewards&lt;/em&gt; (R) and the value from the &lt;em&gt;critic’s value function&lt;/em&gt;, how good a state is, V(s). Thus formally:&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;Estimated Advantage = R-V(s)&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;In A3C, there is a global network. This network will consist of a neural network to process the input data (states), and the output layers consists of value (how good a state is) and policy (a set of action probability for a given state) estimations.&lt;/p&gt;
-
-&lt;p&gt;The following summarizes the process of each episode:&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;To start the process, each worker initializes its network parameters equal to the global network.&lt;/li&gt;
-  &lt;li&gt;Each worker interacts with its own environment and accumulates experience in the form of tuples &lt;em&gt;(observation, action, reward, done, value)&lt;/em&gt; after every interaction.&lt;/li&gt;
-  &lt;li&gt;Once the worker’s experience history reaches our set size, we calculate the &lt;em&gt;discounted return -&amp;gt; estimated advantage -&amp;gt; temporal difference (TD) -&amp;gt;value and policy losses&lt;/em&gt;. Note that we also calculate an entropy of the policy to understand the spread of the action probabilities. In other words, a high entropy is the result of similar action probabilities, or &lt;em&gt;uncertain what to do&lt;/em&gt; in laymens terms. A low entropy means the agent is very confident (high probability of one action versus the rest) in the action it choses.&lt;/li&gt;
-  &lt;li&gt;Once we’ve obtained the value and policy losses from (3), our forward pass (propagation) through the network is complete. Now it’s time for the backward pass (propagation). Each worker uses these calculated losses to compute the gradients for its network parameters.&lt;/li&gt;
-  &lt;li&gt;We then use the gradients from (4) to update the global network parameters. This is when we reap the benefits of the asynchronous workers. The global network is constantly updated by each worker as they interact with its &lt;em&gt;own environment&lt;/em&gt;. The intuition here is that because each worker has it’s own environment, the overall experience for training is more diverse.&lt;/li&gt;
-  &lt;li&gt;This concludes one round-trip (episode) of training. Then it repeats (1–5)&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;Overall, the value estimates from the critic is used to update the policy in the actor, which works better than traditional policy gradient methods which doesn’t have a value etimate and solely tries to optimize the policy function. Therefore, it may be intuitive to let the critic learn faster (higher learning rate) than the actor.&lt;/p&gt;</content><author><name></name></author><summary type="html">The A3C method in Reinforcement Learning (RL) combines both a critic’s value function (how good a state is) and an actor’s policy (a set of action probability for a given state). I promise this explanation doesn’t not contain greek letters or calculus. It only contains English alphabets and subtraction in math.</summary></entry><entry><title type="html">React Redux Intro</title><link href="http://henrypan.com/blog/react/2019/01/26/react-redux-intro.html" rel="alternate" type="text/html" title="React Redux Intro" /><published>2019-01-26T09:00:00-08:00</published><updated>2019-01-26T09:00:00-08:00</updated><id>http://henrypan.com/blog/react/2019/01/26/react-redux-intro</id><content type="html" xml:base="http://henrypan.com/blog/react/2019/01/26/react-redux-intro.html">&lt;p&gt;I’ve been bugged by the native state management system in React that I finally had to take a stab at Redux. Here are some notes I took along the way to understand what Redux is and why we need it.&lt;/p&gt;
-
-&lt;p&gt;First off, why do we need Redux when we already have build-in states? Isn’t this just more boilerplate code? What’s the return on investment?&lt;/p&gt;
-
-&lt;p&gt;The short answer is it depends on the lifecycle of the data being stored in the state. In other words:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/blog/assets/images/react_redux/painpoint.png&quot; alt=&quot;Pain Point&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Let’s see how this might be a problem. There are cases where mismanaged states could cause chaos. For example:
-&lt;img src=&quot;/blog/assets/images/react_redux/painpoint2.png&quot; alt=&quot;Pain Point&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;If Dropdown 1’s options wants to be conditionally dependant on Dropdown 2’s state or vice versa or both. And since props can only be passed from top to bottom, the only way either Dropdown knows the value of its sibling is to ask it’s parent (container). This means every action either dropdown invokes, it has to invoke an actionHandler at the parent level which sets the state for the other child which is then passed down to the child as a prop. This approach doesn’t scale well. Below is an example snippet of how this might be troublesome.&lt;/p&gt;
-
-&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Dropdown1&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Component&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  
-  &lt;span class=&quot;nx&quot;&gt;render&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-      &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;select&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;onChange&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)}&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;style&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt;
-      &lt;span class=&quot;c1&quot;&gt;//... various options&lt;/span&gt;
-      &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;sr&quot;&gt;/select&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;gt;
-&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Dropdown2&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Component&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  
-  &lt;span class=&quot;nx&quot;&gt;render&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-      &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;select&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;onChange&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;props&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)}&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;style&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt;
-      &lt;span class=&quot;c1&quot;&gt;//... various options&lt;/span&gt;
-      &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;sr&quot;&gt;/select&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;gt;
-&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Form&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Component&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;state&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;na&quot;&gt;dropdown1Active&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;na&quot;&gt;dropdown2Active&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;handleAction1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;setState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;dropdown2Active&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;handleAction2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;setState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;dropdown1Active&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;render&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-      &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Dropdown1&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;handleAction1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;isActive&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;dropdown1Active&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sr&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;gt;
-&lt;/span&gt;      &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Dropdown2&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;handleAction2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;isActive&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;dropdown2Active&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;sr&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;gt;
-&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Wouldn’t it be great if each child’s action can directly change the centralized state of a particular field without always going through the parent and all other children will know right away? That’s the simplified idea of Redux.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;Before we go into the details of Redux, here are some commonly used terms that I’ll refer extensively in my notes.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Store{Object}&lt;/strong&gt;—The centralized state storage. One instance exists at any given time; therefore, states that pertain to particular components will be stored under separate “keys”.&lt;/p&gt;
-&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// Fetch the current store contents&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;store&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;// returns &lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;nl&quot;&gt;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;text&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;test&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}],&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;counter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nl&quot;&gt;currentNumber&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;Reducer{Function}&lt;/strong&gt;—Given the current state and action, returns the next state. This reminds me of the Markov Decision Process. Therefore, this function will contain the logic on how to update the states. By default, it will return the initial state &lt;code class=&quot;highlighter-rouge&quot;&gt;currentNum: 0&lt;/code&gt; if no action is provided. Similar to calling &lt;code class=&quot;highlighter-rouge&quot;&gt;this.state&lt;/code&gt; in plain React. Always remember not to modify the state directly but to return a copy of the state &lt;code class=&quot;highlighter-rouge&quot;&gt;{…state, currentNum: state.currentNum+1}&lt;/code&gt;(this is ES6 syntax).&lt;/p&gt;
-
-&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// actions.js&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;counter&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;state&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;currentNum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;action&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;switch&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;action&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'INCREMENT'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-                &lt;span class=&quot;na&quot;&gt;currentNum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;currentNum&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'DECREMENT'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
-                &lt;span class=&quot;na&quot;&gt;currentNum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;currentNum&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;nl&quot;&gt;default&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;The process:&lt;/strong&gt;
-Define the reducer like above
-Create the store for a particular (or set of) reducers. You can include multiple reducers for a given store by using the &lt;code class=&quot;highlighter-rouge&quot;&gt;combineReducers&lt;/code&gt; function provided by Redux. Using &lt;code class=&quot;highlighter-rouge&quot;&gt;combineReducers&lt;/code&gt; will essentially combine multiple reducers into one reducer object, which saves the effort of redefining a parent reducer object.&lt;/p&gt;
-
-&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// App.js&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;createStore&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;combineReducers&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'redux'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;cm&quot;&gt;/**
- * The keys used here will be the keys in the redux store
- * E.g.
- * {
- *    &quot;todos&quot;: [],
- *    &quot;counter&quot;: {
- *      &quot;currentNum&quot;: 0
- *    },
- *    &quot;filter&quot;: &quot;SHOW_ALL&quot;
- * }
- */&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;app&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;combineReducers&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;todos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;counter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;filter&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;store&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;createStore&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;Have the presentational components subscribe to the changes of the store to know when to re-render. This step could be replaced by &lt;code class=&quot;highlighter-rouge&quot;&gt;connect()&lt;/code&gt; from &lt;code class=&quot;highlighter-rouge&quot;&gt;react-redux&lt;/code&gt; package, which basically wraps around the component and all children under it will have access to the &lt;code class=&quot;highlighter-rouge&quot;&gt;store&lt;/code&gt; instead of passing the &lt;code class=&quot;highlighter-rouge&quot;&gt;store&lt;/code&gt; to every child that needs access to it. (Not explained in this note)&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// index.js&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;App&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;store&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'./App'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;render&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;ReactDOM&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;render&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;App&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&amp;gt;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;document&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getElementById&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'root'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;store&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;subscribe&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;render&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// invokes render whenever the store changes, essentially pushing render into an array of listeners&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;In the presentational components, reference the store and the contents that it’s interested in &lt;code class=&quot;highlighter-rouge&quot;&gt;counter.currentNum&lt;/code&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;store&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'./App'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-
-&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;h3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;store&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getState&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;counter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;currentNum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;sr&quot;&gt;/h3&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;gt;
-&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;ol&gt;
-  &lt;li&gt;Fire off an action from a button to dispatch a particular action for the reducer function to process&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;button&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;onClick&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;store&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;dispatch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
-      &lt;span class=&quot;na&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;INCREMENT&quot;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;sr&quot;&gt;/button&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;gt;
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;The “INCREMENT” action gets dispatched by the store to the reducer. In the reducer, the action and the current state gets processed by the logic, which then returns the next state &lt;code class=&quot;highlighter-rouge&quot;&gt;{currentNum: state.currentNum + 1}&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;You can find a working example &lt;a href=&quot;https://github.com/workofart/playground/tree/master/react&quot;&gt;here&lt;/a&gt; that demonstrates and compares React Redux and Component State usage.&lt;/p&gt;</content><author><name></name></author><summary type="html">I’ve been bugged by the native state management system in React that I finally had to take a stab at Redux. Here are some notes I took along the way to understand what Redux is and why we need it.</summary></entry></feed>
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    
+    <title>Henry's Blog</title>
+    
+    
+    <link>/blog</link>
+    <atom:link href="/blog/feed.xml" rel="self" type="application/rss+xml" />
+    
+    
+      <item>
+        <title>Tic-tac-toe Self-Play</title>
+        <description>
+          
+          Code Here 1. Goal The motivation of this project is AlphaGo and its mechanism of self-play. So I took on the task of implementing a very simple self-play mechanism that is able to train 2 agents in mastering tic-tac-toe with only the visible state/reward information. No information on the rules...
+        </description>
+        <pubDate>Fri, 06 Dec 2019 16:00:00 -0500</pubDate>
+        <link>/blog/2019-12-06-tic-tac-toe-selfplay/</link>
+        <guid isPermaLink="true">/blog/2019-12-06-tic-tac-toe-selfplay/</guid>
+      </item>
+    
+      <item>
+        <title>OpenAI Gym - Acrobot-v1</title>
+        <description>
+          
+          Code Here 1. Goal The problem setting is to solve the Acrobot problem in OpenAI gym. The acrobot system includes two joints and two links, where the joint between the two links is actuated. Initially, the links are hanging downwards, and the goal is to swing the end of the...
+        </description>
+        <pubDate>Tue, 03 Dec 2019 16:00:00 -0500</pubDate>
+        <link>/blog/2019-12-03-acrobot/</link>
+        <guid isPermaLink="true">/blog/2019-12-03-acrobot/</guid>
+      </item>
+    
+      <item>
+        <title>OpenAI Gym - Pendulum-v0</title>
+        <description>
+          
+          Code Here 1. Goal The problem setting is to solve the Inverted Pendulum problem in OpenAI gym. Try to keep a frictionless pendulum standing up. 2. Environment The pendulum environment has a continuous state space as follows (copied from wiki): State Type: Box(3) Num State Observation Min Max 0 Angle1...
+        </description>
+        <pubDate>Tue, 05 Nov 2019 16:00:00 -0500</pubDate>
+        <link>/blog/2019-11-05-pendulum/</link>
+        <guid isPermaLink="true">/blog/2019-11-05-pendulum/</guid>
+      </item>
+    
+      <item>
+        <title>OpenAI Gym - MountainCar-v0</title>
+        <description>
+          
+          Code Here 1. Goal The problem setting is to solve the Continuous MountainCar problem in OpenAI gym. 2. Environment The mountain car follows a continuous state space as follows(copied from wiki): The acceleration of the car is controlled via the application of a force which takes values in the range...
+        </description>
+        <pubDate>Mon, 04 Nov 2019 18:00:00 -0500</pubDate>
+        <link>/blog/2019-11-04-mountain-car/</link>
+        <guid isPermaLink="true">/blog/2019-11-04-mountain-car/</guid>
+      </item>
+    
+      <item>
+        <title>BrawlStars AI Series (Part 2) - Reinforcement Learning</title>
+        <description>
+          
+          First and foremost, I must say, perception is harder than planning. This part, I will be attempting to apply reinforcement learning (RL) towards creating an agent that can play Brawlstars. The goal of the project is similar to part 1 —be a decent player and excert human-like behaviors. My personal...
+        </description>
+        <pubDate>Thu, 25 Apr 2019 01:00:00 -0400</pubDate>
+        <link>/blog/2019-04-25-Brawlstars-RL/</link>
+        <guid isPermaLink="true">/blog/2019-04-25-Brawlstars-RL/</guid>
+      </item>
+    
+      <item>
+        <title>BrawlStars AI Series (Part 1)</title>
+        <description>
+          
+          Brawlstars: https://supercell.com/en/games/brawlstars/ 1. Motivation I’ve personally being playing Brawlstars for over 3 months, and it’s a simple game to start considering the limited key combinations that it has. However, it’s fairly hard to master, considering the different mechanics each character has and the different maps in which each character’s play...
+        </description>
+        <pubDate>Sat, 20 Apr 2019 01:00:00 -0400</pubDate>
+        <link>/blog/2019-04-20-Brawlstars-AI/</link>
+        <guid isPermaLink="true">/blog/2019-04-20-Brawlstars-AI/</guid>
+      </item>
+    
+      <item>
+        <title>Creating a Policy Gradient (PG) Agent to Trade</title>
+        <description>
+          
+          This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share some findings along the way. The goal of the series is to learn RL by applying it on an actual problem that I can...
+        </description>
+        <pubDate>Thu, 04 Apr 2019 01:55:00 -0400</pubDate>
+        <link>/blog/2019-04-04-pg-trading/</link>
+        <guid isPermaLink="true">/blog/2019-04-04-pg-trading/</guid>
+      </item>
+    
+      <item>
+        <title>Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future</title>
+        <description>
+          
+          Previous Knowledge Required Understand what is a neural network (NN) and how it works conceptually. Python Basic understanding of what derivatives/gradients are Goals In this tutorial, I will go over 3 different approaches of creating a NN that can predict the prices of a particular cryptocurrency pair (ETHBTC). This include...
+        </description>
+        <pubDate>Wed, 20 Mar 2019 11:50:00 -0400</pubDate>
+        <link>/blog/2019-03-20-ml-tut-price-prediction/</link>
+        <guid isPermaLink="true">/blog/2019-03-20-ml-tut-price-prediction/</guid>
+      </item>
+    
+      <item>
+        <title>Asynchronous Advantage Actor Critic (A3C)-Reinforcement Learning -Laymens Explanation</title>
+        <description>
+          
+          The A3C method in Reinforcement Learning (RL) combines both a critic’s value function (how good a state is) and an actor’s policy (a set of action probability for a given state). I promise this explanation doesn’t not contain greek letters or calculus. It only contains English alphabets and subtraction in...
+        </description>
+        <pubDate>Wed, 27 Feb 2019 12:00:00 -0500</pubDate>
+        <link>/blog/2019-02-27-a3c-rl-layments-explanation/</link>
+        <guid isPermaLink="true">/blog/2019-02-27-a3c-rl-layments-explanation/</guid>
+      </item>
+    
+      <item>
+        <title>React Redux Intro</title>
+        <description>
+          
+          I’ve been bugged by the native state management system in React that I finally had to take a stab at Redux. Here are some notes I took along the way to understand what Redux is and why we need it. First off, why do we need Redux when we already...
+        </description>
+        <pubDate>Sat, 26 Jan 2019 12:00:00 -0500</pubDate>
+        <link>/blog/2019-01-26-react-redux-intro/</link>
+        <guid isPermaLink="true">/blog/2019-01-26-react-redux-intro/</guid>
+      </item>
+    
+      <item>
+        <title>Career Paths in Data Science/Machine Learning</title>
+        <description>
+          
+          This post is adapted from my answer on Reddit. I think there are various career paths that fall under “Data Science/Machine Learning”. This doesn’t mean there are 4 roles, it’s just how I see this industry; nevertheless, the more skills you possess, the better. Below are my personal thoughts based...
+        </description>
+        <pubDate>Thu, 10 Jan 2019 12:00:00 -0500</pubDate>
+        <link>/blog/2019-01-10-career-paths-in-ml/</link>
+        <guid isPermaLink="true">/blog/2019-01-10-career-paths-in-ml/</guid>
+      </item>
+    
+      <item>
+        <title>Looking back, planning forward</title>
+        <description>
+          
+          It’s been a while since my last post. There’s just too much going on in my life that I didn’t get time to write down. Anyways, here goes nothing. The past 1.5 year has been really, really rough without any exaggeration. After switching majors, I’ve learnt a lot of new...
+        </description>
+        <pubDate>Thu, 03 Dec 2015 08:46:00 -0500</pubDate>
+        <link>/blog/2015-12-03-looking-back-planning-forward/</link>
+        <guid isPermaLink="true">/blog/2015-12-03-looking-back-planning-forward/</guid>
+      </item>
+    
+      <item>
+        <title>A few thoughts on choosing a career path</title>
+        <description>
+          
+          When choosing a career path, the most important thing is to do the research and plan ahead. When we are talking about doing research for career cruising, we need to understand its industry. Its past, present, future. You don’t just wanna look at the present condition, because who knows what...
+        </description>
+        <pubDate>Tue, 24 Dec 2013 09:52:00 -0500</pubDate>
+        <link>/blog/2013-12-24-a-few-thoughts-on-choosing-a-career-path/</link>
+        <guid isPermaLink="true">/blog/2013-12-24-a-few-thoughts-on-choosing-a-career-path/</guid>
+      </item>
+    
+      <item>
+        <title>Different Life Experiences Bring Different Perspectives</title>
+        <description>
+          
+          How I ever wonder, how does so many people have so many different answers to a simple “1+1” problem. To put the question into perspective, we have all heard of the “Standard Deviation” term from basic statistics, if not, this measures the variability of the sample or population data points....
+        </description>
+        <pubDate>Sat, 16 Nov 2013 08:11:00 -0500</pubDate>
+        <link>/blog/2013-11-16-different-life-experiences-bring-different-perspectives/</link>
+        <guid isPermaLink="true">/blog/2013-11-16-different-life-experiences-bring-different-perspectives/</guid>
+      </item>
+    
+      <item>
+        <title>Finding the 'right' route</title>
+        <description>
+          
+          It has been approximately 24 days since classes have started and I have gotten used to the work and life style in business school, the case method and socializing all the way. Most of the courses here are taught in the form of case studies, where the learning, supposedly comes...
+        </description>
+        <pubDate>Wed, 25 Sep 2013 04:11:00 -0400</pubDate>
+        <link>/blog/2013-09-25-finding-the-right-route/</link>
+        <guid isPermaLink="true">/blog/2013-09-25-finding-the-right-route/</guid>
+      </item>
+    
+      <item>
+        <title>Step Back and Rethink</title>
+        <description>
+          
+          The thing that has been puzzling me for the few days was my career problem. I had come across some computer programming while working on my start-up venture. I really enjoyed working on technical problems, which made me rethink why I am here now, studying business.  I eventually decided to...
+        </description>
+        <pubDate>Wed, 07 Aug 2013 00:33:00 -0400</pubDate>
+        <link>/blog/2013-08-07-step-back-and-rethink/</link>
+        <guid isPermaLink="true">/blog/2013-08-07-step-back-and-rethink/</guid>
+      </item>
+    
+      <item>
+        <title>One Sentence Summary of Books</title>
+        <description>
+          
+          Outliers - The curiosity of seeing one of my classmates do exceptionally well both in school and in life led me to reading this book; this book ties lots of real-world examples closely together and observing the information that people normally neglect. The Tipping Point - A awesome marketing, sociology,...
+        </description>
+        <pubDate>Thu, 18 Jul 2013 18:36:00 -0400</pubDate>
+        <link>/blog/2013-07-18-one-sentence-summary-books/</link>
+        <guid isPermaLink="true">/blog/2013-07-18-one-sentence-summary-books/</guid>
+      </item>
+    
+      <item>
+        <title>1st day at McKinsey</title>
+        <description>
+          
+          My first day at McKinsey was a blast for myself. Simply because there were so much to see and so much to learn at this firm. I got access to lots of resources in its intranet and I was amazed by how much content is available to the employees regardless...
+        </description>
+        <pubDate>Wed, 15 May 2013 17:28:00 -0400</pubDate>
+        <link>/blog/2013-05-15-first-day-at-mckinsey/</link>
+        <guid isPermaLink="true">/blog/2013-05-15-first-day-at-mckinsey/</guid>
+      </item>
+    
+      <item>
+        <title>Dinner Talk</title>
+        <description>
+          
+          Just had a wonderful dinner with a friend of mine. This guy isn’t just a friend, he is a mentor to me in some ways. The following is what I learnt from him tonight. A degree from a university is useful only if you really know how to apply the...
+        </description>
+        <pubDate>Sat, 30 Mar 2013 20:31:00 -0400</pubDate>
+        <link>/blog/2013-03-30-dinner-talk/</link>
+        <guid isPermaLink="true">/blog/2013-03-30-dinner-talk/</guid>
+      </item>
+    
+      <item>
+        <title>Movie Review - 'Accepted'</title>
+        <description>
+          
+          Just finished watching this movie during my dinner break. It was awesome, to say the least! I was kind of unsure about my career and education these past years, because I found it really important to choose a “right” path for myself in my early 20s. Going to university/college is...
+        </description>
+        <pubDate>Sat, 16 Mar 2013 17:20:00 -0400</pubDate>
+        <link>/blog/2013-03-16-movie-review-accepted/</link>
+        <guid isPermaLink="true">/blog/2013-03-16-movie-review-accepted/</guid>
+      </item>
+    
+  </channel>
+</rss>

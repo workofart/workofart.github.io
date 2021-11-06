@@ -9,13 +9,13 @@
 
   
 
-  <title>Henry's Blog</title>
+  <title>Creating a Policy Gradient (PG) Agent to Trade</title>
 
   
   <meta name="author" content="Henry Pan">
   
 
-  <meta name="description" content="My learning notes, research, projects and musings">
+  <meta name="description" content="This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share some findings along the way. The goal of the series is to learn RL by applying it on an actual problem that I can...">
 
   
 
@@ -89,15 +89,17 @@
 
   
   <meta property="og:site_name" content="Henry's Blog">
-  <meta property="og:title" content="Henry's Blog">
-  <meta property="og:description" content="My learning notes, research, projects and musings">
+  <meta property="og:title" content="Creating a Policy Gradient (PG) Agent to Trade">
+  <meta property="og:description" content="This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share some findings along the way. The goal of the series is to learn RL by applying it on an actual problem that I can...">
 
   
 
   
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="/blog/">
-  <link rel="canonical" href="/blog/">
+  <meta property="og:type" content="article">
+  <meta property="og:article:author" content="Henry Pan">
+  <meta property="og:article:published_time" content="2019-04-04T01:55:00-04:00">
+  <meta property="og:url" content="/blog/2019-04-04-pg-trading/">
+  <link rel="canonical" href="/blog/2019-04-04-pg-trading/">
   
 
   
@@ -106,8 +108,8 @@
   <meta name="twitter:site" content="@">
   <meta name="twitter:creator" content="@">
 
-  <meta property="twitter:title" content="Henry's Blog">
-  <meta property="twitter:description" content="My learning notes, research, projects and musings">
+  <meta property="twitter:title" content="Creating a Policy Gradient (PG) Agent to Trade">
+  <meta property="twitter:description" content="This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share some findings along the way. The goal of the series is to learn RL by applying it on an actual problem that I can...">
 
   
 
@@ -383,15 +385,14 @@
   <div class="container-md">
     <div class="row">
       <div class="col-xl-8 offset-xl-2 col-lg-10 offset-lg-1">
-        <div class="page-heading">
-          <h1>Henry's Blog</h1>
-          
-            
-              <hr class="small">
-              <span class="page-subheading">My learning notes, research, projects and musings</span>
-            
+        <div class="post-heading">
+          <h1>Creating a Policy Gradient (PG) Agent to Trade</h1>
           
 
+          
+            <span class="post-meta">Posted on April 4, 2019</span>
+            
+            
           
         </div>
       </div>
@@ -404,254 +405,169 @@
 
 
 
-<div class=" container-md " role="main">
+<div class=" container-md ">
   <div class="row">
     <div class=" col-xl-8 offset-xl-2 col-lg-10 offset-lg-1 ">
-      
 
       
 
-
-
-<div class="posts-list">
-  
-  <article class="post-preview">
-    
-
-    
-
-    <a href="/blog/2019-12-06-tic-tac-toe-selfplay/">
-      <h2 class="post-title">Tic-tac-toe Self-Play</h2>
-
       
-    </a>
 
-    <p class="post-meta">
-      
-      Posted on December 6, 2019
-    </p>
+      <article role="main" class="blog-post">
+        <p>This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share some findings along the way. The goal of the series is to learn RL by applying it on an actual problem that I can relate to.</p>
 
-    
+<h2 id="policy-gradient">Policy Gradient</h2>
 
-    
-    
+<p>Policy gradient is a policy-based approach, where the goal of the training process is to develop a policy that maximizes the reward the agent receives overtime. The other approach is value-based, which basically tries to develop a value function that outputs the value (goodness) of choosing a particular action in given a state.</p>
 
-    <div class="post-entry">
-      
-      Code
+<h2 id="problem-setting">Problem Setting</h2>
+<blockquote>
+  <p>High-level overview</p>
+</blockquote>
 
+<h3 id="agent">Agent</h3>
+<p>At the start of each time step in each episode, the agent is presented with a state (see environment section for details on the state). The agent initially randomly selects different actions (buy, sell, hold) and observes its outcomes to determine which actions it should choose or avoid later. At the end of each episode, the agent is trained on the entire dataset to improve its policy.</p>
 
-      
-      
-        <a href="/blog/2019-12-06-tic-tac-toe-selfplay/" class="post-read-more">[Read&nbsp;More]</a>
-      
-    </div>
-    
+<h3 id="environment">Environment</h3>
+<p>The environment consists of <em>states</em> and <em>actions</em>. Each <em>state</em> is a set of prices (high/low/current) at any given point in time. There’s an option to use 10-second raw data or 1-minute data. I’ll be sticking to 1-minute intervals as there’s less noise compared to the 10-second data which looks like ping-pong and we’re not going for high-frequency trading (HFT) here. There are three possible <em>actions</em>: buy, sell or hold.</p>
 
-    
-    <div class="blog-tags">
-      <span>Tags:</span>
-      
-      <a href="/blog/tags#reinforcement-learning">reinforcement-learning</a>
-      
-    </div>
-    
+<h3 id="reward">Reward</h3>
+<p>This is the hardest to design. Naively, I used the unrealized profit/loss (market value) of the entire portfolio (including cash) as the reward. Note that there’s no point in scaling up/down the reward as the significance gets taken into account by the market value anyways. In the later part of the series, I will go into details on the different reward functions that I’ve designed for trading.</p>
 
-   </article>
-  
-  <article class="post-preview">
-    
+<h2 id="technical-details">Technical Details</h2>
 
-    
+<h3 id="policy-network-design">Policy Network Design</h3>
+<p>In policy gradient, we are trying to approximate a good policy using a neural network. As a result, I implemented a simple 3-layer neural network.</p>
 
-    <a href="/blog/2019-12-03-acrobot/">
-      <h2 class="post-title">OpenAI Gym - Acrobot-v1</h2>
+<p><img src="/blog/assets/images/rl/pg_architecture.png" width="800" /></p>
 
-      
-    </a>
+<h3 id="training">Training</h3>
 
-    <p class="post-meta">
-      
-      Posted on December 3, 2019
-    </p>
+<p>Note that in policy gradient, there is no traditional loss for a given sample. We use our reward to help us come up with a loss for a particular sample, and help update our neural network weights.</p>
 
-    
+<p>E.g. If we chose action 1 in our forward propagation pass, the update rule will update the weights of the neural network so that action 1 can be more/less likely to be chosen in the next iteration. This is dependent on our reward. If reward (V<sub>t</sub>) is high, the update value (∇) will increase, and vice versa. See the formal update rule below:</p>
 
-    
-    
+<p><img src="/blog/assets/images/rl/reinforce_pseudocode.png" width="400" /></p>
+<h5 id="reference-httpwww0csuclacukstaffdsilverwebteaching_filespgpdf">Reference: http://www0.cs.ucl.ac.uk/staff/d.silver/web/Teaching_files/pg.pdf</h5>
 
-    <div class="post-entry">
-      
-      Code
+<h3 id="key-considerations">Key Considerations</h3>
 
+<ul>
+  <li><em>How many neurons per hidden layer.</em> I’ve noticed that using very small number of neurons in the second-last layer will result in nothing being learned, regardless of which activation function we use in between. Once I’ve increased the number of neurons in the second-last layer to 16, the loss started to decrease.</li>
+  <li><em>Activation function for each layer of the NN.</em> Since the policy is trying to decide between 3 different actions. We can treat this problem as a multi-classification problem. As a result, I used the expotential linear unit for intermediary hidden layers, and the softmax function in the output layer.</li>
+  <li>
+    <p><em>Discount factor for future rewards.</em> The intuitive thought would be to think of this from a investment/time perspective, in other words, the time value of money. Since we’re dealing with 1-minute increments of rewards, the risk-free interest rate (treasury rate) for 1 year is around 2.4%, the 1-minute rate would calculated to be:</p>
 
-      
-      
-        <a href="/blog/2019-12-03-acrobot/" class="post-read-more">[Read&nbsp;More]</a>
-      
-    </div>
-    
-
-    
-    <div class="blog-tags">
-      <span>Tags:</span>
-      
-      <a href="/blog/tags#reinforcement-learning">reinforcement-learning</a>
-      
-    </div>
-    
-
-   </article>
-  
-  <article class="post-preview">
-    
-
-    
-
-    <a href="/blog/2019-11-05-pendulum/">
-      <h2 class="post-title">OpenAI Gym - Pendulum-v0</h2>
-
-      
-    </a>
-
-    <p class="post-meta">
-      
-      Posted on November 5, 2019
-    </p>
-
-    
-
-    
-    
-
-    <div class="post-entry">
-      
-      Code
-
-
-      
-      
-        <a href="/blog/2019-11-05-pendulum/" class="post-read-more">[Read&nbsp;More]</a>
-      
-    </div>
-    
-
-    
-    <div class="blog-tags">
-      <span>Tags:</span>
-      
-      <a href="/blog/tags#reinforcement-learning">reinforcement-learning</a>
-      
-    </div>
-    
-
-   </article>
-  
-  <article class="post-preview">
-    
-
-    
-
-    <a href="/blog/2019-11-04-mountain-car/">
-      <h2 class="post-title">OpenAI Gym - MountainCar-v0</h2>
-
-      
-    </a>
-
-    <p class="post-meta">
-      
-      Posted on November 4, 2019
-    </p>
-
-    
-
-    
-    
-
-    <div class="post-entry">
-      
-      Code
-
-
-      
-      
-        <a href="/blog/2019-11-04-mountain-car/" class="post-read-more">[Read&nbsp;More]</a>
-      
-    </div>
-    
-
-    
-    <div class="blog-tags">
-      <span>Tags:</span>
-      
-      <a href="/blog/tags#reinforcement-learning">reinforcement-learning</a>
-      
-    </div>
-    
-
-   </article>
-  
-  <article class="post-preview">
-    
-
-    
-
-    <a href="/blog/2019-04-25-Brawlstars-RL/">
-      <h2 class="post-title">BrawlStars AI Series (Part 2) - Reinforcement Learning</h2>
-
-      
-    </a>
-
-    <p class="post-meta">
-      
-      Posted on April 25, 2019
-    </p>
-
-    
-
-    
-    
-
-    <div class="post-entry">
-      
-      First and foremost, I must say, perception is harder than planning.
-
-
-      
-      
-        <a href="/blog/2019-04-25-Brawlstars-RL/" class="post-read-more">[Read&nbsp;More]</a>
-      
-    </div>
-    
-
-    
-    <div class="blog-tags">
-      <span>Tags:</span>
-      
-      <a href="/blog/tags#reinforcement-learning">reinforcement-learning</a>
-      
-    </div>
-    
-
-   </article>
-  
-</div>
-
-
-<ul class="pagination main-pager">
-  
-  
-  <li class="page-item next">
-    <a class="page-link" href="/blog/page2">Older Posts &rarr;</a>
+    <p>\(0.024 / 365 / 24 / 60 = .000000046 = 4.6 \times 10^{-8}\)
+Therefore, the discount factor should be \(1 - 4.6 \times 10^{-8} = 0.999999954\).</p>
   </li>
-  
+  <li><em>Learning rate.</em> This is a hyperparameter that we should tune. However, for the purpose of this short tutorial on PG, I will use a learning rate of \(4 \times 10^{-5}\) that I found to be good without going into the details.</li>
 </ul>
 
+<h3 id="key-challenges">Key Challenges</h3>
+
+<h4 id="challenge-1">Challenge 1</h4>
+
+<p><img src="/blog/assets/images/rl/dead_relu_loss.png" width="300" />
+<img src="/blog/assets/images/rl/dead_relu_reward.png" width="300" /></p>
+
+<p>During training, I’ve noticed that the training loss is stuck at 0 for many episodes. After some investigation, I realized that it was because the activation function I chose to be ReLU behaved in a interesting way when the learning rate was too high. In other words, some of the neurons were “permanently dead” after passing through the ReLU activation function. This meant that learning stopped for those neurons, and thus the entire training session was useless. Formally, this is called the “Dying ReLU” problem, and I can’t believe I personally encoutered it. I overcame the challenge by using expotential linear unit (ELU) instead.</p>
+
+<p><img src="/blog/assets/images/rl/elu_graph.png" width="300" /></p>
+
+<h6 id="source-httpsmediumcomtinyminda-practical-guide-to-relu-b83ca804f1f7">Source: https://medium.com/tinymind/a-practical-guide-to-relu-b83ca804f1f7</h6>
+
+<blockquote>
+  <p>A “dead” ReLU always outputs the same value (zero as it happens, but that is not important) for any input. Probably this is arrived at by learning a large negative bias term for its weights.</p>
+</blockquote>
+
+<blockquote>
+  <p>In turn, that means that it takes no role in discriminating between inputs. For classification, you could visualise this as a decision plane outside of all possible input data.</p>
+</blockquote>
+
+<blockquote>
+  <p>Once a ReLU ends up in this state, it is unlikely to recover, because the function gradient at 0 is also 0, so gradient descent learning will not alter the weights. “Leaky” ReLUs with a small positive gradient for negative inputs (y=0.01x when x &lt; 0 say) are one attempt to address this issue and give a chance to recover.</p>
+</blockquote>
+
+<h6 id="reference-httpsdatasciencestackexchangecomquestions5706what-is-the-dying-relu-problem-in-neural-networks">Reference: https://datascience.stackexchange.com/questions/5706/what-is-the-dying-relu-problem-in-neural-networks</h6>
+
+<h4 id="challenge-2">Challenge 2</h4>
+
+<p><img src="/blog/assets/images/rl/fluctuate_loss.png" width="300" />
+<img src="/blog/assets/images/rl/fluctuate_reward.png" width="300" />
+<img src="/blog/assets/images/rl/fluctuate_test_reward.png" width="300" /></p>
+
+<p>To measure the effectiveness of the agent, I constantly monitor the loss of the training as well as the “mean_reward” per episode to see if there’s a upward trend. However, the loss seem to fluctuate with (high variance) with no clear upward or downward trend.</p>
+
+<p>To understand why this is <em>inherently</em> a challenge for our problem let’s revisit two things:</p>
+
+<ol>
+  <li><em>How policy gradient learns the policy.</em> The agent initially randomly chooses actions, and based on the reward that this action yielded at this state, the agent encourages/discourages the action chosen so it will be more/less likely to be chosen next time the agent sees the same state.</li>
+  <li>
+    <p><em>The state definition in our problem statement.</em> We are defining each state to be a set of prices at <strong>one point in time</strong>. Combining this fact with (1) that the agent learns by observing the reward at a given state, we can easily see that a state doesn’t tell the agent that the price is in a downward trend or a upward trend.</p>
+
+    <p>E.g. A price of 70 can either be part of a upward trend from 65 to 75, or a downward trend from 80 to 60. The agent initially bought at 70 (by random). Since this is in a upward trend from 65 to 75, buying at 70 yielded a reward of 5. This positive reward reinforced the agent to take the “buy” action whenever it sees state containing the price 70. However, the next time the agent encounters the same state 70, it utilizes the knowledge learned from last time and still buys, resulting in a reward of -15. This time the state 70 is part of a downward trend from 80 to 60.</p>
+
+    <p>Perhaps if we utilize a recurrent neural network or long short-term memory network, we could incorporate the sequence information that could potentially help the agent make better decisions. But that’s for another time.</p>
+  </li>
+</ol>
+
+<blockquote>
+  <p>I can’t believe I spent 5 days on this last challenge, because I thought there was a bug in the algorithm. But I eventually revisited the fundamentals and came to this realization.</p>
+</blockquote>
+
+<h3 id="results">Results</h3>
+<p>Due to the inherent nature of vanilla policy gradient, this problem setting wasn’t “solved” so there are no fancy profit curves accomplished by the agent. However, the learning was invaluable to me. Feel free to check out the code <a href="https://github.com/workofart/work-trader/tree/master/playground/pg">here</a></p>
+
+<h3 id="next-steps">Next Steps</h3>
+
+<p>I’ll be continuing on my journey with applying RL towards trading. The next step is to try out Q-learning. Stay tuned…</p>
+
+      </article>
+
+      
+        <div class="blog-tags">
+          <span>Tags:</span>
+          
+            <a href="/blog/tags#reinforcement-learning">reinforcement-learning</a>
+          
+        </div>
+      
+
+      
+
+      
+        <!-- Check if any share-links are active -->
+
+
+
 
 
       
 
+      <ul class="pagination blog-pager">
+        
+        <li class="page-item previous">
+          <a class="page-link" href="/blog/2019-03-20-ml-tut-price-prediction/" data-toggle="tooltip" data-placement="top" title="Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future">&larr; Previous Post</a>
+        </li>
+        
+        
+        <li class="page-item next">
+          <a class="page-link" href="/blog/2019-04-20-Brawlstars-AI/" data-toggle="tooltip" data-placement="top" title="BrawlStars AI Series (Part 1)">Next Post &rarr;</a>
+        </li>
+        
+      </ul>
       
+  
+  
+  
+
+  
+
+
+  
+
+
 
     </div>
   </div>
@@ -740,6 +656,13 @@
 
 
 
+
+  
+    
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+  
 
 
 

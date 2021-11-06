@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Beautiful Jekyll 5.0.0 | Copyright Dean Attali 2020 -->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  
+
+  
+
+  <title>BrawlStars AI Series (Part 1)</title>
+
+  
+  <meta name="author" content="Henry Pan">
+  
+
+  <meta name="description" content="Brawlstars: https://supercell.com/en/games/brawlstars/ 1. Motivation I’ve personally being playing Brawlstars for over 3 months, and it’s a simple game to start considering the limited key combinations that it has. However, it’s fairly hard to master, considering the different mechanics each character has and the different maps in which each character’s play...">
+
+  
+
+  
+  <meta name="keywords" content="career,software,engineering,life,education,inspiration,machine learning,deep learning,reinforcement learning,web development,react">
+  
+
+  
+
+  
+
+  
+
+  
+<!-- Google Analytics -->
+<script>
+  (function (i, s, o, g, r, a, m) {
+    i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+      (i[r].q = i[r].q || []).push(arguments)
+    }, i[r].l = 1 * new Date(); a = s.createElement(o),
+      m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+  })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+  ga('create', 'UA-103622213-1', 'auto');
+  ga('send', 'pageview');
+</script>
+<!-- End Google Analytics -->
+
+
+  
+
+
+  
+    
+      
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+
+    
+      
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css">
+
+
+    
+      
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic">
+
+
+    
+      
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800">
+
+
+    
+  
+
+  
+    
+      <link rel="stylesheet" href="/blog/assets/css/bootstrap-social.css">
+    
+      <link rel="stylesheet" href="/blog/assets/css/beautifuljekyll.css">
+    
+  
+
+  
+
+  
+  
+  
+
+  
+
+  
+  <meta property="og:site_name" content="Henry's Blog">
+  <meta property="og:title" content="BrawlStars AI Series (Part 1)">
+  <meta property="og:description" content="Brawlstars: https://supercell.com/en/games/brawlstars/ 1. Motivation I’ve personally being playing Brawlstars for over 3 months, and it’s a simple game to start considering the limited key combinations that it has. However, it’s fairly hard to master, considering the different mechanics each character has and the different maps in which each character’s play...">
+
+  
+
+  
+  <meta property="og:type" content="article">
+  <meta property="og:article:author" content="Henry Pan">
+  <meta property="og:article:published_time" content="2019-04-20T01:00:00-04:00">
+  <meta property="og:url" content="/blog/2019-04-20-Brawlstars-AI/">
+  <link rel="canonical" href="/blog/2019-04-20-Brawlstars-AI/">
+  
+
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@">
+  <meta name="twitter:creator" content="@">
+
+  <meta property="twitter:title" content="BrawlStars AI Series (Part 1)">
+  <meta property="twitter:description" content="Brawlstars: https://supercell.com/en/games/brawlstars/ 1. Motivation I’ve personally being playing Brawlstars for over 3 months, and it’s a simple game to start considering the limited key combinations that it has. However, it’s fairly hard to master, considering the different mechanics each character has and the different maps in which each character’s play...">
+
+  
+
+  
+
+
+  
+
+  
+
+</head>
+
+
+<body>
+
+  
+
+
+  <nav class="navbar navbar-expand-xl navbar-light fixed-top navbar-custom top-nav-regular"><a class="navbar-brand" href="/blog">Henry's Blog</a><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="main-navbar">
+    <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/blog/tags">Topics</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="https://www.henrypan.com">Author's home</a>
+          </li>
+        <li class="nav-item">
+          <a class="nav-link" id="nav-search-link" href="#" title="Search">
+            <span id="nav-search-icon" class="fa fa-search"></span>
+            <span id="nav-search-text">Search</span>
+          </a>
+        </li></ul>
+  </div>
+
+  
+
+  
+
+</nav>
+
+
+
+<div id="beautifuljekyll-search-overlay">
+
+  <div id="nav-search-exit" title="Exit search">✕</div>
+  <input type="text" id="nav-search-input" placeholder="Search">
+  <ul id="search-results-container"></ul>
+  
+  <script src="https://unpkg.com/simple-jekyll-search@latest/dest/simple-jekyll-search.min.js"></script>
+  <script>
+    var searchjson = '[ \
+       \
+        { \
+          "title"    : "Tic-tac-toe Self-Play", \
+          "category" : "reinforcement-learning", \
+          "url"      : "/blog/2019-12-06-tic-tac-toe-selfplay/", \
+          "date"     : "December  6, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "OpenAI Gym - Acrobot-v1", \
+          "category" : "reinforcement-learning", \
+          "url"      : "/blog/2019-12-03-acrobot/", \
+          "date"     : "December  3, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "OpenAI Gym - Pendulum-v0", \
+          "category" : "reinforcement-learning", \
+          "url"      : "/blog/2019-11-05-pendulum/", \
+          "date"     : "November  5, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "OpenAI Gym - MountainCar-v0", \
+          "category" : "reinforcement-learning", \
+          "url"      : "/blog/2019-11-04-mountain-car/", \
+          "date"     : "November  4, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "BrawlStars AI Series (Part 2) - Reinforcement Learning", \
+          "category" : "reinforcement-learning", \
+          "url"      : "/blog/2019-04-25-Brawlstars-RL/", \
+          "date"     : "April 25, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "BrawlStars AI Series (Part 1)", \
+          "category" : "machine-learning", \
+          "url"      : "/blog/2019-04-20-Brawlstars-AI/", \
+          "date"     : "April 20, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "Creating a Policy Gradient (PG) Agent to Trade", \
+          "category" : "reinforcement-learning", \
+          "url"      : "/blog/2019-04-04-pg-trading/", \
+          "date"     : "April  4, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future", \
+          "category" : "machine-learning", \
+          "url"      : "/blog/2019-03-20-ml-tut-price-prediction/", \
+          "date"     : "March 20, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "Asynchronous Advantage Actor Critic (A3C)-Reinforcement Learning -Laymens Explanation", \
+          "category" : "reinforcement-learning", \
+          "url"      : "/blog/2019-02-27-a3c-rl-layments-explanation/", \
+          "date"     : "February 27, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "React Redux Intro", \
+          "category" : "react", \
+          "url"      : "/blog/2019-01-26-react-redux-intro/", \
+          "date"     : "January 26, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "Career Paths in Data Science/Machine Learning", \
+          "category" : "career", \
+          "url"      : "/blog/2019-01-10-career-paths-in-ml/", \
+          "date"     : "January 10, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "Looking back, planning forward", \
+          "category" : "career", \
+          "url"      : "/blog/2015-12-03-looking-back-planning-forward/", \
+          "date"     : "December  3, 2015" \
+        }, \
+       \
+        { \
+          "title"    : "A few thoughts on choosing a career path", \
+          "category" : "career", \
+          "url"      : "/blog/2013-12-24-a-few-thoughts-on-choosing-a-career-path/", \
+          "date"     : "December 24, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "Different Life Experiences Bring Different Perspectives", \
+          "category" : "life", \
+          "url"      : "/blog/2013-11-16-different-life-experiences-bring-different-perspectives/", \
+          "date"     : "November 16, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "Finding the &#39;right&#39; route", \
+          "category" : "education", \
+          "url"      : "/blog/2013-09-25-finding-the-right-route/", \
+          "date"     : "September 25, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "Step Back and Rethink", \
+          "category" : "career", \
+          "url"      : "/blog/2013-08-07-step-back-and-rethink/", \
+          "date"     : "August  7, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "One Sentence Summary of Books", \
+          "category" : "books", \
+          "url"      : "/blog/2013-07-18-one-sentence-summary-books/", \
+          "date"     : "July 18, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "1st day at McKinsey", \
+          "category" : "culture", \
+          "url"      : "/blog/2013-05-15-first-day-at-mckinsey/", \
+          "date"     : "May 15, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "Dinner Talk", \
+          "category" : "inspirationcareer", \
+          "url"      : "/blog/2013-03-30-dinner-talk/", \
+          "date"     : "March 30, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "Movie Review - &#39;Accepted&#39;", \
+          "category" : "movieeducation", \
+          "url"      : "/blog/2013-03-16-movie-review-accepted/", \
+          "date"     : "March 16, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "Some Inspirational People", \
+          "category" : "inspirationcareer", \
+          "url"      : "/blog/2013-03-02-some-inspirational-people/", \
+          "date"     : "March  2, 2013" \
+        }, \
+       \
+       \
+        { \
+          "title"    : "Henry&#39;s Blog", \
+          "category" : "page", \
+          "url"      : "/blog/", \
+          "date"     : "January 1, 1970" \
+        }, \
+       \
+        { \
+          "title"    : "Tag Index", \
+          "category" : "page", \
+          "url"      : "/blog/tags/", \
+          "date"     : "January 1, 1970" \
+        }, \
+       \
+        { \
+          "title"    : "Henry&#39;s Blog", \
+          "category" : "page", \
+          "url"      : "/blog/page2/", \
+          "date"     : "January 1, 1970" \
+        }, \
+       \
+        { \
+          "title"    : "Henry&#39;s Blog", \
+          "category" : "page", \
+          "url"      : "/blog/page3/", \
+          "date"     : "January 1, 1970" \
+        }, \
+       \
+        { \
+          "title"    : "Henry&#39;s Blog", \
+          "category" : "page", \
+          "url"      : "/blog/page4/", \
+          "date"     : "January 1, 1970" \
+        }, \
+       \
+        { \
+          "title"    : "Henry&#39;s Blog", \
+          "category" : "page", \
+          "url"      : "/blog/page5/", \
+          "date"     : "January 1, 1970" \
+        } \
+       \
+    ]';
+    searchjson = JSON.parse(searchjson);
+
+    var sjs = SimpleJekyllSearch({
+      searchInput: document.getElementById('nav-search-input'),
+      resultsContainer: document.getElementById('search-results-container'),
+      json: searchjson
+    });
+  </script>
+</div>
+
+
+
+
+
+  <!-- TODO this file has become a mess, refactor it -->
+
+
+
+
+
+
+
+<header class="header-section ">
+
+<div class="intro-header no-img">
+  <div class="container-md">
+    <div class="row">
+      <div class="col-xl-8 offset-xl-2 col-lg-10 offset-lg-1">
+        <div class="post-heading">
+          <h1>BrawlStars AI Series (Part 1)</h1>
+          
+
+          
+            <span class="post-meta">Posted on April 20, 2019</span>
+            
+            
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</header>
+
+
+
+
+
+<div class=" container-md ">
+  <div class="row">
+    <div class=" col-xl-8 offset-xl-2 col-lg-10 offset-lg-1 ">
+
+      
+
+      
+
+      <article role="main" class="blog-post">
+        <p>Brawlstars: <a href="https://supercell.com/en/games/brawlstars/">https://supercell.com/en/games/brawlstars/</a></p>
+
+<h2 id="1-motivation">1. Motivation</h2>
+<p>I’ve personally being playing Brawlstars for over 3 months, and it’s a simple game to start considering the limited key combinations that it has. However, it’s fairly hard to master, considering the different mechanics each character has and the different maps in which each character’s play style can be affected by.</p>
+
+<h2 id="2-goals">2. Goals</h2>
+<p>For this project, I want to train an agent that will be able to play Brawlstars decently (be able to consistently beat built-in AI, and be able to play in Player-vs-Player (PVP) games “like” a human player. During the process, my personal goal is to brush up on topics in computer vision and deep learning.</p>
+
+<h2 id="3-starting-point">3. Starting Point</h2>
+<p>As for the game, I will start with the “Bounty” game mode and the “Temple Ruins” map as the fixed map, with “Shelly” being the character to train on.</p>
+
+<p><strong>Map</strong></p>
+
+<p><img src="https://vignette.wikia.nocookie.net/brawlstars/images/3/3e/Temple_Ruins-Map.png/revision/latest/scale-to-width-down/310?cb=20190714193752" alt="Map" width="180" /></p>
+
+<p><strong>Character</strong></p>
+
+<p>More info: <a href="https://brawlstars.fandom.com/wiki/Shelly">https://brawlstars.fandom.com/wiki/Shelly</a></p>
+
+<p><img src="https://vignette.wikia.nocookie.net/brawlstars/images/5/5e/Shelly_Skin-Default.png/revision/latest?cb=20191220032258" alt="Shelly" width="100" /></p>
+
+<p><strong>Game Mode</strong></p>
+
+<p>Bounty: <a href="https://brawlstars.fandom.com/wiki/Bounty">https://brawlstars.fandom.com/wiki/Bounty</a></p>
+
+<p><strong>Considerations</strong></p>
+
+<ol>
+  <li>
+    <p>Ultimately, I will want to explore Reinforcement learning (RL), and one of the hardest things is reward definition. (Refer to my post about defining reward in stock trading using RL). The “Bounty” game mode allows for straight-forward reward definition by the number of stars each player gains by killing the opposing players.</p>
+  </li>
+  <li>
+    <p>“Shelly” has a simple set of attack mechanics. Her normal attack is short-to-medium range, and her super attack is the same range with more damage.</p>
+  </li>
+  <li>
+    <p>Using a fixed map allows me to eliminate a lot of the variation in agent performance due to map mechanics or other factors that is derived from the map.</p>
+  </li>
+</ol>
+
+<h2 id="3-related-work">3. Related Work</h2>
+<p><a href="https://github.com/ChintanTrivedi/DeepGamingAI_FIFA">FIFA AI</a> For inspiring me to try out LSTM for action determination in supervised learning.</p>
+
+<p><a href="https://github.com/Sentdex/pygta5">PyGTA5</a> For the initial direction with regards to perception and supervised learning training data generation.</p>
+
+<h2 id="4-project-focusscope">4. Project Focus/Scope</h2>
+<p>In the first part of this series of projects, I will be exploring the possibility of using supervised learning to train an agent to play Brawlstars. In the process, I will evaluate different feature extractors and identify other areas of improvements.</p>
+
+<p>The second part of the project is to use reinforcement learning to let the agent play Brawlstars on its own and learn from it’s own mistakes. In this process, I will evaluate various RL techniques to improvement the agent’s decision-making abilities.</p>
+
+<h2 id="5-showcase">5. Showcase</h2>
+<p><a href="https://github.com/workofart/brawlstars-ai">Code &amp; Gameplay Snapshot</a></p>
+
+<h2 id="6-supervised-learning">6. Supervised Learning</h2>
+
+<h3 id="61-creating-training-data">6.1 Creating training data</h3>
+<p>As the name suggests, supervised learning requires training data with labeled ground truth. As for this project, I will be the person creating the training data by playing the game. The <em>screen information</em> and my <em>key presses</em> will be recorded into training data, which will be fed into the agent during the training process.</p>
+
+<h3 id="62-features">6.2 Features</h3>
+
+<h4 id="621-raw-pixels-as-features">6.2.1 Raw Pixels as Features</h4>
+<p>Feeding in raw pixels doesn’t yield too good of a result, because it’s difficult to make sense of individual pixels and translate them into concrete meaning. For example, it’s hard for the agent to infer from raw pixels which set of pixels corresponds to the its own player, allies or enemies.</p>
+
+<p>For my training instance, I used 1 hour of game play data played only on the fixed map “Temple Ruins”.</p>
+
+<h4 id="622-using-mobilenet-as-the-feature-extractor">6.2.2 Using MobileNet as the feature extractor</h4>
+
+<p>After seeing the performance of raw pixels, I decided to try out some feature extractors that could help with the performance of the agent for Supervised Learning. I chose Mobilenet as the feature extractor for its balance between high accuracy and fast speed.</p>
+
+<p>For my training instance, I used 1 hour of data played only on the fixed map “Temple Ruins”.</p>
+
+<h3 id="63-action-determination">6.3 Action Determination</h3>
+
+<h4 id="631-alexnet-convolutional-neural-network">6.3.1 AlexNet (Convolutional Neural Network)</h4>
+<p><strong>Motivation:</strong> As a starting point, AlexNet is fairly robust for image feature extraction and classification.</p>
+
+<p><em>Input</em>: Raw Pixels</p>
+
+<p><em>Output</em>: A one-hot array of 6 elements. Representing (left, right, forward, backward, attack, superattack) Basically, the neural network will try to classify “snapshot” of the game screen into one of 6 actions.</p>
+
+<p><img src="https://cdn-images-1.medium.com/max/1600/0*xPOQ3btZ9rQO23LK.png" alt="AlexNet" /></p>
+
+<p>Paper Reference: <em>https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf</em></p>
+
+<h4 id="632-long-short-term-memory">6.3.2 Long short-term memory</h4>
+<p><strong>Motivation:</strong> Because this is a game with animation composed of frames of game screen. It is intuitive to think that a sequence of frames will provide more information than one snapshot of the game screen. This is the main motivation for choosing LSTM. The intuition behind separating into 2 LSTMs is because the movement actions and attack actions are not necessarily mutually exclusive—one can, and ought to, move and attack at the same time.</p>
+
+<p><em>Input</em>: Features extracted by MobileNet from after the last convolutional layer and right before the softmax.</p>
+
+<p><em>Output</em>: A one-hot array representing the actions to take</p>
+
+<p><strong>LSTM1</strong> - A one-hot array of 5 elements. Representing (left, right, forward, backward, no-op)</p>
+
+<p><strong>LSTM2</strong> - A one-hot array of 3 elements. Representing (attack, superattack, no-op)</p>
+
+<p><em>Note that each set of actions includes no-op (no action) compared to the AlexNet approach.</em></p>
+
+<p><strong><a href="https://github.com/workofart/brawlstars-ai/blob/master/net/lstm.py">NN Architecture</a></strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Input - LSTM Layer 1 - Dropout - LSTM Layer 2 - Dropout
+- Fully Connected Layer - Softmax Activation
+</code></pre></div></div>
+
+<p>Training blew up my home desktop due to the amount of memory the feature space occupys at the peak. I had to use Google Cloud’s VM with 32GB of ram to train this.</p>
+
+<h2 id="7-challenges">7. Challenges</h2>
+
+<h3 id="71-data">7.1 Data</h3>
+
+<p>The challenge with supervised learning is always with data gathering. In this case, I can’t gather a huge amount of gameplay data for the agent to be trained to play well. Also, the generalization ability of supervised learning is questionable. Does the agent play well on other maps? Other characters? I believe incorporating reinforcement learning into the equation will allow the agent to develop a more robust and general strategy for playing this game. Also, by using RL, I personally wouldn’t need to “waste time” playing the game to generate training data.</p>
+
+<h3 id="72-features">7.2 Features</h3>
+
+<p>Since there was no game “hacking” involved or game data available for the agent to use, getting the features to be passed into the agent for supervised learning was challenging. I had to visualize the CNN intermediary layers to understand if the CNN was useful in detecting and classifying elements of the game. This was important because even if the agent’s decision-making abilities (planning) were superb, giving misleading information (bad perception) might still lead to chaos.</p>
+
+<p><strong>Snapshot of Intermediate CNN Layers</strong></p>
+
+<p>This is visualized using the second-last <strong>(CONV-5-1)</strong> block (out of 5 blocks) of the <a href="https://arxiv.org/abs/1409.1556">Very Deep Convolutional Networks for Large-Scale Image Recognition (VGG)</a> architecture.
+<img src="https://neurohive.io/wp-content/uploads/2018/11/vgg16.png" alt="VGG16" />
+Reference: https://neurohive.io/en/popular-networks/vgg16/</p>
+
+<p><img src="https://github.com/workofart/brawlstars-ai/raw/master/vgg_block5_conv1_18x18.png" alt="CNNVIZ" /></p>
+
+<h2 id="8-statistics-and-performance">8. Statistics and Performance</h2>
+
+<p><strong>The input screen dimension:</strong> 1280 x 715 (cut off some pixels from the title bar)</p>
+
+<p><strong>Supervised Learning</strong></p>
+
+<ul>
+  <li>Trained on Raw Pixels fed into Alexnet for decision output with the following hyperparameters:
+    <ul>
+      <li>EPOCHS=500</li>
+      <li>Learning Rate=\(3e^{-5}\)</li>
+      <li>Resize_Width=80</li>
+      <li>Resize_Height=60</li>
+      <li>Batch size=12</li>
+    </ul>
+  </li>
+  <li>Trained on MobileNet extracted features fed into 2 LSTMs for decision output with the following hyperparameters:
+    <ul>
+      <li>Mobilenet</li>
+      <li>Learning Rate=\(3 \times 10 ^{-5}\)</li>
+      <li>Batch size=8</li>
+    </ul>
+  </li>
+</ul>
+
+<p>The best way to evaluate performance in this game is by keeping track of the average number of stars the player possess throughout the game. This is a high-level reward/goal because it encompasses short-term goals of killing the oponent and gaining an additional star each time and a long-term goal of not dying and resetting the player’s stars to 2.</p>
+
+<p><strong>Human Benchmark (Measured by myself):</strong>
+For the given setting, I can, on average, possess 5 stars throughout the game. With aggresive playstyle taking the initial 30 seconds, and conservative playstyle dominating the last 30 seconds, to preserve the 7 max stars on the player.</p>
+
+<p><strong>Agent Performance:</strong>
+For the given setting, in the supervised learning approach, the results weren’t impressive. The agent does avoid running into the wall, but attacks randomly at no target.</p>
+
+<h2 id="9-error-analysis--future-steps">9. Error Analysis + Future Steps</h2>
+
+<p>I wasn’t surprised that supervised learning in a dynamic multi-agent environment would not go well. Unless I have near infinite amount of training data, I wouldn’t be able to train a decent agent.</p>
+
+<p>Next, I will attempt to tackle this problem from a more fundamental level, starting from perception. Currently, I simply “dump” the pixels as input to a feature extractor, and hope that it will be able to transfer-learn some useful features.</p>
+
+<p>Then, I am going to apply reinforcement learning on this problem to tackle the planning part of it. I will be framing the environment, constructing the agent’s brain, and designing rewards.</p>
+
+<p>If you’re interested, please check my next post <a href="http://www.henrypan.com/blog/reinforcement-learning/2019/04/25/Brawlstars-RL.html">here</a>. Thanks!</p>
+
+<p>- Henry</p>
+
+      </article>
+
+      
+        <div class="blog-tags">
+          <span>Tags:</span>
+          
+            <a href="/blog/tags#machine-learning">machine-learning</a>
+          
+        </div>
+      
+
+      
+
+      
+        <!-- Check if any share-links are active -->
+
+
+
+
+
+      
+
+      <ul class="pagination blog-pager">
+        
+        <li class="page-item previous">
+          <a class="page-link" href="/blog/2019-04-04-pg-trading/" data-toggle="tooltip" data-placement="top" title="Creating a Policy Gradient (PG) Agent to Trade">&larr; Previous Post</a>
+        </li>
+        
+        
+        <li class="page-item next">
+          <a class="page-link" href="/blog/2019-04-25-Brawlstars-RL/" data-toggle="tooltip" data-placement="top" title="BrawlStars AI Series (Part 2) - Reinforcement Learning">Next Post &rarr;</a>
+        </li>
+        
+      </ul>
+      
+  
+  
+  
+
+  
+
+
+  
+
+
+
+    </div>
+  </div>
+</div>
+
+
+  <footer>
+  <div class="container-md beautiful-jekyll-footer">
+    <div class="row">
+      <div class="col-xl-8 offset-xl-2 col-lg-10 offset-lg-1">
+      <ul class="list-inline text-center footer-links"><li class="list-inline-item">
+    <a href="mailto:hanxiangp@gmail.com" title="Email me">
+      <span class="fa-stack fa-lg" aria-hidden="true">
+        <i class="fas fa-circle fa-stack-2x"></i>
+        <i class="fas fa-envelope fa-stack-1x fa-inverse"></i>
+      </span>
+      <span class="sr-only">Email me</span>
+   </a>
+  </li><li class="list-inline-item">
+    <a href="https://github.com/workofart" title="GitHub">
+      <span class="fa-stack fa-lg" aria-hidden="true">
+        <i class="fas fa-circle fa-stack-2x"></i>
+        <i class="fab fa-github fa-stack-1x fa-inverse"></i>
+      </span>
+      <span class="sr-only">GitHub</span>
+   </a>
+  </li><li class="list-inline-item">
+    <a href="https://linkedin.com/in/pan-henry" title="LinkedIn">
+      <span class="fa-stack fa-lg" aria-hidden="true">
+        <i class="fas fa-circle fa-stack-2x"></i>
+        <i class="fab fa-linkedin fa-stack-1x fa-inverse"></i>
+      </span>
+      <span class="sr-only">LinkedIn</span>
+   </a>
+  </li></ul>
+
+      
+      <p class="copyright text-muted">
+      
+        Henry Pan
+        &nbsp;&bull;&nbsp;
+      
+      2021
+
+      
+
+      
+      </p>
+      <p class="theme-by text-muted">
+        Powered by
+        <a href="https://beautifuljekyll.com">Beautiful Jekyll</a>
+      </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+  
+  
+    
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
+
+
+  
+    
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+
+  
+    
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+
+  
+
+
+
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+      <script src="/blog/assets/js/beautifuljekyll.js"></script>
+    
+  
+
+
+
+
+
+  
+    
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+  
+
+
+
+
+
+</body>
+</html>

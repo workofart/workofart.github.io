@@ -9,14 +9,13 @@
 
   
 
-  <title>404 - Page not found</title>
+  <title>Asynchronous Advantage Actor Critic (A3C)-Reinforcement Learning -Laymens Explanation</title>
 
   
   <meta name="author" content="Henry Pan">
   
 
-  <meta name="description" content="Whoops, this page doesn't exist.
-  Move along. (404 error)">
+  <meta name="description" content="The A3C method in Reinforcement Learning (RL) combines both a critic’s value function (how good a state is) and an actor’s policy (a set of action probability for a given state). I promise this explanation doesn’t not contain greek letters or calculus. It only contains English alphabets and subtraction in...">
 
   
 
@@ -90,16 +89,17 @@
 
   
   <meta property="og:site_name" content="Henry's Blog">
-  <meta property="og:title" content="404 - Page not found">
-  <meta property="og:description" content="Whoops, this page doesn't exist.
-  Move along. (404 error)">
+  <meta property="og:title" content="Asynchronous Advantage Actor Critic (A3C)-Reinforcement Learning -Laymens Explanation">
+  <meta property="og:description" content="The A3C method in Reinforcement Learning (RL) combines both a critic’s value function (how good a state is) and an actor’s policy (a set of action probability for a given state). I promise this explanation doesn’t not contain greek letters or calculus. It only contains English alphabets and subtraction in...">
 
   
 
   
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="/blog/404.html">
-  <link rel="canonical" href="/blog/404.html">
+  <meta property="og:type" content="article">
+  <meta property="og:article:author" content="Henry Pan">
+  <meta property="og:article:published_time" content="2019-02-27T12:00:00-05:00">
+  <meta property="og:url" content="/blog/2019-02-27-a3c-rl-layments-explanation/">
+  <link rel="canonical" href="/blog/2019-02-27-a3c-rl-layments-explanation/">
   
 
   
@@ -108,9 +108,8 @@
   <meta name="twitter:site" content="@">
   <meta name="twitter:creator" content="@">
 
-  <meta property="twitter:title" content="404 - Page not found">
-  <meta property="twitter:description" content="Whoops, this page doesn't exist.
-  Move along. (404 error)">
+  <meta property="twitter:title" content="Asynchronous Advantage Actor Critic (A3C)-Reinforcement Learning -Laymens Explanation">
+  <meta property="twitter:description" content="The A3C method in Reinforcement Learning (RL) combines both a critic’s value function (how good a state is) and an actor’s policy (a set of action probability for a given state). I promise this explanation doesn’t not contain greek letters or calculus. It only contains English alphabets and subtraction in...">
 
   
 
@@ -372,21 +371,125 @@
 
 
 
-  <div class="intro-header"></div>
+  <!-- TODO this file has become a mess, refactor it -->
 
-<div role="main" class=" container-md ">
-  
 
-  <div class="text-center">
-  <h1>Whoops, this page doesn't exist.</h1>
-  <h1>Move along. (404 error)</h1>
-  <br/>
 
-  <img src="/blog/assets/img/404-southpark.jpg" alt="Not found" />
+
+
+
+
+<header class="header-section ">
+
+<div class="intro-header no-img">
+  <div class="container-md">
+    <div class="row">
+      <div class="col-xl-8 offset-xl-2 col-lg-10 offset-lg-1">
+        <div class="post-heading">
+          <h1>Asynchronous Advantage Actor Critic (A3C)-Reinforcement Learning -Laymens Explanation</h1>
+          
+
+          
+            <span class="post-meta">Posted on February 27, 2019</span>
+            
+            
+          
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+</header>
+
+
+
+
+
+<div class=" container-md ">
+  <div class="row">
+    <div class=" col-xl-8 offset-xl-2 col-lg-10 offset-lg-1 ">
+
+      
+
+      
+
+      <article role="main" class="blog-post">
+        <p>The A3C method in Reinforcement Learning (RL) combines both a <em>critic’s value function</em> (how good a state is) and an <em>actor’s policy</em> (a set of action probability for a given state). <strong>I promise this explanation doesn’t not contain greek letters or calculus. It only contains English alphabets and subtraction in math.</strong></p>
+
+<p><img src="/blog/assets/images/rl/a3c_architecture.png" alt="Diagram" /></p>
+
+<h6 id="taken-from-hands-on-reinforcement-learning-with-python-by-sudharsan-ravichandiran">Taken from “Hands-On Reinforcement Learning with Python by Sudharsan Ravichandiran”</h6>
+
+<p>Advantage in A3C is used to determine which actions were “good” and “bad”, and it is updated to encourage or discourage accordingly. Note that this also informs the agent how much better it is than expected. This is better than just using discounted rewards in vanilla Deep Q-learning. To see why, below is a formal explanation.</p>
+
+<p>The advantage is estimated using <em>discounted rewards</em> (R) and the value from the <em>critic’s value function</em>, how good a state is, V(s). Thus formally:</p>
+
+<blockquote>
+  <p>Estimated Advantage = R-V(s)</p>
+</blockquote>
+
+<p>In A3C, there is a global network. This network will consist of a neural network to process the input data (states), and the output layers consists of value (how good a state is) and policy (a set of action probability for a given state) estimations.</p>
+
+<p>The following summarizes the process of each episode:</p>
+<ol>
+  <li>To start the process, each worker initializes its network parameters equal to the global network.</li>
+  <li>Each worker interacts with its own environment and accumulates experience in the form of tuples <em>(observation, action, reward, done, value)</em> after every interaction.</li>
+  <li>Once the worker’s experience history reaches our set size, we calculate the <em>discounted return -&gt; estimated advantage -&gt; temporal difference (TD) -&gt;value and policy losses</em>. Note that we also calculate an entropy of the policy to understand the spread of the action probabilities. In other words, a high entropy is the result of similar action probabilities, or <em>uncertain what to do</em> in laymens terms. A low entropy means the agent is very confident (high probability of one action versus the rest) in the action it choses.</li>
+  <li>Once we’ve obtained the value and policy losses from (3), our forward pass (propagation) through the network is complete. Now it’s time for the backward pass (propagation). Each worker uses these calculated losses to compute the gradients for its network parameters.</li>
+  <li>We then use the gradients from (4) to update the global network parameters. This is when we reap the benefits of the asynchronous workers. The global network is constantly updated by each worker as they interact with its <em>own environment</em>. The intuition here is that because each worker has it’s own environment, the overall experience for training is more diverse.</li>
+  <li>This concludes one round-trip (episode) of training. Then it repeats (1–5)</li>
+</ol>
+
+<p>Overall, the value estimates from the critic is used to update the policy in the actor, which works better than traditional policy gradient methods which doesn’t have a value etimate and solely tries to optimize the policy function. Therefore, it may be intuitive to let the critic learn faster (higher learning rate) than the actor.</p>
+
+      </article>
+
+      
+        <div class="blog-tags">
+          <span>Tags:</span>
+          
+            <a href="/blog/tags#reinforcement-learning">reinforcement-learning</a>
+          
+        </div>
+      
+
+      
+
+      
+        <!-- Check if any share-links are active -->
+
+
+
+
+
+      
+
+      <ul class="pagination blog-pager">
+        
+        <li class="page-item previous">
+          <a class="page-link" href="/blog/2019-01-26-react-redux-intro/" data-toggle="tooltip" data-placement="top" title="React Redux Intro">&larr; Previous Post</a>
+        </li>
+        
+        
+        <li class="page-item next">
+          <a class="page-link" href="/blog/2019-03-20-ml-tut-price-prediction/" data-toggle="tooltip" data-placement="top" title="Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future">Next Post &rarr;</a>
+        </li>
+        
+      </ul>
+      
+  
+  
+  
+
+  
 
 
   
+
+
+
+    </div>
+  </div>
 </div>
 
 
@@ -472,6 +575,13 @@
 
 
 
+
+  
+    
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+  
 
 
 

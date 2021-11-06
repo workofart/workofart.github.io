@@ -9,13 +9,13 @@
 
   
 
-  <title>Henry's Blog</title>
+  <title>OpenAI Gym - Pendulum-v0</title>
 
   
   <meta name="author" content="Henry Pan">
   
 
-  <meta name="description" content="My learning notes, research, projects and musings">
+  <meta name="description" content="Code Here 1. Goal The problem setting is to solve the Inverted Pendulum problem in OpenAI gym. Try to keep a frictionless pendulum standing up. 2. Environment The pendulum environment has a continuous state space as follows (copied from wiki): State Type: Box(3) Num State Observation Min Max 0 Angle1...">
 
   
 
@@ -89,15 +89,17 @@
 
   
   <meta property="og:site_name" content="Henry's Blog">
-  <meta property="og:title" content="Henry's Blog">
-  <meta property="og:description" content="My learning notes, research, projects and musings">
+  <meta property="og:title" content="OpenAI Gym - Pendulum-v0">
+  <meta property="og:description" content="Code Here 1. Goal The problem setting is to solve the Inverted Pendulum problem in OpenAI gym. Try to keep a frictionless pendulum standing up. 2. Environment The pendulum environment has a continuous state space as follows (copied from wiki): State Type: Box(3) Num State Observation Min Max 0 Angle1...">
 
   
 
   
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="/blog/">
-  <link rel="canonical" href="/blog/">
+  <meta property="og:type" content="article">
+  <meta property="og:article:author" content="Henry Pan">
+  <meta property="og:article:published_time" content="2019-11-05T16:00:00-05:00">
+  <meta property="og:url" content="/blog/2019-11-05-pendulum/">
+  <link rel="canonical" href="/blog/2019-11-05-pendulum/">
   
 
   
@@ -106,8 +108,8 @@
   <meta name="twitter:site" content="@">
   <meta name="twitter:creator" content="@">
 
-  <meta property="twitter:title" content="Henry's Blog">
-  <meta property="twitter:description" content="My learning notes, research, projects and musings">
+  <meta property="twitter:title" content="OpenAI Gym - Pendulum-v0">
+  <meta property="twitter:description" content="Code Here 1. Goal The problem setting is to solve the Inverted Pendulum problem in OpenAI gym. Try to keep a frictionless pendulum standing up. 2. Environment The pendulum environment has a continuous state space as follows (copied from wiki): State Type: Box(3) Num State Observation Min Max 0 Angle1...">
 
   
 
@@ -383,15 +385,14 @@
   <div class="container-md">
     <div class="row">
       <div class="col-xl-8 offset-xl-2 col-lg-10 offset-lg-1">
-        <div class="page-heading">
-          <h1>Henry's Blog</h1>
-          
-            
-              <hr class="small">
-              <span class="page-subheading">My learning notes, research, projects and musings</span>
-            
+        <div class="post-heading">
+          <h1>OpenAI Gym - Pendulum-v0</h1>
           
 
+          
+            <span class="post-meta">Posted on November 5, 2019</span>
+            
+            
           
         </div>
       </div>
@@ -404,254 +405,354 @@
 
 
 
-<div class=" container-md " role="main">
+<div class=" container-md ">
   <div class="row">
     <div class=" col-xl-8 offset-xl-2 col-lg-10 offset-lg-1 ">
-      
 
       
 
-
-
-<div class="posts-list">
-  
-  <article class="post-preview">
-    
-
-    
-
-    <a href="/blog/2019-12-06-tic-tac-toe-selfplay/">
-      <h2 class="post-title">Tic-tac-toe Self-Play</h2>
-
       
-    </a>
 
-    <p class="post-meta">
-      
-      Posted on December 6, 2019
-    </p>
+      <article role="main" class="blog-post">
+        <h2 id="code">Code</h2>
 
-    
+<p><a href="https://github.com/workofart/openai-gym-baselines/tree/master/Pendulum-v0">Here</a></p>
 
-    
-    
+<p><br /></p>
 
-    <div class="post-entry">
-      
-      Code
+<h2 id="1-goal">1. Goal</h2>
+<p>The problem setting is to solve the <a href="https://gym.openai.com/envs/MountainCarContinuous-v0/">Inverted Pendulum</a> problem in OpenAI gym. Try to keep a frictionless pendulum standing up.</p>
 
+<p><img src="https://github.com/workofart/openai-gym-baselines/raw/master/Pendulum-v0/test-run.gif" alt="test-run" style="zoom: 67%;" /></p>
 
-      
-      
-        <a href="/blog/2019-12-06-tic-tac-toe-selfplay/" class="post-read-more">[Read&nbsp;More]</a>
-      
-    </div>
-    
+<h2 id="2-environment">2. Environment</h2>
+<p>The pendulum environment has a continuous state space as follows (copied from <a href="https://github.com/openai/gym/wiki/Pendulum-v0">wiki</a>):</p>
 
-    
-    <div class="blog-tags">
-      <span>Tags:</span>
-      
-      <a href="/blog/tags#reinforcement-learning">reinforcement-learning</a>
-      
-    </div>
-    
+<p><br /></p>
 
-   </article>
-  
-  <article class="post-preview">
-    
+<h4 id="state">State</h4>
 
-    
+<p>Type: Box(3)</p>
 
-    <a href="/blog/2019-12-03-acrobot/">
-      <h2 class="post-title">OpenAI Gym - Acrobot-v1</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Num</th>
+      <th>State</th>
+      <th>Observation</th>
+      <th>Min</th>
+      <th>Max</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>Angle1</td>
+      <td>cos(theta)</td>
+      <td>-1.0</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Angle2</td>
+      <td>sin(theta)</td>
+      <td>-1.0</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Velocity</td>
+      <td>theta dot</td>
+      <td>-8.0</td>
+      <td>8.0</td>
+    </tr>
+  </tbody>
+</table>
 
-      
-    </a>
+<p><br /></p>
 
-    <p class="post-meta">
-      
-      Posted on December 3, 2019
-    </p>
+<h4 id="actions">Actions</h4>
 
-    
+<p>Type: Box(1)</p>
 
-    
-    
+<table>
+  <thead>
+    <tr>
+      <th>Num</th>
+      <th>Action</th>
+      <th>Min</th>
+      <th>Max</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>Joint effort</td>
+      <td>-2.0</td>
+      <td>2.0</td>
+    </tr>
+  </tbody>
+</table>
 
-    <div class="post-entry">
-      
-      Code
+<p><br /></p>
 
+<h4 id="reward">Reward</h4>
 
-      
-      
-        <a href="/blog/2019-12-03-acrobot/" class="post-read-more">[Read&nbsp;More]</a>
-      
-    </div>
-    
+<p>The precise equation for reward:</p>
 
-    
-    <div class="blog-tags">
-      <span>Tags:</span>
-      
-      <a href="/blog/tags#reinforcement-learning">reinforcement-learning</a>
-      
-    </div>
-    
+\[-(\theta^2 + 0.1*\theta_{dot}^2 + 0.001*\text{action}^2)\]
 
-   </article>
-  
-  <article class="post-preview">
-    
+<p>Theta is normalized between -pi and pi. Therefore, the lowest reward is \(-(\pi^2 + 0.1*8^2 + 0.001*2^2) = -16.2736044\), and the highest reward is \(0\). In essence, the goal is to remain at zero angle (vertical), with the least rotational velocity, and the least effort.</p>
 
-    
+<p><br /></p>
 
-    <a href="/blog/2019-11-05-pendulum/">
-      <h2 class="post-title">OpenAI Gym - Pendulum-v0</h2>
+<h4 id="starting-state">Starting State</h4>
 
-      
-    </a>
+<p>Random angle from \(-\pi\) to \(\pi\), and random velocity between <code class="language-plaintext highlighter-rouge">-1</code> and <code class="language-plaintext highlighter-rouge">1</code></p>
 
-    <p class="post-meta">
-      
-      Posted on November 5, 2019
-    </p>
+<p><br /></p>
 
-    
+<h4 id="episode-termination">Episode Termination</h4>
 
-    
-    
+<p>There is no specified termination. Adding a maximum number of steps might be a good idea.</p>
 
-    <div class="post-entry">
-      
-      Code
+<p>NOTE: Your environment object could be wrapped by the TimeLimit wrapper, if created using the <code class="language-plaintext highlighter-rouge">gym.make</code> method. In that case it will terminate after 200 steps.</p>
 
+<p><br /></p>
 
-      
-      
-        <a href="/blog/2019-11-05-pendulum/" class="post-read-more">[Read&nbsp;More]</a>
-      
-    </div>
-    
+<h4 id="solved-condition">Solved Condition</h4>
 
-    
-    <div class="blog-tags">
-      <span>Tags:</span>
-      
-      <a href="/blog/tags#reinforcement-learning">reinforcement-learning</a>
-      
-    </div>
-    
+<p>There are no specific requirements, see the <strong>experiments section</strong> for a comparison of performance with the leaderboard.</p>
 
-   </article>
-  
-  <article class="post-preview">
-    
+<p><br /></p>
 
-    
+<h2 id="3-approach">3. Approach</h2>
+<p>The approach uses the one-step <em>actor-critic</em> (episodic) algorithm with <em>temporal difference</em> for estimating the advantage function for the critic. The policy will be a continuous one, namely the gaussian function.</p>
 
-    <a href="/blog/2019-11-04-mountain-car/">
-      <h2 class="post-title">OpenAI Gym - MountainCar-v0</h2>
+<p><br /></p>
 
-      
-    </a>
+<h3 id="31-discretization">3.1 Discretization</h3>
 
-    <p class="post-meta">
-      
-      Posted on November 4, 2019
-    </p>
+<p>Since the state space is continuous and is comprised of angle of the pendulum and the velocity we will discretize them separately using a radial basis function (RBF) as follows:</p>
 
-    
-
-    
-    
-
-    <div class="post-entry">
-      
-      Code
-
-
-      
-      
-        <a href="/blog/2019-11-04-mountain-car/" class="post-read-more">[Read&nbsp;More]</a>
-      
-    </div>
-    
-
-    
-    <div class="blog-tags">
-      <span>Tags:</span>
-      
-      <a href="/blog/tags#reinforcement-learning">reinforcement-learning</a>
-      
-    </div>
-    
-
-   </article>
-  
-  <article class="post-preview">
-    
-
-    
-
-    <a href="/blog/2019-04-25-Brawlstars-RL/">
-      <h2 class="post-title">BrawlStars AI Series (Part 2) - Reinforcement Learning</h2>
-
-      
-    </a>
-
-    <p class="post-meta">
-      
-      Posted on April 25, 2019
-    </p>
-
-    
-
-    
-    
-
-    <div class="post-entry">
-      
-      First and foremost, I must say, perception is harder than planning.
-
-
-      
-      
-        <a href="/blog/2019-04-25-Brawlstars-RL/" class="post-read-more">[Read&nbsp;More]</a>
-      
-    </div>
-    
-
-    
-    <div class="blog-tags">
-      <span>Tags:</span>
-      
-      <a href="/blog/tags#reinforcement-learning">reinforcement-learning</a>
-      
-    </div>
-    
-
-   </article>
-  
-</div>
-
-
-<ul class="pagination main-pager">
-  
-  
-  <li class="page-item next">
-    <a class="page-link" href="/blog/page2">Older Posts &rarr;</a>
+<ul>
+  <li>
+    <p>Angle1 and Angle2 will <em>each</em> be discretized into 15 radial basis kernels</p>
   </li>
-  
+  <li>
+    <p>Pendulum velocity will be discretized into 15 radial basis kernels.</p>
+  </li>
+  <li>
+    <p>Essentially, each “transformed” state will be computed by measuring how far the raw state is from each of the 15 radial basis kernel centers.</p>
+  </li>
 </ul>
 
+<p>Therefore, in total, there will be \(15^3=3375\) states.</p>
+
+<p><br /></p>
+
+<h3 id="32-exploration-vs-exploitation">3.2 Exploration vs Exploitation</h3>
+
+<p>To overcome the exploration-exploitation dilemma, we will be slowly decreasing the standard deviation of the gaussian function. This will allow the agent’s action to vary a lot initially for exploration. At later stages of training, since the standard deviation is smaller, the actions will tend to be closer to the estimated gaussian mean, thus exploiting the learnt policy weights for a more accurate action selection.</p>
+
+<p><br /></p>
+
+<h3 id="33-gaussian-policy">3.3 Gaussian Policy</h3>
+
+<p>To generate continuous actions for this problem, the gaussian policy is a simple and good baseline to start off with.</p>
+
+<p>\(\Large
+\pi(a \mid s, \theta) = \frac{1}{\sigma \sqrt{2\pi}} e^{-\frac{(a - \mu(s, \theta))^2}{2\sigma^2}}\)
+We can see that there are three variables that we need to provide for the policy to generate an action:
+\(\mu = \text{The mean given the state and weights, this will be approximated by a function approximator}\\
+\sigma = \text{The standard deviation parameter for this policy} \\
+\theta = \text{The weights of the policy that will be trained}\)</p>
+
+<p><br /></p>
+
+<h3 id="34-linear-value-function">3.4 Linear Value Function</h3>
+
+<p>Not to complicate our approach, our value function is defined to be a function approximator that has the same number of parameters as the number of states, which is 3375. The prediction of the value given the state is just a dot product between the current weights and the given state.</p>
+
+<p><br /></p>
+
+<h3 id="35-training">3.5 Training</h3>
+
+<p>As the name suggest, the agent is trained one step at a time, which means the learning happens after every timestep (max 200 timestep make up one episode).</p>
+
+<p><br /></p>
+
+<p><strong>Policy (Actor) and Value (Critic) Function Weight Update</strong></p>
+
+\[\Large
+\begin{align*}
+\alpha_v &amp;= \text{Value function learning rate}\\
+\alpha_p &amp;= \text{Policy function learning rate}\\
+\hat{v} &amp;= \text{Estimated value for the given state} \\
+\theta_v &amp;= \text{Value function parameterization weights}\\
+\theta_p &amp;= \text{Policy function parameterization weights}\\
+\delta &amp;= \text{Advantage}\\
+\gamma &amp;= \text{Discount rate}\\
+I &amp;= \text{Policy parameter scaling factor, initially 1} \\
+R &amp;= \text{Reward}\\ \\
+
+\delta &amp;\leftarrow R + \gamma \hat{v}(S', \theta_v) - \hat{v}(S, \theta_v)\\
+\theta_v &amp;\leftarrow \theta_v + \alpha_v \delta \triangledown \hat{v}(S, \theta_v) \\
+\theta_p &amp;\leftarrow \theta_p + \alpha_p I \delta \triangledown \ln{\pi(A \mid S, \theta_p)} \\
+I &amp;\leftarrow \gamma I \\
+\end{align*}\]
+
+<p><br /></p>
+
+<h3 id="36-hyperparameters">3.6 Hyperparameters</h3>
+
+<ul>
+  <li>Discount rate (\(\gamma\)): 0.99</li>
+  <li>Actor learning rate (\(\alpha_v\)): \(1e^{-4}\)</li>
+  <li>Critic learning rate (\(\alpha_p\)): \(5e^{-3}\)</li>
+  <li>Gaussian Policy standard deviation (\(\sigma_p\)): 0.5 decreasing to 0.1 linearly over all training episodes</li>
+  <li>Radial Basis Function Kernel Width (\(\sigma_{rbf}\)): 0.1</li>
+  <li>Total number of RBF kernels: 15 for each dimension of the state.</li>
+</ul>
+
+<p><br /></p>
+
+<h2 id="4-experiment--findings">4. Experiment &amp; Findings</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th># Episodes</th>
+      <th>Training Time</th>
+      <th>Avg Reward (last 100 episodes)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>2000</td>
+      <td>213 seconds</td>
+      <td>-146</td>
+    </tr>
+    <tr>
+      <td>1000</td>
+      <td>117 seconds</td>
+      <td>-151</td>
+    </tr>
+    <tr>
+      <td>500</td>
+      <td>76 seconds</td>
+      <td>-215</td>
+    </tr>
+    <tr>
+      <td>200</td>
+      <td>23.55 seconds</td>
+      <td>-1062</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><img src="https://github.com/workofart/openai-gym-baselines/raw/master/Pendulum-v0/500_ep.png" alt="500ep" style="zoom: 67%;" /></p>
+
+<p><img src="https://github.com/workofart/openai-gym-baselines/raw/master/Pendulum-v0/2000_ep.png" alt="2000ep" style="zoom: 67%;" /></p>
+
+<p>We can see that there is a significant improvement in performance after training for 1000 episodes. And by looking at the rewards graph, for the 2000 episode training instance, it has converged to &gt; -200 rewards at around 500 episodes. This means that perhaps a better initial and decay value for \(\sigma_p\) can be chosen to speed up the convergence rate in shorter training sessions.</p>
+
+<p>It also shows that having 15 RBF kernels for each state dimension is enough for discretizing the state space. Since this hyperparameter directly affects the training speed and memory usage during training, it is often necessary to revisit this when it becomes a bottleneck.</p>
+
+<p>Compared to the leaderboard below, our performance is within the range of the average users.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>User</th>
+      <th>Best 100-episode performance</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="https://github.com/msinto93">msinto93</a></td>
+      <td>-123.11 ± 6.86</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/msinto93">msinto93</a></td>
+      <td>-123.79 ± 6.90</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/heerad">heerad</a></td>
+      <td>-134.48 ± 9.07</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/Bhaney44">BS Haney</a></td>
+      <td>-135</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/ThyrixYang">ThyrixYang</a></td>
+      <td>-136.16 ± 11.97</td>
+    </tr>
+    <tr>
+      <td><a href="https://github.com/lirnli">lirnli</a></td>
+      <td>-152.24 ± 10.87</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><br /></p>
+
+<h2 id="5-next-steps">5. Next Steps</h2>
+
+<p>Fine tune the initial and decay value for \(\sigma_p\) and see its effect on the convergence rate and overall performance.</p>
+
+<p>Remember that we’re still using a very simple linear function approximator for our value function. It works pretty well even with this simple baseline setup, which makes me wonder how much of an improvement will we have if we try something more powerful.</p>
+
+<p>Try to shrink the state discretization to less RBF kernels, and see if there’s a significant reduction in training efficiency or effectiveness.</p>
+
+<p>Overall, this was a very shallow dive into actor-critic, and there are far more intricacies to this method. I will try to explore other alternatives with the OpenAI gym. Stay tuned.</p>
+
+      </article>
+
+      
+        <div class="blog-tags">
+          <span>Tags:</span>
+          
+            <a href="/blog/tags#reinforcement-learning">reinforcement-learning</a>
+          
+        </div>
+      
+
+      
+
+      
+        <!-- Check if any share-links are active -->
+
+
+
 
 
       
 
+      <ul class="pagination blog-pager">
+        
+        <li class="page-item previous">
+          <a class="page-link" href="/blog/2019-11-04-mountain-car/" data-toggle="tooltip" data-placement="top" title="OpenAI Gym - MountainCar-v0">&larr; Previous Post</a>
+        </li>
+        
+        
+        <li class="page-item next">
+          <a class="page-link" href="/blog/2019-12-03-acrobot/" data-toggle="tooltip" data-placement="top" title="OpenAI Gym - Acrobot-v1">Next Post &rarr;</a>
+        </li>
+        
+      </ul>
       
+  
+  
+  
+
+  
+
+
+  
+
+
 
     </div>
   </div>
@@ -740,6 +841,13 @@
 
 
 
+
+  
+    
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+  
 
 
 

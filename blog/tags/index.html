@@ -9,14 +9,13 @@
 
   
 
-  <title>404 - Page not found</title>
+  <title>Tag Index</title>
 
   
   <meta name="author" content="Henry Pan">
   
 
-  <meta name="description" content="Whoops, this page doesn't exist.
-  Move along. (404 error)">
+  <meta name="description" content="{% assign date_format = site.date_format | default: &quot;%B %-d, %Y&quot; %} {%- capture site_tags -%} {%- for tag in site.tags -%} {{- tag | first -}}{%- unless forloop.last -%},{%- endunless -%} {%- endfor -%} {%- endcapture -%} {%- assign tags_list = site_tags | split:',' | sort -%} {%- for tag...">
 
   
 
@@ -90,16 +89,15 @@
 
   
   <meta property="og:site_name" content="Henry's Blog">
-  <meta property="og:title" content="404 - Page not found">
-  <meta property="og:description" content="Whoops, this page doesn't exist.
-  Move along. (404 error)">
+  <meta property="og:title" content="Tag Index">
+  <meta property="og:description" content="{% assign date_format = site.date_format | default: &quot;%B %-d, %Y&quot; %} {%- capture site_tags -%} {%- for tag in site.tags -%} {{- tag | first -}}{%- unless forloop.last -%},{%- endunless -%} {%- endfor -%} {%- endcapture -%} {%- assign tags_list = site_tags | split:',' | sort -%} {%- for tag...">
 
   
 
   
   <meta property="og:type" content="website">
-  <meta property="og:url" content="/blog/404.html">
-  <link rel="canonical" href="/blog/404.html">
+  <meta property="og:url" content="/blog/tags/">
+  <link rel="canonical" href="/blog/tags/">
   
 
   
@@ -108,9 +106,8 @@
   <meta name="twitter:site" content="@">
   <meta name="twitter:creator" content="@">
 
-  <meta property="twitter:title" content="404 - Page not found">
-  <meta property="twitter:description" content="Whoops, this page doesn't exist.
-  Move along. (404 error)">
+  <meta property="twitter:title" content="Tag Index">
+  <meta property="twitter:description" content="{% assign date_format = site.date_format | default: &quot;%B %-d, %Y&quot; %} {%- capture site_tags -%} {%- for tag in site.tags -%} {{- tag | first -}}{%- unless forloop.last -%},{%- endunless -%} {%- endfor -%} {%- endcapture -%} {%- assign tags_list = site_tags | split:',' | sort -%} {%- for tag...">
 
   
 
@@ -372,21 +369,210 @@
 
 
 
-  <div class="intro-header"></div>
+  <!-- TODO this file has become a mess, refactor it -->
 
-<div role="main" class=" container-md ">
-  
 
-  <div class="text-center">
-  <h1>Whoops, this page doesn't exist.</h1>
-  <h1>Move along. (404 error)</h1>
-  <br/>
 
-  <img src="/blog/assets/img/404-southpark.jpg" alt="Not found" />
+
+
+
+
+<header class="header-section ">
+
+<div class="intro-header no-img">
+  <div class="container-md">
+    <div class="row">
+      <div class="col-xl-8 offset-xl-2 col-lg-10 offset-lg-1">
+        <div class="page-heading">
+          <h1>Tag Index</h1>
+          
+
+          
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+</header>
 
 
-  
+
+
+
+<div class=" container-md " role="main">
+  <div class="row">
+    <div class=" col-xl-8 offset-xl-2 col-lg-10 offset-lg-1 ">
+      
+
+      <a href="#books" class="btn btn-primary tag-btn"><i class="fas fa-tag" aria-hidden="true"></i>&nbsp;books&nbsp;(1)</a><a href="#career" class="btn btn-primary tag-btn"><i class="fas fa-tag" aria-hidden="true"></i>&nbsp;career&nbsp;(6)</a><a href="#culture" class="btn btn-primary tag-btn"><i class="fas fa-tag" aria-hidden="true"></i>&nbsp;culture&nbsp;(1)</a><a href="#education" class="btn btn-primary tag-btn"><i class="fas fa-tag" aria-hidden="true"></i>&nbsp;education&nbsp;(2)</a><a href="#inspiration" class="btn btn-primary tag-btn"><i class="fas fa-tag" aria-hidden="true"></i>&nbsp;inspiration&nbsp;(2)</a><a href="#life" class="btn btn-primary tag-btn"><i class="fas fa-tag" aria-hidden="true"></i>&nbsp;life&nbsp;(1)</a><a href="#machine-learning" class="btn btn-primary tag-btn"><i class="fas fa-tag" aria-hidden="true"></i>&nbsp;machine-learning&nbsp;(2)</a><a href="#movie" class="btn btn-primary tag-btn"><i class="fas fa-tag" aria-hidden="true"></i>&nbsp;movie&nbsp;(1)</a><a href="#react" class="btn btn-primary tag-btn"><i class="fas fa-tag" aria-hidden="true"></i>&nbsp;react&nbsp;(1)</a><a href="#reinforcement-learning" class="btn btn-primary tag-btn"><i class="fas fa-tag" aria-hidden="true"></i>&nbsp;reinforcement-learning&nbsp;(7)</a><div id="full-tags-list"><h2 id="books" class="linked-section">
+        <i class="fas fa-tag" aria-hidden="true"></i>
+        &nbsp;books&nbsp;(1)
+    </h2>
+    <div class="post-list"><div class="tag-entry">
+                <a href="/blog/2013-07-18-one-sentence-summary-books/">One Sentence Summary of Books</a>
+                <div class="entry-date">
+                    <time datetime="2013-07-18T18:36:00-04:00">July 18, 2013</time>
+                </div>
+            </div></div><h2 id="career" class="linked-section">
+        <i class="fas fa-tag" aria-hidden="true"></i>
+        &nbsp;career&nbsp;(6)
+    </h2>
+    <div class="post-list"><div class="tag-entry">
+                <a href="/blog/2019-01-10-career-paths-in-ml/">Career Paths in Data Science/Machine Learning</a>
+                <div class="entry-date">
+                    <time datetime="2019-01-10T12:00:00-05:00">January 10, 2019</time>
+                </div>
+            </div><div class="tag-entry">
+                <a href="/blog/2015-12-03-looking-back-planning-forward/">Looking back, planning forward</a>
+                <div class="entry-date">
+                    <time datetime="2015-12-03T08:46:00-05:00">December 3, 2015</time>
+                </div>
+            </div><div class="tag-entry">
+                <a href="/blog/2013-12-24-a-few-thoughts-on-choosing-a-career-path/">A few thoughts on choosing a career path</a>
+                <div class="entry-date">
+                    <time datetime="2013-12-24T09:52:00-05:00">December 24, 2013</time>
+                </div>
+            </div><div class="tag-entry">
+                <a href="/blog/2013-08-07-step-back-and-rethink/">Step Back and Rethink</a>
+                <div class="entry-date">
+                    <time datetime="2013-08-07T00:33:00-04:00">August 7, 2013</time>
+                </div>
+            </div><div class="tag-entry">
+                <a href="/blog/2013-03-30-dinner-talk/">Dinner Talk</a>
+                <div class="entry-date">
+                    <time datetime="2013-03-30T20:31:00-04:00">March 30, 2013</time>
+                </div>
+            </div><div class="tag-entry">
+                <a href="/blog/2013-03-02-some-inspirational-people/">Some Inspirational People</a>
+                <div class="entry-date">
+                    <time datetime="2013-03-02T09:07:00-05:00">March 2, 2013</time>
+                </div>
+            </div></div><h2 id="culture" class="linked-section">
+        <i class="fas fa-tag" aria-hidden="true"></i>
+        &nbsp;culture&nbsp;(1)
+    </h2>
+    <div class="post-list"><div class="tag-entry">
+                <a href="/blog/2013-05-15-first-day-at-mckinsey/">1st day at McKinsey</a>
+                <div class="entry-date">
+                    <time datetime="2013-05-15T17:28:00-04:00">May 15, 2013</time>
+                </div>
+            </div></div><h2 id="education" class="linked-section">
+        <i class="fas fa-tag" aria-hidden="true"></i>
+        &nbsp;education&nbsp;(2)
+    </h2>
+    <div class="post-list"><div class="tag-entry">
+                <a href="/blog/2013-09-25-finding-the-right-route/">Finding the 'right' route</a>
+                <div class="entry-date">
+                    <time datetime="2013-09-25T04:11:00-04:00">September 25, 2013</time>
+                </div>
+            </div><div class="tag-entry">
+                <a href="/blog/2013-03-16-movie-review-accepted/">Movie Review - 'Accepted'</a>
+                <div class="entry-date">
+                    <time datetime="2013-03-16T17:20:00-04:00">March 16, 2013</time>
+                </div>
+            </div></div><h2 id="inspiration" class="linked-section">
+        <i class="fas fa-tag" aria-hidden="true"></i>
+        &nbsp;inspiration&nbsp;(2)
+    </h2>
+    <div class="post-list"><div class="tag-entry">
+                <a href="/blog/2013-03-30-dinner-talk/">Dinner Talk</a>
+                <div class="entry-date">
+                    <time datetime="2013-03-30T20:31:00-04:00">March 30, 2013</time>
+                </div>
+            </div><div class="tag-entry">
+                <a href="/blog/2013-03-02-some-inspirational-people/">Some Inspirational People</a>
+                <div class="entry-date">
+                    <time datetime="2013-03-02T09:07:00-05:00">March 2, 2013</time>
+                </div>
+            </div></div><h2 id="life" class="linked-section">
+        <i class="fas fa-tag" aria-hidden="true"></i>
+        &nbsp;life&nbsp;(1)
+    </h2>
+    <div class="post-list"><div class="tag-entry">
+                <a href="/blog/2013-11-16-different-life-experiences-bring-different-perspectives/">Different Life Experiences Bring Different Perspectives</a>
+                <div class="entry-date">
+                    <time datetime="2013-11-16T08:11:00-05:00">November 16, 2013</time>
+                </div>
+            </div></div><h2 id="machine-learning" class="linked-section">
+        <i class="fas fa-tag" aria-hidden="true"></i>
+        &nbsp;machine-learning&nbsp;(2)
+    </h2>
+    <div class="post-list"><div class="tag-entry">
+                <a href="/blog/2019-04-20-Brawlstars-AI/">BrawlStars AI Series (Part 1)</a>
+                <div class="entry-date">
+                    <time datetime="2019-04-20T01:00:00-04:00">April 20, 2019</time>
+                </div>
+            </div><div class="tag-entry">
+                <a href="/blog/2019-03-20-ml-tut-price-prediction/">Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future</a>
+                <div class="entry-date">
+                    <time datetime="2019-03-20T11:50:00-04:00">March 20, 2019</time>
+                </div>
+            </div></div><h2 id="movie" class="linked-section">
+        <i class="fas fa-tag" aria-hidden="true"></i>
+        &nbsp;movie&nbsp;(1)
+    </h2>
+    <div class="post-list"><div class="tag-entry">
+                <a href="/blog/2013-03-16-movie-review-accepted/">Movie Review - 'Accepted'</a>
+                <div class="entry-date">
+                    <time datetime="2013-03-16T17:20:00-04:00">March 16, 2013</time>
+                </div>
+            </div></div><h2 id="react" class="linked-section">
+        <i class="fas fa-tag" aria-hidden="true"></i>
+        &nbsp;react&nbsp;(1)
+    </h2>
+    <div class="post-list"><div class="tag-entry">
+                <a href="/blog/2019-01-26-react-redux-intro/">React Redux Intro</a>
+                <div class="entry-date">
+                    <time datetime="2019-01-26T12:00:00-05:00">January 26, 2019</time>
+                </div>
+            </div></div><h2 id="reinforcement-learning" class="linked-section">
+        <i class="fas fa-tag" aria-hidden="true"></i>
+        &nbsp;reinforcement-learning&nbsp;(7)
+    </h2>
+    <div class="post-list"><div class="tag-entry">
+                <a href="/blog/2019-12-06-tic-tac-toe-selfplay/">Tic-tac-toe Self-Play</a>
+                <div class="entry-date">
+                    <time datetime="2019-12-06T16:00:00-05:00">December 6, 2019</time>
+                </div>
+            </div><div class="tag-entry">
+                <a href="/blog/2019-12-03-acrobot/">OpenAI Gym - Acrobot-v1</a>
+                <div class="entry-date">
+                    <time datetime="2019-12-03T16:00:00-05:00">December 3, 2019</time>
+                </div>
+            </div><div class="tag-entry">
+                <a href="/blog/2019-11-05-pendulum/">OpenAI Gym - Pendulum-v0</a>
+                <div class="entry-date">
+                    <time datetime="2019-11-05T16:00:00-05:00">November 5, 2019</time>
+                </div>
+            </div><div class="tag-entry">
+                <a href="/blog/2019-11-04-mountain-car/">OpenAI Gym - MountainCar-v0</a>
+                <div class="entry-date">
+                    <time datetime="2019-11-04T18:00:00-05:00">November 4, 2019</time>
+                </div>
+            </div><div class="tag-entry">
+                <a href="/blog/2019-04-25-Brawlstars-RL/">BrawlStars AI Series (Part 2) - Reinforcement Learning</a>
+                <div class="entry-date">
+                    <time datetime="2019-04-25T01:00:00-04:00">April 25, 2019</time>
+                </div>
+            </div><div class="tag-entry">
+                <a href="/blog/2019-04-04-pg-trading/">Creating a Policy Gradient (PG) Agent to Trade</a>
+                <div class="entry-date">
+                    <time datetime="2019-04-04T01:55:00-04:00">April 4, 2019</time>
+                </div>
+            </div><div class="tag-entry">
+                <a href="/blog/2019-02-27-a3c-rl-layments-explanation/">Asynchronous Advantage Actor Critic (A3C)-Reinforcement Learning -Laymens Explanation</a>
+                <div class="entry-date">
+                    <time datetime="2019-02-27T12:00:00-05:00">February 27, 2019</time>
+                </div>
+            </div></div></div>
+
+
+      
+
+      
+
+    </div>
+  </div>
 </div>
 
 
