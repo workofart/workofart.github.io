@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Beautiful Jekyll 5.0.0 | Copyright Dean Attali 2020 -->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  
+
+  
+
+  <title>ML by Hand</title>
+
+  
+  <meta name="author" content="Henry Pan">
+  
+
+  <meta name="description" content="Project link: https://github.com/workofart/ml-by-hand I recently started working on a project called ML by Hand, which is a machine learning library that I built using just Python and NumPy. Afterwards, I trained various models (classical ones like CNN, ResNet, RNN, LSTM, and more modern architectures like Transformers and GPT) using this...">
+
+  
+
+  
+  <meta name="keywords" content="career,software,engineering,life,education,inspiration,machine learning,deep learning,reinforcement learning,web development,react">
+  
+
+  
+
+  
+
+  
+
+  
+<!-- Google Analytics -->
+<script>
+  (function (i, s, o, g, r, a, m) {
+    i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+      (i[r].q = i[r].q || []).push(arguments)
+    }, i[r].l = 1 * new Date(); a = s.createElement(o),
+      m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+  })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+  ga('create', 'UA-103622213-1', 'auto');
+  ga('send', 'pageview');
+</script>
+<!-- End Google Analytics -->
+
+
+  
+
+
+  
+    
+      
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+
+    
+      
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css">
+
+
+    
+      
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic">
+
+
+    
+      
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800">
+
+
+    
+  
+
+  
+    
+      <link rel="stylesheet" href="/blog/assets/css/bootstrap-social.css">
+    
+      <link rel="stylesheet" href="/blog/assets/css/beautifuljekyll.css">
+    
+  
+
+  
+
+  
+  
+  
+
+  
+
+  
+  <meta property="og:site_name" content="Henry's Blog">
+  <meta property="og:title" content="ML by Hand">
+  <meta property="og:description" content="Project link: https://github.com/workofart/ml-by-hand I recently started working on a project called ML by Hand, which is a machine learning library that I built using just Python and NumPy. Afterwards, I trained various models (classical ones like CNN, ResNet, RNN, LSTM, and more modern architectures like Transformers and GPT) using this...">
+
+  
+
+  
+  <meta property="og:type" content="article">
+  <meta property="og:article:author" content="Henry Pan">
+  <meta property="og:article:published_time" content="2025-02-06T03:23:00-05:00">
+  <meta property="og:url" content="/blog/2025-02-06-ml-by-hand/">
+  <link rel="canonical" href="/blog/2025-02-06-ml-by-hand/">
+  
+
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:site" content="@">
+  <meta name="twitter:creator" content="@">
+
+  <meta property="twitter:title" content="ML by Hand">
+  <meta property="twitter:description" content="Project link: https://github.com/workofart/ml-by-hand I recently started working on a project called ML by Hand, which is a machine learning library that I built using just Python and NumPy. Afterwards, I trained various models (classical ones like CNN, ResNet, RNN, LSTM, and more modern architectures like Transformers and GPT) using this...">
+
+  
+
+  
+
+
+  
+
+  
+
+</head>
+
+
+<body>
+
+  
+
+
+  <nav class="navbar navbar-expand-xl navbar-light fixed-top navbar-custom top-nav-regular"><a class="navbar-brand" href="/blog">Henry's Blog</a><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="main-navbar">
+    <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/blog/tags">Topics</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="https://www.henrypan.com">Author's home</a>
+          </li>
+        <li class="nav-item">
+          <a class="nav-link" id="nav-search-link" href="#" title="Search">
+            <span id="nav-search-icon" class="fa fa-search"></span>
+            <span id="nav-search-text">Search</span>
+          </a>
+        </li></ul>
+  </div>
+
+  
+
+  
+
+</nav>
+
+
+
+<div id="beautifuljekyll-search-overlay">
+
+  <div id="nav-search-exit" title="Exit search">✕</div>
+  <input type="text" id="nav-search-input" placeholder="Search">
+  <ul id="search-results-container"></ul>
+  
+  <script src="https://unpkg.com/simple-jekyll-search@latest/dest/simple-jekyll-search.min.js"></script>
+  <script>
+    var searchjson = '[ \
+       \
+        { \
+          "title"    : "ML by Hand", \
+          "category" : "machine-learningresearchpythondeep-learningeducationframework", \
+          "url"      : "/blog/2025-02-06-ml-by-hand/", \
+          "date"     : "February  6, 2025" \
+        }, \
+       \
+        { \
+          "title"    : "Peaking into the real game", \
+          "category" : "careerlife", \
+          "url"      : "/blog/2021-11-15-peaking-into-the-real-game/", \
+          "date"     : "November 15, 2021" \
+        }, \
+       \
+        { \
+          "title"    : "Tic-tac-toe Self-Play", \
+          "category" : "reinforcement-learningresearch", \
+          "url"      : "/blog/2019-12-06-tic-tac-toe-selfplay/", \
+          "date"     : "December  6, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "OpenAI Gym - Acrobot-v1", \
+          "category" : "reinforcement-learningresearch", \
+          "url"      : "/blog/2019-12-03-acrobot/", \
+          "date"     : "December  3, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "OpenAI Gym - Pendulum-v0", \
+          "category" : "reinforcement-learningresearch", \
+          "url"      : "/blog/2019-11-05-pendulum/", \
+          "date"     : "November  5, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "OpenAI Gym - MountainCar-v0", \
+          "category" : "reinforcement-learningresearch", \
+          "url"      : "/blog/2019-11-04-mountain-car/", \
+          "date"     : "November  4, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "BrawlStars AI Series (Part 2) - Reinforcement Learning", \
+          "category" : "reinforcement-learningcomputer visiongameresearch", \
+          "url"      : "/blog/2019-04-25-Brawlstars-RL/", \
+          "date"     : "April 25, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "BrawlStars AI Series (Part 1)", \
+          "category" : "machine-learningdeep learninggameresearch", \
+          "url"      : "/blog/2019-04-20-Brawlstars-AI/", \
+          "date"     : "April 20, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "Creating a Policy Gradient (PG) Agent to Trade", \
+          "category" : "reinforcement-learningdeep learningtradingresearch", \
+          "url"      : "/blog/2019-04-04-pg-trading/", \
+          "date"     : "April  4, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future", \
+          "category" : "machine-learningtutorial", \
+          "url"      : "/blog/2019-03-20-ml-tut-price-prediction/", \
+          "date"     : "March 20, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "Asynchronous Advantage Actor Critic (A3C)-Reinforcement Learning -Laymens Explanation", \
+          "category" : "reinforcement-learningconcept", \
+          "url"      : "/blog/2019-02-27-a3c-rl-layments-explanation/", \
+          "date"     : "February 27, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "React Redux Intro", \
+          "category" : "reactfront-endsoftware development", \
+          "url"      : "/blog/2019-01-26-react-redux-intro/", \
+          "date"     : "January 26, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "Career Paths in Data Science/Machine Learning", \
+          "category" : "careermachine learningdata scienceanalyst", \
+          "url"      : "/blog/2019-01-10-career-paths-in-ml/", \
+          "date"     : "January 10, 2019" \
+        }, \
+       \
+        { \
+          "title"    : "Looking back, planning forward", \
+          "category" : "careercomputer sciencebusiness", \
+          "url"      : "/blog/2015-12-03-looking-back-planning-forward/", \
+          "date"     : "December  3, 2015" \
+        }, \
+       \
+        { \
+          "title"    : "A few thoughts on choosing a career path", \
+          "category" : "careeradvice", \
+          "url"      : "/blog/2013-12-24-a-few-thoughts-on-choosing-a-career-path/", \
+          "date"     : "December 24, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "Different Life Experiences Bring Different Perspectives", \
+          "category" : "life", \
+          "url"      : "/blog/2013-11-16-different-life-experiences-bring-different-perspectives/", \
+          "date"     : "November 16, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "Finding the &#39;right&#39; route", \
+          "category" : "educationbusinesslife", \
+          "url"      : "/blog/2013-09-25-finding-the-right-route/", \
+          "date"     : "September 25, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "Step Back and Rethink", \
+          "category" : "careercomputer sciencebusiness", \
+          "url"      : "/blog/2013-08-07-step-back-and-rethink/", \
+          "date"     : "August  7, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "One Sentence Summary of Books", \
+          "category" : "books", \
+          "url"      : "/blog/2013-07-18-one-sentence-summary-books/", \
+          "date"     : "July 18, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "1st day at McKinsey", \
+          "category" : "corporate culture", \
+          "url"      : "/blog/2013-05-15-first-day-at-mckinsey/", \
+          "date"     : "May 15, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "Dinner Talk", \
+          "category" : "inspirationcareer", \
+          "url"      : "/blog/2013-03-30-dinner-talk/", \
+          "date"     : "March 30, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "Movie Review - &#39;Accepted&#39;", \
+          "category" : "movieeducation", \
+          "url"      : "/blog/2013-03-16-movie-review-accepted/", \
+          "date"     : "March 16, 2013" \
+        }, \
+       \
+        { \
+          "title"    : "Some Inspirational People", \
+          "category" : "inspirationcareer", \
+          "url"      : "/blog/2013-03-02-some-inspirational-people/", \
+          "date"     : "March  2, 2013" \
+        }, \
+       \
+       \
+        { \
+          "title"    : "Henry&#39;s Blog", \
+          "category" : "page", \
+          "url"      : "/blog/", \
+          "date"     : "January 1, 1970" \
+        }, \
+       \
+        { \
+          "title"    : "Tag Index", \
+          "category" : "page", \
+          "url"      : "/blog/tags/", \
+          "date"     : "January 1, 1970" \
+        }, \
+       \
+        { \
+          "title"    : "Henry&#39;s Blog", \
+          "category" : "page", \
+          "url"      : "/blog/page2/", \
+          "date"     : "January 1, 1970" \
+        }, \
+       \
+        { \
+          "title"    : "Henry&#39;s Blog", \
+          "category" : "page", \
+          "url"      : "/blog/page3/", \
+          "date"     : "January 1, 1970" \
+        }, \
+       \
+        { \
+          "title"    : "Henry&#39;s Blog", \
+          "category" : "page", \
+          "url"      : "/blog/page4/", \
+          "date"     : "January 1, 1970" \
+        }, \
+       \
+        { \
+          "title"    : "Henry&#39;s Blog", \
+          "category" : "page", \
+          "url"      : "/blog/page5/", \
+          "date"     : "January 1, 1970" \
+        } \
+       \
+    ]';
+    searchjson = JSON.parse(searchjson);
+
+    var sjs = SimpleJekyllSearch({
+      searchInput: document.getElementById('nav-search-input'),
+      resultsContainer: document.getElementById('search-results-container'),
+      json: searchjson
+    });
+  </script>
+</div>
+
+
+
+
+
+  <!-- TODO this file has become a mess, refactor it -->
+
+
+
+
+
+
+
+<header class="header-section ">
+
+<div class="intro-header no-img">
+  <div class="container-md">
+    <div class="row">
+      <div class="col-xl-8 offset-xl-2 col-lg-10 offset-lg-1">
+        <div class="post-heading">
+          <h1>ML by Hand</h1>
+          
+
+          
+            <span class="post-meta">Posted on February 6, 2025</span>
+            
+            
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</header>
+
+
+
+
+
+<div class=" container-md ">
+  <div class="row">
+    <div class=" col-xl-8 offset-xl-2 col-lg-10 offset-lg-1 ">
+
+      
+
+      
+
+      <article role="main" class="blog-post">
+        <p>Project link: <a href="https://github.com/workofart/ml-by-hand">https://github.com/workofart/ml-by-hand</a></p>
+
+<p>I recently started working on a project called ML by Hand, which is a machine learning library that I built using just Python and NumPy. Afterwards, I trained various models (classical ones like CNN, ResNet, RNN, LSTM, and more modern architectures like Transformers and GPT) using this library. The motivation came from my curiosity about how to build deep learning models from scratch, like literally from mathematical formulas. The purpose of this project is definitely not to replace the machine learning libraries out there (e.g. PyTorch, TensorFlow), but rather to provide educational material to develop a deeper understanding of how models and libraries are created from scratch. Therefore, our top priority is not to develop the most efficient library, but still good enough to train <a href="https://github.com/workofart/ml-by-hand/blob/main/examples/gpt-2.py">GPT models locally</a>. The library implementation ensures that code and documentation are explicit enough to illustrate mathematical formulas in its rawest form. This project took inspiration from <a href="https://github.com/karpathy/micrograd">Micrograd</a> by Andrej Karpathy. I was initially interested in creating just an autograd engine (<a href="https://en.wikipedia.org/wiki/Automatic_differentiation">wikipedia</a>) but this project slowly evolved into a full-fledged machine learning library. Oh well, here we go. 😁</p>
+
+<p>This blog post is structured into several sections. We start by discussing the <a href="#motivation">motivation</a>. Then we move on to understanding the different <a href="#abstraction-layers-of-machine-learning-libraries">abstraction layers in machine learning libraries</a>. At this point, we can see where this project fits into the bigger picture. We then <a href="#comparing-this-project-to-pytorch-for-the-same-functionality">compare this project to PyTorch</a> to illustrate my motivation concretely. The bulk of the blog post is centralized around the <a href="#technical-design">Technical Design</a>, where we discuss the core components of the library. Finally, I have some <a href="#additional-thoughts">additional thoughts</a> while working on this project.</p>
+
+<center><img src="/blog/assets/images/ml/ml-by-hand/ml-by-hand.gif" alt="demo" style="zoom: 100%;" /></center>
+<center>Demo of GPT-2 Inference and Training (built by this library, which was built from scratch)</center>
+
+<h2 id="motivation-and-goals">Motivation and Goals</h2>
+
+<ul>
+  <li>The goal is for learning (fewer abstractions and closer to math), not for replacing major machine learning libraries</li>
+  <li>Learn from first principles (calculus and linear algebra) and express them in their rawest form in code</li>
+  <li>Implement techniques and model architectures from academic papers (<a href="https://github.com/search?q=repo%3Aworkofart%2Fml-by-hand%20paper&amp;type=code">examples</a>)</li>
+  <li>Strip down the abstraction layers of machine learning libraries to understand what’s going on underneath the hood</li>
+  <li>Learn to create a machine learning library from scratch</li>
+</ul>
+
+<h2 id="abstraction-layers-of-machine-learning-libraries">Abstraction layers of Machine Learning Libraries</h2>
+
+<p>Below is an illustration of abstraction layers from the highest level to the lowest level.</p>
+
+<center><img src="/blog/assets/images/ml/ml-by-hand/ml-by-hand-Abstraction-Layers.png" alt="Abstraction-Layers" style="zoom: 100%;" /></center>
+
+<p>This project operates around the middle layer, which means that we’re basically converting these mathematical formulas from textbooks and papers into NumPy or Python code. I believe that this layer provides the most transparency to show how everything works, yet not so low-level that you’re worried about how the hardware works (another domain). And given that Python is a very beginner-friendly programming language, we want to use this as the starting point.</p>
+
+<h2 id="comparing-this-project-to-pytorch-for-the-same-functionality">Comparing this project to PyTorch for the same functionality</h2>
+<p>Here we are comparing the same functionality in our own library versus PyTorch. Although PyTorch’s APIs are very easy to understand, I think the difference comes in when we want to debug something. So if you want to trace down this function call hierarchy, you can see that PyTorch wraps a lot of functions around, mostly to improve efficiency, but also to be very generic. In our library, we can easily just step through the function call references to see what exactly is happening. And most likely the depth of these function references is about 2 to 3 layers, whereas PyTorch has significant deeper layers.</p>
+
+<p>Let’s try to step through a typical ReLU function in PyTorch.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Source: https://github.com/pytorch/pytorch/blob/v2.6.0/torch/nn/functional.py#L1693
+</span><span class="k">def</span> <span class="nf">relu</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>  <span class="c1"># noqa: D400,D402
+</span>    <span class="s">"""
+    Applies the rectified linear unit function element-wise. See
+    :class:`~torch.nn.ReLU` for more details.
+    """</span>
+    <span class="k">if</span> <span class="n">has_torch_function_unary</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">handle_torch_function</span><span class="p">(</span><span class="n">relu</span><span class="p">,</span> <span class="p">(</span><span class="nb">input</span><span class="p">,),</span> <span class="nb">input</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="n">inplace</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">relu_</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+</code></pre></div></div>
+<p>Now, you’re wondering, what’s <code class="language-plaintext highlighter-rouge">has_torch_function_unary</code> above? Let’s ignore that and take a look at <code class="language-plaintext highlighter-rouge">torch.nn.ReLU</code> as the code comment suggested.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Source: https://github.com/pytorch/pytorch/blob/9ea1823f96690b4f8b3d79e01c477b3629eab3b6/torch/nn/modules/activation.py#L97
+</span><span class="k">class</span> <span class="nc">ReLU</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sa">r</span><span class="s">"""Applies the rectified linear unit function element-wise.
+    :math:`\text{ReLU}(x) = (x)^+ = \max(0, x)`
+    """</span>
+
+    <span class="n">__constants__</span> <span class="o">=</span> <span class="p">[</span><span class="s">"inplace"</span><span class="p">]</span>
+    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">inplace</span> <span class="o">=</span> <span class="n">inplace</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">F</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">inplace</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">inplace_str</span> <span class="o">=</span> <span class="s">"inplace=True"</span> <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">inplace</span> <span class="k">else</span> <span class="s">""</span>
+        <span class="k">return</span> <span class="n">inplace_str</span>
+</code></pre></div></div>
+
+<p>Ok, so we have the math formula for this ReLU operation in the code comment, which is helpful. But the code implementation is still not found. Let’s trace through the <code class="language-plaintext highlighter-rouge">F.relu()</code> function. Wait, that’s referencing something not easily navigable through the IDE. I did some searching and found that the actual implementation of the ReLU function is done in C++. Below is how it’s currently defined, though the exact function signatures or file locations may change in future PyTorch versions.</p>
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Source: https://github.com/pytorch/pytorch/blob/9ea1823f96690b4f8b3d79e01c477b3629eab3b6/aten/src/ATen/native/Activation.cpp#L512-L515</span>
+<span class="n">Tensor</span> <span class="nf">relu</span><span class="p">(</span><span class="k">const</span> <span class="n">Tensor</span> <span class="o">&amp;</span> <span class="n">self</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">TORCH_CHECK</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">scalar_type</span><span class="p">()</span> <span class="o">!=</span> <span class="n">at</span><span class="o">::</span><span class="n">kBool</span><span class="p">,</span> <span class="s">"Boolean inputs not supported for relu"</span><span class="p">);</span>
+  <span class="k">return</span> <span class="n">at</span><span class="o">::</span><span class="n">clamp_min</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>So we finally found the code implementation for the ReLU activation function, in terms of math, which is \(\max(0, x)\). But if we want to find the backward (derivative of this formula), that’s another journey. But you get the point now. To be clear, PyTorch is much more efficient than our library because of those additional layers. And that’s the trade-off we’re making here. We’re targeting educational value over efficiency.</p>
+
+<p>Let’s do the same exercise using our library. If we look up the <code class="language-plaintext highlighter-rouge">relu</code> function, we first find this wrapper function</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Source: https://github.com/workofart/ml-by-hand/blob/3cf1d45ec2c451af58da2d2b839b1c17fdc0cb9d/autograd/functional.py#L17
+</span><span class="k">def</span> <span class="nf">relu</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="s">"""
+    Applies the Rectified Linear Unit (ReLU) activation function.
+    """</span>
+    <span class="k">return</span> <span class="n">Relu</span><span class="p">.</span><span class="nb">apply</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Now let’s navigate to <code class="language-plaintext highlighter-rouge">Relu</code> class. It’s defined in the same <code class="language-plaintext highlighter-rouge">functional.py</code> module.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># source: https://github.com/workofart/ml-by-hand/blob/3cf1d45ec2c451af58da2d2b839b1c17fdc0cb9d/autograd/functional.py#L87
+</span><span class="k">class</span> <span class="nc">Relu</span><span class="p">(</span><span class="n">Function</span><span class="p">):</span>
+    <span class="s">"""
+    Rectified Linear Unit (ReLU) activation function.
+
+    The ReLU function is defined as:
+        $$
+        ReLU(x) = max(0, x)
+        $$
+    """</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="p">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="p">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="p">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">grad</span><span class="p">.</span><span class="n">data</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Here we can exactly see the forward function and the backward function. And these correspond exactly to the mathematical formulations of ReLU \(\max(0, x)\) and</p>
+
+\[\frac{\partial{ReLU(x)}}{\partial x} =
+\begin{cases} 
+1 &amp; \text{if } x &gt; 0 \\
+0 &amp; \text{if } x \leq 0
+\end{cases}\]
+
+<p>The forward function is calling NumPy <code class="language-plaintext highlighter-rouge">maximum()</code>. And the backward function is performing a simple conditional multiply on a NumPy array <code class="language-plaintext highlighter-rouge">self.x</code> and <code class="language-plaintext highlighter-rouge">grad.data</code>. There’s nothing too complex about it.</p>
+
+<p>In this project, we intentionally keep the explicit mathematical formulas as shallow as possible so you can easily trace each step and understand why certain functions might fail. You can set breakpoints to debug your model training process without getting lost in multiple abstraction layers. Stepping back, while high-level libraries like PyTorch offer efficiency and extensive functionality, I personally find them less beginner-friendly. That’s why I’m building this project from scratch to bring the code and math closer together so we can connect the dots more easily, without the extra mental load of navigating countless functions and abstraction layers.</p>
+
+<h2 id="efficiency-vs-learning">Efficiency vs Learning</h2>
+
+<p>As mentioned above, this project is not targeted towards efficiency, but rather learning. Therefore, the scope and the nature of the project mean we can only achieve a certain degree of efficiency. After that point, it’s beyond the scope of this project to further optimize at lower levels of abstraction (e.g. C/C++ or kernel level). That being said, the code is still optimized to a certain extent without destroying the educational value and simplicity. I will talk about this later in the <a href="#technical-design">technical design</a> section. (spoiler alert: <em>there are a lot of ways to implement the computational graph and depending on which way we do that, there are some efficiency gains both in terms of CPU cycles and memory usage. The wrapper function for ReLU in the above example is part of that</em>).</p>
+
+<p>Along the way, I noticed one low-hanging fruit for efficiency improvement (drop-in replacement for NumPy) – <a href="https://github.com/cupy/cupy">CuPy</a>. This library allows us to enable GPU acceleration with near-zero code changes (hardware-agnostic code). In the animated gif above, I have trained the <a href="link">GPT-2 model</a> on a single GPU accelerated by CuPy. The fundamental acceleration comes from the matrix operations in NumPy -&gt; CuPy, where it could be done in parallel on GPUs, because CuPy has implemented the lower layers of abstraction to talk to the CUDA kernel directly.</p>
+
+<p>As hardware and training technique evolve, we might still be able to achieve great performance on certain datasets, but just a bit behind due to this trade-off. That’s totally fine. The motivation of this project is to understand how models are built from scratch. After we’ve grasped that, we can implement the same model using more efficient libraries such as PyTorch.</p>
+
+<h2 id="technical-design">Technical Design</h2>
+
+<p>This section goes in depth on the various components that make up this machine learning library and how I initially designed these components to interact with each other nicely and in a very easy-to-digest manner.</p>
+
+<center><img src="/blog/assets/images/ml/ml-by-hand/ml-by-hand-Tech-Design0.png" alt="Tech-Design0" style="zoom: 100%;" /></center>
+<center><h3>Figure 1</h3></center>
+
+<p>From a 30,000-foot view, you need to provide “Input Data” and “Labels”. Then you can define a neural network using <code class="language-plaintext highlighter-rouge">nn.py</code> module. The basic data structure is called a <a href="https://github.com/workofart/ml-by-hand/blob/3cf1d45ec2c451af58da2d2b839b1c17fdc0cb9d/autograd/tensor.py#L137">Tensor</a>, which represents things like neural network weights, output as well as loss. Neural networks in <code class="language-plaintext highlighter-rouge">nn.py</code> are functions, just like activation and loss functions in <code class="language-plaintext highlighter-rouge">functional.py</code>. All functions implement the <code class="language-plaintext highlighter-rouge">forward()</code> and <code class="language-plaintext highlighter-rouge">backward()</code> interface. The optimizer in <code class="language-plaintext highlighter-rouge">optim.py</code> determines how we update our weights. That’s it. Now let’s take a deeper look at each component to understand how everything works.</p>
+
+<h3 id="tensor-class">Tensor Class</h3>
+<center><img src="/blog/assets/images/ml/ml-by-hand/ml-by-hand-Tech-Design2.png" alt="Tech-Design2" style="zoom: 100%;" /></center>
+<center><h3>Figure 2</h3></center>
+
+<p>Let’s first introduce the smallest unit of data structure in our library, which is called a <strong>Tensor</strong>. This data structure basically encapsulates the <strong>data</strong> as well as the <strong>gradient</strong>. So those are two main attributes for a tensor. Obviously the data and the gradient are represented by the NumPy arrays. But a lot of our mathematical operations such as adding, subtracting, matrix multiplication are done on the Tensor level. So this means that we need to implement these mathematical operations in the <code class="language-plaintext highlighter-rouge">Tensor</code> class.</p>
+
+<h4 id="tensor-level-operations">Tensor-level Operations</h4>
+<p>The main categories of Tensor operations:</p>
+<ul>
+  <li><strong>Binary operations</strong> (Add, mul etc…): These operations operate on two operands (<code class="language-plaintext highlighter-rouge">Tensor1</code>, <code class="language-plaintext highlighter-rouge">Tensor2</code> in <code class="language-plaintext highlighter-rouge">Tensor1 + Tensor2</code>). If you’re just adding two Tensors containing scalar values (e.g. <code class="language-plaintext highlighter-rouge">Tensor(1.0) + Tensor(2.0)</code>) it will be easy. But remember in machine learning, we are often working with N-dimensional matrices. And <code class="language-plaintext highlighter-rouge">Tensor1</code> could have a different shape than <code class="language-plaintext highlighter-rouge">Tensor2</code>. Therefore, each of the binary operations needs to handle that. The good news is NumPy has built-in <a href="https://numpy.org/doc/stable/user/basics.broadcasting.html">broadcasting feature</a> for matrices with different shapes. But there are still some complexities such as handling shapes in the backward pass after we’ve broadcasted forward.</li>
+  <li><strong>Reduce operations</strong> (Sum, max, mean etc…): These operations often reduce multiple tensors along a certain dimension, back down to one tensor, hence the name is called reduce. Similar to native python <code class="language-plaintext highlighter-rouge">functools.reduce(sum, [1,2,3]) == 6</code>.</li>
+  <li><strong>Movement operations</strong> (view, expand, reshape, transpose, etc.): These operations change how tensor data is accessed without necessarily copying it. Each tensor has an underlying <code class="language-plaintext highlighter-rouge">data</code> matrix, and these operations allow us to reinterpret its structure. This is important in machine learning, where training data often comes in different dimensions. Without reshaping or transposing, operations like add, mul, and matmul may fail due to incompatible shapes. Moving data can be expensive if copying occurs, but NumPy optimizes for efficiency by creating views whenever possible. A view is a new way to access the same underlying data without duplicating it. This allows tensors to be reshaped or transposed efficiently, preserving memory while making computations more flexible.</li>
+</ul>
+
+<p>The above operations in its simplest form are:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Tensor</span><span class="p">:</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">required_grad</span><span class="p">):</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="n">requires_grad</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">grad</span> <span class="o">=</span> <span class="bp">None</span>  
+
+  <span class="c1"># Binary Ops Example
+</span>  <span class="k">def</span> <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">data</span> <span class="o">+</span> <span class="n">other</span><span class="p">.</span><span class="n">data</span>
+  
+  <span class="c1"># Reduction Ops Example
+</span>  <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">keepdims</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="n">keepdims</span><span class="p">)</span>
+
+  <span class="c1"># Movement Ops Example
+</span>  <span class="k">def</span> <span class="nf">reshape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Looks easy, right? Obviously, this is oversimplified for illustration purposes. Remember we need to implement both the forward and backward pass for the Tensor class. The above is just the forward pass. In the next section, we’ll see how the tensor-level operations in the library are actually implemented.</p>
+
+<h4 id="function-class">Function class</h4>
+
+<p>If you recall the overall flow of ML training revolves around two operations (1) forward pass (2) backward pass, and ML inference is just the forward pass. These two operations are run against all the tensors/weights in the model. Therefore, tensor-level operations need to know how to perform forward/backward pass.</p>
+
+<p>This section is called “Function class” because we are encapsulating this forward/backward interface inside a class called <code class="language-plaintext highlighter-rouge">Function</code>. This class only knows how 
+to do those two things. If you think about it, for any tensor-level operation whether that’s computing a maximum or adding two tensors together, it just needs to perform two things: <code class="language-plaintext highlighter-rouge">forward/backward()</code>. Let’s take a look.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Function</span><span class="p">:</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">tensors</span><span class="p">):</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">tensors</span> <span class="o">=</span> <span class="n">tensors</span> <span class="c1"># input tensors
+</span>  
+  <span class="o">@</span><span class="n">abstractmethod</span>
+  <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="nb">NotImplementedError</span><span class="p">(</span><span class="s">"Forward pass not implemented for this function"</span><span class="p">)</span>
+
+  <span class="o">@</span><span class="n">abstractmethod</span>
+  <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="nb">NotImplementedError</span><span class="p">(</span><span class="s">"Backward pass not implemented for this function"</span><span class="p">)</span>
+
+  <span class="o">@</span><span class="nb">classmethod</span>
+  <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">tensors</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">func</span> <span class="o">=</span> <span class="n">cls</span><span class="p">(</span><span class="o">*</span><span class="n">tensors</span><span class="p">)</span>
+    <span class="n">out_data</span> <span class="o">=</span> <span class="n">func</span><span class="p">.</span><span class="n">forward</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">inp</span><span class="p">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">inp</span> <span class="ow">in</span> <span class="n">tensors</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">requires_grad</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">inp</span><span class="p">.</span><span class="n">requires_grad</span> <span class="k">for</span> <span class="n">inp</span> <span class="ow">in</span> <span class="n">tensors</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">out_data</span><span class="p">,</span> <span class="n">creator</span><span class="o">=</span><span class="n">func</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span>
+
+<span class="k">class</span> <span class="nc">Add</span><span class="p">(</span><span class="n">Function</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="p">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="p">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="p">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+  <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
+    <span class="n">grad_x</span> <span class="o">=</span> <span class="n">grad</span><span class="p">.</span><span class="n">data</span> <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">requires_grad</span> <span class="k">else</span> <span class="bp">None</span>
+    <span class="n">grad_y</span> <span class="o">=</span> <span class="n">grad</span><span class="p">.</span><span class="n">data</span> <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">requires_grad</span> <span class="k">else</span> <span class="bp">None</span>
+    <span class="k">return</span> <span class="n">grad_x</span><span class="p">,</span> <span class="n">grad_y</span>
+
+<span class="k">class</span> <span class="nc">Tensor</span><span class="p">:</span>
+  <span class="k">def</span> <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s">"Tensor"</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s">"Tensor"</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">):</span>
+        <span class="n">other</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Add</span><span class="p">.</span><span class="nb">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Let’s break this down into steps:</p>
+
+<ol>
+  <li>When we call <code class="language-plaintext highlighter-rouge">Tensor + Tensor</code> it invokes <code class="language-plaintext highlighter-rouge">Tensor.__add__</code>, which calls <code class="language-plaintext highlighter-rouge">Add.apply</code> with the two tensors that we want to add.</li>
+  <li><code class="language-plaintext highlighter-rouge">Function.apply</code> basically passes the two tensors we want to add into the <code class="language-plaintext highlighter-rouge">func.forward(*tensors)</code> but getting the <code class="language-plaintext highlighter-rouge">.data</code> attribute since <code class="language-plaintext highlighter-rouge">tensors</code> are <code class="language-plaintext highlighter-rouge">Tensor</code> objects.</li>
+  <li>We register the <code class="language-plaintext highlighter-rouge">creator=func</code> for this <code class="language-plaintext highlighter-rouge">out</code> Tensor, so that we can later traverse the computational graph back from the output tensor to the input tensors recursively.</li>
+  <li>The <code class="language-plaintext highlighter-rouge">Add</code> class implements the <code class="language-plaintext highlighter-rouge">forward/backward()</code>
+    <ul>
+      <li>The <code class="language-plaintext highlighter-rouge">forward()</code> computes the addition operation between two NumPy arrays. The <code class="language-plaintext highlighter-rouge">backward()</code> computes the gradient of \(\frac{\partial (x+y)}{\partial x} = 1\) and \(\frac{\partial (x+y)}{\partial y} = 1\).</li>
+      <li>The <code class="language-plaintext highlighter-rouge">grad</code> argument in the <code class="language-plaintext highlighter-rouge">backward()</code> is the input gradient coming from earlier steps of the backward pass, let’s call it \(\frac{\partial z}{\partial (x+y)}\).</li>
+      <li>Recall the chain-rule of calculus \(\frac{\partial z}{\partial x} = \frac{\partial z}{\partial (x+y)} \cdot \frac{\partial (x+y)}{\partial x} = \text{grad} \cdot \frac{\partial (x+y)}{\partial x} = \text{grad} \cdot 1 = \text{grad}\).</li>
+    </ul>
+  </li>
+</ol>
+
+<p>So now we can clearly see a particular tensor operation (and its associated <code class="language-plaintext highlighter-rouge">forward/backward()</code>). In the library, we subclass the <code class="language-plaintext highlighter-rouge">Function</code> for every tensor-level operation, activation function and loss function (as we see later), because they all follow the same <code class="language-plaintext highlighter-rouge">forward/backward()</code> interface.</p>
+
+<h3 id="computational-graph">Computational Graph</h3>
+
+<p>Before we introduce how backward propagation (not just a partial derivative above) is implemented, we first need to understand the data flow from the input node to the final output node. When we do a forward pass in a neural network (or any function we want to differentiate), each operation creates new Tensors by combining or transforming previous Tensors. This chain of “Tensor → Function → Tensor → Function → …” eventually leads to some final output tensor (e.g., a “loss” tensor). Because we never have cycles in standard feedforward computations (it’s always “flow from inputs to outputs”), the graph is acyclic.</p>
+
+<p>More specifically, the “computational graph” itself is built during forward passes:</p>
+
+<ul>
+  <li>Each new <a href="#tensor-class">Tensor</a> remembers “who made me?” via (<code class="language-plaintext highlighter-rouge">Tensor.creator=func</code>)</li>
+  <li>Each <a href="#function-class">Function</a> (an operation like addition, matrix multiply, sigmoid, etc.) also remembers “which tensors fed into me?” (<code class="language-plaintext highlighter-rouge">Function.tensors</code>)
+So, by the time we call <code class="language-plaintext highlighter-rouge">Tensor.backward()</code>, the graph of connections (which function made which tensor) is already in place, making it straightforward to traverse the graph.</li>
+</ul>
+
+<p>The main idea of training a model in machine learning is to compute the gradient of a final output with respect to the weights of the model, it means: “How does that final output change if we nudge each weight by a tiny amount?”. That’s exactly the backward propagation.</p>
+
+<center><img src="/blog/assets/images/ml/ml-by-hand/ml-by-hand-Tech-Design3.png" alt="Tech-Design3" style="zoom: 67%;" /></center>
+
+<center><h3>Figure 3</h3></center>
+
+<h4 id="tensorbackward">Tensor.backward()</h4>
+
+<p>One special tensor-level operation is the <code class="language-plaintext highlighter-rouge">backward()</code>. Note that this is different from the <code class="language-plaintext highlighter-rouge">Function.backward()</code>.</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">Function.backward()</code> computes the local partial derivative for a given function in the computational graph, <code class="language-plaintext highlighter-rouge">Function.backward()</code> is called by the library, never by the user.</li>
+  <li><code class="language-plaintext highlighter-rouge">Tensor.backward()</code> is the <strong>top-level entry point</strong> for backward propagation of the graph. In the previous sections, we’ve talked about the basics of a neural network is to perform forward and backward propagation, right? In order to perform a backward propagation, you need to start from somewhere. Usually that’s from the output tensor or the loss tensor if we computed a loss (<a href="#technical-design">refresher</a>).</li>
+</ul>
+
+<p>When you call <code class="language-plaintext highlighter-rouge">Tensor.backward()</code>, you’re computing the gradient of that final tensor with respect to all the tensors that led to it in the computational graph. For example, if z = f(y) and y = g(x), we must backward pass from z into y before we backward pass from y into x. This matches the classic <a href="https://www.geeksforgeeks.org/postorder-traversal-of-binary-tree/">post-order traversal algorithm</a>, where we visit all of a node’s children before visiting that node. We will implement this using <strong>depth-first search (DFS)</strong> in <strong>post-order</strong> manner.</p>
+
+<p><strong>Why pre-order traversal is not enough:</strong> In a graph where one node depends on multiple inputs, you’d need all child gradients merged into the parent. But if pre-order visits the parent first, the parent can’t properly collect the gradients from children that haven’t been visited yet.</p>
+
+<p>Below is the implementation:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">topological_sorted_tensors</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="n">stack</span> <span class="o">=</span> <span class="p">[(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">False</span><span class="p">)]</span>  <span class="c1"># node, has_visit_children
+</span>
+<span class="c1"># Post-order traversal to figure out the order of the backprop
+</span><span class="k">while</span> <span class="n">stack</span><span class="p">:</span>
+  <span class="n">node</span><span class="p">,</span> <span class="n">has_visit_children</span> <span class="o">=</span> <span class="n">stack</span><span class="p">.</span><span class="n">pop</span><span class="p">()</span>
+  <span class="k">if</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">has_visit_children</span><span class="p">:</span>
+      <span class="c1"># first time we see this node, push it again with has_visit_children=True
+</span>      <span class="n">stack</span><span class="p">.</span><span class="n">append</span><span class="p">((</span><span class="n">node</span><span class="p">,</span> <span class="bp">True</span><span class="p">))</span>
+      <span class="c1"># then push its parents
+</span>      <span class="k">if</span> <span class="n">node</span><span class="p">.</span><span class="n">creator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">node</span><span class="p">.</span><span class="n">creator</span><span class="p">.</span><span class="n">tensors</span><span class="p">:</span>
+          <span class="k">if</span> <span class="n">p</span><span class="p">.</span><span class="n">requires_grad</span><span class="p">:</span>
+            <span class="n">stack</span><span class="p">.</span><span class="n">append</span><span class="p">((</span><span class="n">p</span><span class="p">,</span> <span class="bp">False</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="c1"># Now we've visited node's inputs (second time seeing node),
+</span>      <span class="c1"># so node is in correct post-order
+</span>      <span class="n">visited</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+      <span class="n">topological_sorted_tensors</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>We start off with the final output tensor (<code class="language-plaintext highlighter-rouge">self</code>) whose <code class="language-plaintext highlighter-rouge">.backward()</code> was called and we initialize the stack with <code class="language-plaintext highlighter-rouge">(self, False)</code>. The reason we use a stack, as opposed to a recursion solution, is to avoid very large graphs creating large recursion stack and consuming lots of memory (the <a href="https://github.com/workofart/ml-by-hand/blob/cc28b82bd6b515d2492d00b316d2f79937c1e113/autograd/tensor.py#L518">initial version</a> was actually recursion).</p>
+
+<p>We pop items off the <code class="language-plaintext highlighter-rouge">stack</code>. For each node (tensor):</p>
+<ul>
+  <li>If we have not visited it yet and have not visited its children, we push <code class="language-plaintext highlighter-rouge">(node, True)</code> back onto the stack. This signals that next time we pop it, we’ll treat it as “children done.”</li>
+  <li>We also push all of its parent Tensors (the inputs in <code class="language-plaintext highlighter-rouge">node.creator.tensors</code>) onto the stack so they get visited first.</li>
+  <li>Eventually, once all children are visited, we pop <code class="language-plaintext highlighter-rouge">(node, True)</code>, and only then do we mark it as visited and add it to <code class="language-plaintext highlighter-rouge">topological_sorted_tensors</code>.</li>
+</ul>
+
+<p>Below is the code for the actual backward propagation:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="n">tensor</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">topological_sorted_tensors</span><span class="p">):</span>
+  <span class="k">if</span> <span class="n">tensor</span><span class="p">.</span><span class="n">creator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="n">grads</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">.</span><span class="n">creator</span><span class="p">.</span><span class="n">backward</span><span class="p">(</span><span class="n">tensor</span><span class="p">.</span><span class="n">grad</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">input_tensor</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">tensor</span><span class="p">.</span><span class="n">creator</span><span class="p">.</span><span class="n">tensors</span><span class="p">,</span> <span class="n">grads</span><span class="p">):</span>
+      <span class="k">if</span> <span class="n">input_tensor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">input_tensor</span><span class="p">.</span><span class="n">requires_grad</span><span class="p">:</span>
+        <span class="n">input_tensor</span><span class="p">.</span><span class="n">_accumulate_grad</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+</code></pre></div></div>
+<p>A depth-first search ensures each node’s children appear earlier in <code class="language-plaintext highlighter-rouge">topological_sorted_tensors</code>. If the graph looked like this <code class="language-plaintext highlighter-rouge">x -&gt; y -&gt; z</code>, then <code class="language-plaintext highlighter-rouge">topological_sorted_tensors</code> would contain <code class="language-plaintext highlighter-rouge">[x, y, z]</code> but we want to start backward propagation in <code class="language-plaintext highlighter-rouge">[z, y, x]</code> order, starting from the output tensor <code class="language-plaintext highlighter-rouge">z</code>. We will reverse the list.</p>
+
+<ol>
+  <li>Compute local gradients (partial derivative) via <code class="language-plaintext highlighter-rouge">tensor.creator.backward(tensor.grad)</code>. Note that <code class="language-plaintext highlighter-rouge">tensor.creator</code> was assigned in our <a href="#function-class">Function class apply()</a> during forward pass. This calls the <code class="language-plaintext highlighter-rouge">Function.backward()</code> specific derivative logic (e.g. <code class="language-plaintext highlighter-rouge">MatMul.backward()</code>). These refer to the blue and teal rectangle function boxes in Figure 3.</li>
+  <li>Accumulate those gradients into each input Tensor’s <code class="language-plaintext highlighter-rouge">.grad</code> field (<code class="language-plaintext highlighter-rouge">input_tensor._accumulate_grad(g)</code>), because multiple paths may flow into the same Tensor.</li>
+  <li>Free references (<code class="language-plaintext highlighter-rouge">tensor.creator.tensors = None</code>) so we don’t hold onto the entire graph in memory.</li>
+</ol>
+
+<p>That completes the entire backward pass (propagation) process from scratch. In the next section, I will go through some building blocks of neural networks (NN Module).</p>
+
+<h3 id="nn-module">NN Module</h3>
+
+<center><img src="/blog/assets/images/ml/ml-by-hand/ml-by-hand-Tech-Design4.png" alt="Tech-Design4" style="zoom: 67%;" /></center>
+<center><h3>Figure 4</h3></center>
+
+<p>The main idea here is that we want to define the basic building block of a neural network – the <code class="language-plaintext highlighter-rouge">nn.Module</code>. We can later use this <code class="language-plaintext highlighter-rouge">nn.Module</code> class to define more complex neural network layers. This is the basis for any multi-layer perceptron, convolutional layers, recurrent layers, attention layers, all of which inherit from the basic <code class="language-plaintext highlighter-rouge">nn.Module</code> building block.</p>
+
+<p>It’s important to take a look at the Module class skeleton (<a href="https://github.com/workofart/ml-by-hand/blob/3cf1d45ec2c451af58da2d2b839b1c17fdc0cb9d/autograd/nn.py#L19">full code</a>) to see what things are shared for all the neural network layers:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Module</span><span class="p">:</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">_parameters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">_modules</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s">"Module"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">_states</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">_is_training</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+  
+  <span class="k">def</span> <span class="nf">zero_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c1"># Zero gradients for parameters in current module
+</span>    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">_parameters</span><span class="p">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="n">p</span><span class="p">.</span><span class="n">grad</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Recursively zero gradients in submodules
+</span>    <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">_modules</span><span class="p">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="n">module</span><span class="p">.</span><span class="n">zero_grad</span><span class="p">()</span>
+  
+  <span class="o">@</span><span class="n">abstractmethod</span>
+  <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="nb">NotImplementedError</span>
+
+  <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">_modules</span><span class="p">.</span><span class="n">values</span><span class="p">():</span>
+      <span class="n">module</span><span class="p">.</span><span class="n">train</span><span class="p">()</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">_is_training</span> <span class="o">=</span> <span class="bp">True</span>
+
+  <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">_modules</span><span class="p">.</span><span class="n">values</span><span class="p">():</span>
+      <span class="n">module</span><span class="p">.</span><span class="nb">eval</span><span class="p">()</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">_is_training</span> <span class="o">=</span> <span class="bp">False</span>
+</code></pre></div></div>
+
+<ul>
+  <li>We can see this <code class="language-plaintext highlighter-rouge">Module</code> defines an abstract <code class="language-plaintext highlighter-rouge">forward</code> method. This needs to be implemented for all subclasses. Essentially, this function defines “how we transform the input Tensor <code class="language-plaintext highlighter-rouge">x</code> into an output Tensor. It can be as simple as <code class="language-plaintext highlighter-rouge">def forward(self, x): return x + 1</code>, but can also be more complicated. Anyways, this is the core of each neural network block.</li>
+  <li>We also see there are some instance variables such as <code class="language-plaintext highlighter-rouge">_parameters</code> and <code class="language-plaintext highlighter-rouge">_states</code>. <code class="language-plaintext highlighter-rouge">_parameters</code> store the weights of the given neural network module/layer. Remember all weights are Tensor objects. <code class="language-plaintext highlighter-rouge">_states</code> are just arbitrary data that a <code class="language-plaintext highlighter-rouge">nn.Module</code> can track. For example, a <a href="https://github.com/workofart/ml-by-hand/blob/3cf1d45ec2c451af58da2d2b839b1c17fdc0cb9d/autograd/nn.py#L1067">BatchNorm layer</a> needs to track the running mean and variance for inference.</li>
+  <li>The <code class="language-plaintext highlighter-rouge">zero_grad</code> function is used to clear out the gradients in all the weights in all the layers of the neural network before a new training iteration starts. Every iteration we will go through forward() and backward() to compute a fresh set of gradients for all the weights</li>
+  <li><code class="language-plaintext highlighter-rouge">train/eval()</code> help us to toggle the module/layer training mode on/off. This can be useful if a module/layer behaves differently, like in the <a href="https://github.com/workofart/ml-by-hand/blob/3cf1d45ec2c451af58da2d2b839b1c17fdc0cb9d/autograd/nn.py#L1149">Dropout layer</a></li>
+</ul>
+
+<p><strong>Where is <code class="language-plaintext highlighter-rouge">backward()</code>???</strong></p>
+
+<p>You might be wondering, we’ve always talked about each function should define its <code class="language-plaintext highlighter-rouge">forward()</code> and <code class="language-plaintext highlighter-rouge">backward()</code> in order for the computational graph to properly compute the gradients, and NN Module is essentially just another fancy function. You are 100% correct. So where is the <code class="language-plaintext highlighter-rouge">backward()</code> function?</p>
+
+<p>Not defining the <code class="language-plaintext highlighter-rouge">backward()</code> here is <em>intentional</em> and is where the <em>magic</em> happens. Give me a minute, let me explain.</p>
+
+<p>Remember that we are working with Tensor objects during the entire forward pass. And the forward pass is where we’re building the <a href="#computational-graph">computational graph</a>. As long as we perform Tensor-level operations, not NumPy operations, on Tensors, the library will correctly connect all the Tensors together from Tensor → Function → Tensor → Function → … → Tensor. Let’s take a look at the following example:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">DummyAdd</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s">"weight"</span><span class="p">]</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]))</span>
+
+  <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="n">y2</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s">"weight"</span><span class="p">])</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y2</span> 
+    <span class="k">return</span> <span class="n">z</span>
+
+<span class="c1"># y2.creator is Mul
+# Mul.tensors = [y, self._parameters["weight"]]
+</span>
+<span class="c1"># z.creator is Add
+# Add.tensors = [x, y2]
+# z.creator.tensors = [x, y2]
+</span></code></pre></div></div>
+<p>Now the question is, do we need to define the <code class="language-plaintext highlighter-rouge">backward()</code> for this <code class="language-plaintext highlighter-rouge">DummyAdd</code> module? Let’s try to call <code class="language-plaintext highlighter-rouge">z.backward()</code> without defining it.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">x</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+   <span class="p">...:</span> <span class="n">y</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+   <span class="p">...:</span> <span class="n">z</span> <span class="o">=</span> <span class="n">DummyAdd</span><span class="p">().</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">z</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="mf">10.</span><span class="p">],</span> <span class="n">grad</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">z</span><span class="p">.</span><span class="n">backward</span><span class="p">()</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">z</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="mf">10.</span><span class="p">],</span> <span class="n">grad</span><span class="o">=</span><span class="n">Tensor</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="mf">1.</span><span class="p">],</span> <span class="n">grad</span><span class="o">=</span><span class="bp">None</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>How come there’s no error? And how was <code class="language-plaintext highlighter-rouge">z.grad</code> computed?</p>
+
+<p>This is the <em>magic</em> of Tensor-level operations. We have implemented the <code class="language-plaintext highlighter-rouge">forward()</code> and <code class="language-plaintext highlighter-rouge">backward()</code> of <code class="language-plaintext highlighter-rouge">Add</code> and <code class="language-plaintext highlighter-rouge">Mul</code>, which are called by <code class="language-plaintext highlighter-rouge">__add__</code> and <code class="language-plaintext highlighter-rouge">__mul__</code>, triggered by the <code class="language-plaintext highlighter-rouge">+</code> and <code class="language-plaintext highlighter-rouge">*</code> in our <code class="language-plaintext highlighter-rouge">DummyAdd.forward()</code>. And the computational graph was built during the forward pass. Therefore, we don’t need to define a <code class="language-plaintext highlighter-rouge">backward()</code> function in the <code class="language-plaintext highlighter-rouge">nn.Module</code> anymore! Note that I highlighted that “<em>As long as we perform Tensor-level operations, not NumPy operations, on Tensors …</em>”. Performing NumPy operations will break this computational graph. See the example below</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">DummyAdd</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+  <span class="p">...</span>
+  <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="n">y2</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s">"weight"</span><span class="p">])</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">y2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">z</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">z</code> now is constructed by <code class="language-plaintext highlighter-rouge">np.sqrt</code>, but <code class="language-plaintext highlighter-rouge">np.sqrt</code> doesn’t know how to do <code class="language-plaintext highlighter-rouge">backward()</code>, so <code class="language-plaintext highlighter-rouge">z.backward()</code> will not back propagate the gradient calculations to the input <code class="language-plaintext highlighter-rouge">x</code> and <code class="language-plaintext highlighter-rouge">y</code>. That’s why for anything that’s used in the module/layers, we need to implement the Tensor-level operations following the <a href="#function-class">Function class</a> interface. As of this writing, I have implemented the most common 23 tensor-level operations in <a href="https://github.com/workofart/ml-by-hand/blob/main/autograd/tensor.py">tensor.py</a>, necessary to tackle basic regression, computer vision, and natural language processing problems.</p>
+
+<p>In short, <code class="language-plaintext highlighter-rouge">nn.Module</code> lays the foundation for building an entire neural network from smaller blocks (e.g. <a href="https://github.com/workofart/ml-by-hand/blob/3cf1d45ec2c451af58da2d2b839b1c17fdc0cb9d/autograd/nn.py#L382">Linear module</a>). Other complex layers just inject more complex logic into the <code class="language-plaintext highlighter-rouge">forward()</code>, or track some internal states. There’s nothing too scary. The famous “Attention is All You Need” (<a href="https://arxiv.org/abs/1706.03762">paper</a>) attention mechanism is implemented like <a href="https://github.com/workofart/ml-by-hand/blob/3cf1d45ec2c451af58da2d2b839b1c17fdc0cb9d/autograd/nn.py#L1163">this</a> using this library.</p>
+
+<h3 id="functional-module">Functional Module</h3>
+
+<p>If you followed along, you might have already noticed the example in the <a href="#comparing-this-project-to-pytorch-for-the-same-functionality">Comparing this project to PyTorch for the same functionality</a> section has already provided a flavor of what functional modules look like.</p>
+
+<p>In this module, we basically implement some activation functions (e.g. ReLU, Softmax, Tanh, Sigmoid, etc) and loss functions (e.g. cross-entropy). Since they are <em>functions</em>, they also are subclasses of the <a href="#function-class">Function class</a>, similar to the tensor operations. If you have followed along, you would know the core of <em>functions</em> are <code class="language-plaintext highlighter-rouge">forward()</code> and <code class="language-plaintext highlighter-rouge">backward()</code>. I won’t paste any code examples, since they are very similar to any other function that we’ve shown above. If interested, check out the <a href="https://github.com/workofart/ml-by-hand/blob/main/autograd/functional.py"><code class="language-plaintext highlighter-rouge">functional.py</code></a> full code.</p>
+
+<h3 id="optimizer">Optimizer</h3>
+
+<p>This module basically helps us update the weights of the neural network. In the most basic form, we have an optimizer class. And this optimizer class knows how to update the weights and incorporates the concept of a learning rate. There are some popular optimizers such as Stochastic Gradient Descent (SGD) and Adam. These are specific implementations of an optimizer. Certain optimizers might have different characteristics such as different learning rate schedules or additional states that they’re tracking. For example the Adam optimizer tracks “momentum” in addition to the normal learning rate. If interested, check out the <a href="https://github.com/workofart/ml-by-hand/blob/main/autograd/optim.py"><code class="language-plaintext highlighter-rouge">optim.py</code></a> full code.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Optimizer</span><span class="p">:</span>
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_parameters</span><span class="p">,</span> <span class="n">lr</span><span class="p">):</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">_hyperparams</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">_states</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+    
+    <span class="bp">self</span><span class="p">.</span><span class="n">model_parameters</span> <span class="o">=</span> <span class="n">model_parameters</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">_hyperparams</span><span class="p">[</span><span class="s">"lr"</span><span class="p">]</span> <span class="o">=</span> <span class="n">lr</span>
+
+  <span class="k">def</span> <span class="nf">zero_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">model_parameters</span><span class="p">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">module</span><span class="p">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">param</span><span class="p">.</span><span class="n">grad</span> <span class="o">=</span> <span class="bp">None</span>
+
+  <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+      <span class="s">"""
+      Performs a single optimization step.
+      """</span>
+      <span class="k">raise</span> <span class="nb">NotImplementedError</span>
+</code></pre></div></div>
+
+<p>If we look at the above code:</p>
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">model_parameters</code>: The layers or weights of the model are passed into the <code class="language-plaintext highlighter-rouge">Optimizer(model_parameters)</code>. The Optimizer can then iterate over these parameters to update their values based on the gradients in the <code class="language-plaintext highlighter-rouge">step()</code></li>
+  <li>Hyperparameters and States
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">_hyperparams</code>: Stores things like the learning rate (lr), or momentum factors, \(\beta_1, \beta_2\) for Adam, etc.</li>
+      <li><code class="language-plaintext highlighter-rouge">_states</code>: For certain optimizers (like Adam or RMSProp), we need to maintain running estimates (e.g. first or second moments of gradients). This <code class="language-plaintext highlighter-rouge">defaultdict</code> is where we can keep track of that “internal memory” keyed by state name.</li>
+    </ul>
+  </li>
+  <li><code class="language-plaintext highlighter-rouge">zero_grad</code>: Clears out any existing gradients in all the parameters before we compute new ones in a fresh forward/backward pass. This prevents mixing gradients from multiple batches. Obviously, this is an oversimplified example, because we could have arbitrary nested “model/layers/modules”.</li>
+  <li><code class="language-plaintext highlighter-rouge">step</code>: The core logic for updating parameters should be defined here. Each specialized optimizer (e.g. SGD, Adam) overrides step() to implement its update rule. A simple SGD <code class="language-plaintext highlighter-rouge">step()</code> might look like this <code class="language-plaintext highlighter-rouge">param.data = param.data - lr * param.grad.data</code>.</li>
+</ol>
+
+<p>That’s it. We’ve covered the core functionalities of a machine learning library.</p>
+
+<h2 id="additional-thoughts">Additional Thoughts</h2>
+
+<p>This section contains some thoughts I had while working on this project:</p>
+
+<ul>
+  <li><strong>Library</strong>: Creating a library from scratch requires careful design decisions along the way (e.g., how to represent data, which levels of abstraction to introduce, and how to balance speed of prototyping vs. generalization). Each choice can ripple through the entire codebase, so it’s important to stay flexible and open to refactoring.</li>
+  <li><strong>Importance of Unit Tests</strong>: Maintaining robust, near-100% test coverage ensures that adding new features or tweaking interfaces (e.g., <code class="language-plaintext highlighter-rouge">Function</code> or <code class="language-plaintext highlighter-rouge">Tensor</code>) won’t break existing functionality. This gives me confidence to experiment and refactor without fear of introducing hidden bugs, which is very necessary when developing library from scratch.</li>
+  <li><strong>Debugging Neural Networks</strong>: Neural networks are challenging to debug due to their arbitrary high-dimensional parameter spaces. Comparing gradients against PyTorch’s outputs, quickly overfitting on small datasets, and nudging weights manually helps identify and fix issues in both forward and backward passes.</li>
+  <li><strong>Performance Testing</strong>: Since the focus of this project is on education rather than library efficiency, I created a simple performance test script to ensure memory and CPU usage have not regressed. It helped me make the Tensor operation <a href="https://github.com/workofart/ml-by-hand/pull/18/files#diff-bc6026b6efb9c0c9beffa739b096273d248b2bd6578d316675aea13d3c03deb6">migration from the “closure” approach to <code class="language-plaintext highlighter-rouge">Function</code> class</a> smooth as butter.</li>
+  <li><strong>Documentation</strong>: I’ve set up a <a href="https://ml-by-hand.readthedocs.io/en/latest/">ReadtheDocs</a> page which provides a good overview of the latest APIs and features implemented in the library. Note that the examples I’ve included in this post are very bare-bones to just illustrate a point. The full functionality of the library is more powerful than that. Feel free to check it out or reference the doc to build your next toy model using this library.</li>
+  <li><strong>Example models</strong>: It’s important to create example models using this library, which help find blind spots and create motivation for me to keep adding new functionality to the library. Feel free to check them out in the <a href="https://github.com/workofart/ml-by-hand/tree/main/examples">examples/</a> (including <a href="https://github.com/workofart/ml-by-hand/blob/main/examples/gpt-2.py">GPT-2</a>). These examples demonstrate both how the library can be used and its capability to build and train real-world models from scratch.</li>
+  <li><strong>In-place operations are tricky to implement</strong>: In-place operations like <code class="language-plaintext highlighter-rouge">+=</code> and <code class="language-plaintext highlighter-rouge">*=</code> can save memory but are difficult to implement in a dynamic computational graph. Ensuring gradient correctness while avoiding data copies remains a challenge. Currently, I haven’t fully implemented gradient tracking for arbitrary in-place slicing <code class="language-plaintext highlighter-rouge">matrix[:, 1:10, :] += new_value</code>, so we have to use <code class="language-plaintext highlighter-rouge">slice1 = matrix[: 1:10], slice2 = matrix[:, 11:20] Tensor.cat([slice1, slice2])</code>.</li>
+  <li><strong>Derivative</strong>: Computing the derivative of every Tensor/activation/loss function can be tedious. This complexity can be compounded by <a href="https://numpy.org/doc/stable/user/basics.broadcasting.html">broadcasting</a> and shape mismatches. But once you have them implemented, the <em>magic</em> happens when you don’t need to define the <code class="language-plaintext highlighter-rouge">backward()</code> function for your <code class="language-plaintext highlighter-rouge">nn.Modules</code>.</li>
+</ul>
+
+<p>Thanks a lot for reading this far. I hope you learned something new from this post and/or library. I know I did. This project was a rewarding deep dive into the fundamentals of machine learning and library-building. Though it’s not optimized for large-scale training, it offers a flexible sandbox for experimenting with new techniques from papers or for random prototyping.</p>
+
+      </article>
+
+      
+        <div class="blog-tags">
+          <span>Tags:</span>
+          
+            <a href="/blog/tags#machine-learning">machine-learning</a>
+          
+            <a href="/blog/tags#research">research</a>
+          
+            <a href="/blog/tags#python">python</a>
+          
+            <a href="/blog/tags#deep-learning">deep-learning</a>
+          
+            <a href="/blog/tags#education">education</a>
+          
+            <a href="/blog/tags#framework">framework</a>
+          
+        </div>
+      
+
+      
+
+      
+        <!-- Check if any share-links are active -->
+
+
+
+
+
+      
+
+      <ul class="pagination blog-pager">
+        
+        <li class="page-item previous">
+          <a class="page-link" href="/blog/2021-11-15-peaking-into-the-real-game/" data-toggle="tooltip" data-placement="top" title="Peaking into the real game">&larr; Previous Post</a>
+        </li>
+        
+        
+      </ul>
+      
+  
+  
+  
+
+  
+
+
+  
+
+
+
+    </div>
+  </div>
+</div>
+
+
+  <footer>
+  <div class="container-md beautiful-jekyll-footer">
+    <div class="row">
+      <div class="col-xl-8 offset-xl-2 col-lg-10 offset-lg-1">
+      <ul class="list-inline text-center footer-links"><li class="list-inline-item">
+    <a href="mailto:hanxiangp@gmail.com" title="Email me">
+      <span class="fa-stack fa-lg" aria-hidden="true">
+        <i class="fas fa-circle fa-stack-2x"></i>
+        <i class="fas fa-envelope fa-stack-1x fa-inverse"></i>
+      </span>
+      <span class="sr-only">Email me</span>
+   </a>
+  </li><li class="list-inline-item">
+    <a href="https://github.com/workofart" title="GitHub">
+      <span class="fa-stack fa-lg" aria-hidden="true">
+        <i class="fas fa-circle fa-stack-2x"></i>
+        <i class="fab fa-github fa-stack-1x fa-inverse"></i>
+      </span>
+      <span class="sr-only">GitHub</span>
+   </a>
+  </li><li class="list-inline-item">
+    <a href="https://linkedin.com/in/pan-henry" title="LinkedIn">
+      <span class="fa-stack fa-lg" aria-hidden="true">
+        <i class="fas fa-circle fa-stack-2x"></i>
+        <i class="fab fa-linkedin fa-stack-1x fa-inverse"></i>
+      </span>
+      <span class="sr-only">LinkedIn</span>
+   </a>
+  </li></ul>
+
+      
+      <p class="copyright text-muted">
+      
+        Henry Pan
+        &nbsp;&bull;&nbsp;
+      
+      2025
+
+      
+
+      
+      </p>
+      <p class="theme-by text-muted">
+        Powered by
+        <a href="https://beautifuljekyll.com">Beautiful Jekyll</a>
+      </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+  
+  
+    
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
+
+
+  
+    
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+
+  
+    
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+
+  
+
+
+
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+      <script src="/blog/assets/js/beautifuljekyll.js"></script>
+    
+  
+
+
+
+
+
+  
+    
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+  
+
+
+
+
+
+</body>
+</html>

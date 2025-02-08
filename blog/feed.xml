@@ -10,6 +10,17 @@
     
     
       <item>
+        <title>ML by Hand</title>
+        <description>
+          
+          Project link: https://github.com/workofart/ml-by-hand I recently started working on a project called ML by Hand, which is a machine learning library that I built using just Python and NumPy. Afterwards, I trained various models (classical ones like CNN, ResNet, RNN, LSTM, and more modern architectures like Transformers and GPT) using this...
+        </description>
+        <pubDate>Thu, 06 Feb 2025 03:23:00 -0500</pubDate>
+        <link>/blog/2025-02-06-ml-by-hand/</link>
+        <guid isPermaLink="true">/blog/2025-02-06-ml-by-hand/</guid>
+      </item>
+    
+      <item>
         <title>Peaking into the real game</title>
         <description>
           
@@ -216,17 +227,6 @@
         <pubDate>Wed, 15 May 2013 17:28:00 -0400</pubDate>
         <link>/blog/2013-05-15-first-day-at-mckinsey/</link>
         <guid isPermaLink="true">/blog/2013-05-15-first-day-at-mckinsey/</guid>
-      </item>
-    
-      <item>
-        <title>Dinner Talk</title>
-        <description>
-          
-          Just had a wonderful dinner with a friend of mine. This guy isn’t just a friend, he is a mentor to me in some ways. The following is what I learnt from him tonight. A degree from a university is useful only if you really know how to apply the...
-        </description>
-        <pubDate>Sat, 30 Mar 2013 20:31:00 -0400</pubDate>
-        <link>/blog/2013-03-30-dinner-talk/</link>
-        <guid isPermaLink="true">/blog/2013-03-30-dinner-talk/</guid>
       </item>
     
   </channel>
