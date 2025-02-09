@@ -10,7 +10,7 @@
     
     
       <item>
-        <title>ML by Hand</title>
+        <title>How I Built a Deep Learning Library from Scratch Using Only Python, NumPy &amp; Math</title>
         <description>
           
           Project link: https://github.com/workofart/ml-by-hand I recently started working on a project called ML by Hand, which is a machine learning library that I built using just Python and NumPy. Afterwards, I trained various models (classical ones like CNN, ResNet, RNN, LSTM, and more modern architectures like Transformers and GPT) using this...
