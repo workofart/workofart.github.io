@@ -15,7 +15,7 @@
   <meta name="author" content="Henry Pan">
   
 
-  <meta name="description" content="Code Here 1. Goal The motivation of this project is AlphaGo and its mechanism of self-play. So I took on the task of implementing a very simple self-play mechanism that is able to train 2 agents in mastering tic-tac-toe with only the visible state/reward information. No information on the rules...">
+  <meta name="description" content="Code 1. Goal 2. Environment State Action Reward Termination Condition 3. Approach 3.1 Reward Function Design 3.2 Learning Algorithm 3.3 Hyperparameters 4. Experiment &amp;amp; Findings 4.1 Training Evaluation 4.2 Optimal Policy Discussion Experiment - Play two copies of the same agent against each other, by following the trained policy Experiment...">
 
   
 
@@ -90,7 +90,7 @@
   
   <meta property="og:site_name" content="Henry's Blog">
   <meta property="og:title" content="Tic-tac-toe Self-Play">
-  <meta property="og:description" content="Code Here 1. Goal The motivation of this project is AlphaGo and its mechanism of self-play. So I took on the task of implementing a very simple self-play mechanism that is able to train 2 agents in mastering tic-tac-toe with only the visible state/reward information. No information on the rules...">
+  <meta property="og:description" content="Code 1. Goal 2. Environment State Action Reward Termination Condition 3. Approach 3.1 Reward Function Design 3.2 Learning Algorithm 3.3 Hyperparameters 4. Experiment &amp;amp; Findings 4.1 Training Evaluation 4.2 Optimal Policy Discussion Experiment - Play two copies of the same agent against each other, by following the trained policy Experiment...">
 
   
 
@@ -109,7 +109,7 @@
   <meta name="twitter:creator" content="@">
 
   <meta property="twitter:title" content="Tic-tac-toe Self-Play">
-  <meta property="twitter:description" content="Code Here 1. Goal The motivation of this project is AlphaGo and its mechanism of self-play. So I took on the task of implementing a very simple self-play mechanism that is able to train 2 agents in mastering tic-tac-toe with only the visible state/reward information. No information on the rules...">
+  <meta property="twitter:description" content="Code 1. Goal 2. Environment State Action Reward Termination Condition 3. Approach 3.1 Reward Function Design 3.2 Learning Algorithm 3.3 Hyperparameters 4. Experiment &amp;amp; Findings 4.1 Training Evaluation 4.2 Optimal Policy Discussion Experiment - Play two copies of the same agent against each other, by following the trained policy Experiment...">
 
   
 
@@ -428,7 +428,36 @@
       
 
       <article role="main" class="blog-post">
-        <h2 id="code">Code</h2>
+        <ul id="markdown-toc">
+  <li><a href="#code" id="markdown-toc-code">Code</a></li>
+  <li><a href="#1-goal" id="markdown-toc-1-goal">1. Goal</a></li>
+  <li><a href="#2-environment" id="markdown-toc-2-environment">2. Environment</a>    <ul>
+      <li><a href="#state" id="markdown-toc-state">State</a></li>
+      <li><a href="#action" id="markdown-toc-action">Action</a></li>
+      <li><a href="#reward" id="markdown-toc-reward">Reward</a></li>
+      <li><a href="#termination-condition" id="markdown-toc-termination-condition">Termination Condition</a></li>
+    </ul>
+  </li>
+  <li><a href="#3-approach" id="markdown-toc-3-approach">3. Approach</a>    <ul>
+      <li><a href="#31-reward-function-design" id="markdown-toc-31-reward-function-design">3.1 Reward Function Design</a></li>
+      <li><a href="#32-learning-algorithm" id="markdown-toc-32-learning-algorithm">3.2 Learning Algorithm</a></li>
+      <li><a href="#33-hyperparameters" id="markdown-toc-33-hyperparameters">3.3 Hyperparameters</a></li>
+    </ul>
+  </li>
+  <li><a href="#4-experiment--findings" id="markdown-toc-4-experiment--findings">4. Experiment &amp; Findings</a>    <ul>
+      <li><a href="#41-training-evaluation" id="markdown-toc-41-training-evaluation">4.1 Training Evaluation</a></li>
+      <li><a href="#42-optimal-policy-discussion" id="markdown-toc-42-optimal-policy-discussion">4.2 Optimal Policy Discussion</a>        <ul>
+          <li><a href="#experiment---play-two-copies-of-the-same-agent-against-each-other-by-following-the-trained-policy" id="markdown-toc-experiment---play-two-copies-of-the-same-agent-against-each-other-by-following-the-trained-policy">Experiment - Play two copies of the same agent against each other, by following the trained policy</a></li>
+          <li><a href="#experiment---train-two-agents-against-each-other-self-play" id="markdown-toc-experiment---train-two-agents-against-each-other-self-play">Experiment - Train two agents against each other (self-play)</a></li>
+          <li><a href="#experiment-re-evaluate-how-a-self-play-agent-player-1-performs-against-min-max-opponent" id="markdown-toc-experiment-re-evaluate-how-a-self-play-agent-player-1-performs-against-min-max-opponent">Experiment: Re-evaluate how a self-play agent (Player 1) performs against min-max opponent</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><a href="#5-next-steps" id="markdown-toc-5-next-steps">5. Next Steps</a></li>
+</ul>
+
+<h2 id="code">Code</h2>
 
 <p><a href="https://github.com/workofart/selfplay-tictactoe">Here</a></p>
 

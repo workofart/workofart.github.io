@@ -13,7 +13,7 @@
         <title>How I Built a Deep Learning Library from Scratch Using Only Python, NumPy &amp; Math</title>
         <description>
           
-          Project link: https://github.com/workofart/ml-by-hand I recently started working on a project called ML by Hand, which is a machine learning library that I built using just Python and NumPy. Afterwards, I trained various models (classical ones like CNN, ResNet, RNN, LSTM, and more modern architectures like Transformers and GPT) using this...
+          Motivation and Goals Abstraction layers of Machine Learning Libraries Comparing this project to PyTorch for the same functionality Efficiency vs Learning Technical Design Tensor Class Tensor-level Operations Function class Computational Graph Tensor.backward() NN Module Functional Module Optimizer Additional Thoughts Project link: https://github.com/workofart/ml-by-hand I recently started working on a project called...
         </description>
         <pubDate>Thu, 06 Feb 2025 03:23:00 -0500</pubDate>
         <link>/blog/2025-02-06-ml-by-hand/</link>
@@ -35,7 +35,7 @@
         <title>Tic-tac-toe Self-Play</title>
         <description>
           
-          Code Here 1. Goal The motivation of this project is AlphaGo and its mechanism of self-play. So I took on the task of implementing a very simple self-play mechanism that is able to train 2 agents in mastering tic-tac-toe with only the visible state/reward information. No information on the rules...
+          Code 1. Goal 2. Environment State Action Reward Termination Condition 3. Approach 3.1 Reward Function Design 3.2 Learning Algorithm 3.3 Hyperparameters 4. Experiment &amp;amp; Findings 4.1 Training Evaluation 4.2 Optimal Policy Discussion Experiment - Play two copies of the same agent against each other, by following the trained policy Experiment...
         </description>
         <pubDate>Fri, 06 Dec 2019 16:00:00 -0500</pubDate>
         <link>/blog/2019-12-06-tic-tac-toe-selfplay/</link>
@@ -46,7 +46,7 @@
         <title>OpenAI Gym - Acrobot-v1</title>
         <description>
           
-          Code Here 1. Goal The problem setting is to solve the Acrobot problem in OpenAI gym. The acrobot system includes two joints and two links, where the joint between the two links is actuated. Initially, the links are hanging downwards, and the goal is to swing the end of the...
+          Code 1. Goal 2. Environment State: Action: Reward: Terminal Condition: Solved Condition: 3. Approach 3.1 Algorithm Comparison 3.2 Problem Parameterization 3.3 Policy Key consideration: 3.4 Neural Network Architecture 3.5 Hyperparameters 4. Experiment &amp;amp; Findings 4.1 Performance 4.2 Training Duration 4.3 Neural Network Complexity 4.4 Discount Rate 5. Next Steps Code...
         </description>
         <pubDate>Tue, 03 Dec 2019 16:00:00 -0500</pubDate>
         <link>/blog/2019-12-03-acrobot/</link>
@@ -57,7 +57,7 @@
         <title>OpenAI Gym - Pendulum-v0</title>
         <description>
           
-          Code Here 1. Goal The problem setting is to solve the Inverted Pendulum problem in OpenAI gym. Try to keep a frictionless pendulum standing up. 2. Environment The pendulum environment has a continuous state space as follows (copied from wiki): State Type: Box(3) Num State Observation Min Max 0 Angle1...
+          Code 1. Goal 2. Environment State Actions Reward Starting State Episode Termination Solved Condition 3. Approach 3.1 Discretization 3.2 Exploration vs Exploitation 3.3 Gaussian Policy 3.4 Linear Value Function 3.5 Training 3.6 Hyperparameters 4. Experiment &amp;amp; Findings 5. Next Steps Code Here 1. Goal The problem setting is to solve...
         </description>
         <pubDate>Tue, 05 Nov 2019 16:00:00 -0500</pubDate>
         <link>/blog/2019-11-05-pendulum/</link>
@@ -68,7 +68,7 @@
         <title>OpenAI Gym - MountainCar-v0</title>
         <description>
           
-          Code Here 1. Goal The problem setting is to solve the Continuous MountainCar problem in OpenAI gym. 2. Environment The mountain car follows a continuous state space as follows(copied from wiki): The acceleration of the car is controlled via the application of a force which takes values in the range...
+          Code 1. Goal 2. Environment State Actions Reward Starting State Episode Termination Solved Requirements 3. Approach 3.1 Discretization 3.2 Exploration vs Exploitation 3.3 Training 3.4 Hyperparameters 4. Experiment &amp;amp; Findings 4.1 Introducing baseline to reduce variance 4.2 Discrete vs Continuous Actions 4.3 Performance 5. Next Steps Code Here 1. Goal...
         </description>
         <pubDate>Mon, 04 Nov 2019 18:00:00 -0500</pubDate>
         <link>/blog/2019-11-04-mountain-car/</link>
@@ -79,7 +79,7 @@
         <title>BrawlStars AI Series (Part 2) - Reinforcement Learning</title>
         <description>
           
-          First and foremost, I must say, perception is harder than planning. This part, I will be attempting to apply reinforcement learning (RL) towards creating an agent that can play Brawlstars. The goal of the project is similar to part 1 —be a decent player and excert human-like behaviors. My personal...
+          1. Perception 1.1 Current Player Position Green Circle Player Name 1.2 Stars (Reward) Player Stars Team Stars 2. Planning 2.1 Agent 2.2 Brain 3. Error Analysis 4. Challenges &amp;amp; Future Steps First and foremost, I must say, perception is harder than planning. This part, I will be attempting to apply...
         </description>
         <pubDate>Thu, 25 Apr 2019 01:00:00 -0400</pubDate>
         <link>/blog/2019-04-25-Brawlstars-RL/</link>
@@ -90,7 +90,7 @@
         <title>BrawlStars AI Series (Part 1)</title>
         <description>
           
-          Brawlstars: https://supercell.com/en/games/brawlstars/ 1. Motivation I’ve personally being playing Brawlstars for over 3 months, and it’s a simple game to start considering the limited key combinations that it has. However, it’s fairly hard to master, considering the different mechanics each character has and the different maps in which each character’s play...
+          1. Motivation 2. Goals 3. Starting Point 3. Related Work 4. Project Focus/Scope 5. Showcase 6. Supervised Learning 6.1 Creating training data 6.2 Features 6.2.1 Raw Pixels as Features 6.2.2 Using MobileNet as the feature extractor 6.3 Action Determination 6.3.1 AlexNet (Convolutional Neural Network) 6.3.2 Long short-term memory 7. Challenges...
         </description>
         <pubDate>Sat, 20 Apr 2019 01:00:00 -0400</pubDate>
         <link>/blog/2019-04-20-Brawlstars-AI/</link>
@@ -101,7 +101,7 @@
         <title>Creating a Policy Gradient (PG) Agent to Trade</title>
         <description>
           
-          This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share some findings along the way. The goal of the series is to learn RL by applying it on an actual problem that I can...
+          Policy Gradient Problem Setting Agent Environment Reward Technical Details Policy Network Design Training Key Considerations Key Challenges Challenge 1 Challenge 2 Results Next Steps This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share...
         </description>
         <pubDate>Thu, 04 Apr 2019 01:55:00 -0400</pubDate>
         <link>/blog/2019-04-04-pg-trading/</link>
@@ -112,7 +112,7 @@
         <title>Creating Neural Networks with Python/Keras/Tensorflow to Predict the Future</title>
         <description>
           
-          Previous Knowledge Required Understand what is a neural network (NN) and how it works conceptually. Python Basic understanding of what derivatives/gradients are Goals In this tutorial, I will go over 3 different approaches of creating a NN that can predict the prices of a particular cryptocurrency pair (ETHBTC). This include...
+          Previous Knowledge Required Goals Showcase Training Set Test Set Input Data Neural Network Architecture (All 3 Versions) Version 1 Version 2 Version 3 Previous Knowledge Required Understand what is a neural network (NN) and how it works conceptually. Python Basic understanding of what derivatives/gradients are Goals In this tutorial, I...
         </description>
         <pubDate>Wed, 20 Mar 2019 11:50:00 -0400</pubDate>
         <link>/blog/2019-03-20-ml-tut-price-prediction/</link>

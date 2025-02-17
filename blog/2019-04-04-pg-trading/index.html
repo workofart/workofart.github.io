@@ -15,7 +15,7 @@
   <meta name="author" content="Henry Pan">
   
 
-  <meta name="description" content="This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share some findings along the way. The goal of the series is to learn RL by applying it on an actual problem that I can...">
+  <meta name="description" content="Policy Gradient Problem Setting Agent Environment Reward Technical Details Policy Network Design Training Key Considerations Key Challenges Challenge 1 Challenge 2 Results Next Steps This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share...">
 
   
 
@@ -90,7 +90,7 @@
   
   <meta property="og:site_name" content="Henry's Blog">
   <meta property="og:title" content="Creating a Policy Gradient (PG) Agent to Trade">
-  <meta property="og:description" content="This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share some findings along the way. The goal of the series is to learn RL by applying it on an actual problem that I can...">
+  <meta property="og:description" content="Policy Gradient Problem Setting Agent Environment Reward Technical Details Policy Network Design Training Key Considerations Key Challenges Challenge 1 Challenge 2 Results Next Steps This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share...">
 
   
 
@@ -109,7 +109,7 @@
   <meta name="twitter:creator" content="@">
 
   <meta property="twitter:title" content="Creating a Policy Gradient (PG) Agent to Trade">
-  <meta property="twitter:description" content="This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share some findings along the way. The goal of the series is to learn RL by applying it on an actual problem that I can...">
+  <meta property="twitter:description" content="Policy Gradient Problem Setting Agent Environment Reward Technical Details Policy Network Design Training Key Considerations Key Challenges Challenge 1 Challenge 2 Results Next Steps This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share...">
 
   
 
@@ -428,7 +428,30 @@
       
 
       <article role="main" class="blog-post">
-        <p>This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share some findings along the way. The goal of the series is to learn RL by applying it on an actual problem that I can relate to.</p>
+        <ul id="markdown-toc">
+  <li><a href="#policy-gradient" id="markdown-toc-policy-gradient">Policy Gradient</a></li>
+  <li><a href="#problem-setting" id="markdown-toc-problem-setting">Problem Setting</a>    <ul>
+      <li><a href="#agent" id="markdown-toc-agent">Agent</a></li>
+      <li><a href="#environment" id="markdown-toc-environment">Environment</a></li>
+      <li><a href="#reward" id="markdown-toc-reward">Reward</a></li>
+    </ul>
+  </li>
+  <li><a href="#technical-details" id="markdown-toc-technical-details">Technical Details</a>    <ul>
+      <li><a href="#policy-network-design" id="markdown-toc-policy-network-design">Policy Network Design</a></li>
+      <li><a href="#training" id="markdown-toc-training">Training</a></li>
+      <li><a href="#key-considerations" id="markdown-toc-key-considerations">Key Considerations</a></li>
+      <li><a href="#key-challenges" id="markdown-toc-key-challenges">Key Challenges</a>        <ul>
+          <li><a href="#challenge-1" id="markdown-toc-challenge-1">Challenge 1</a></li>
+          <li><a href="#challenge-2" id="markdown-toc-challenge-2">Challenge 2</a></li>
+        </ul>
+      </li>
+      <li><a href="#results" id="markdown-toc-results">Results</a></li>
+      <li><a href="#next-steps" id="markdown-toc-next-steps">Next Steps</a></li>
+    </ul>
+  </li>
+</ul>
+
+<p>This is the first post that’s part of the series for teaching an agent to trade. I will evaluate different reinforcement learning (RL) approaches and share some findings along the way. The goal of the series is to learn RL by applying it on an actual problem that I can relate to.</p>
 
 <h2 id="policy-gradient">Policy Gradient</h2>
 
@@ -461,8 +484,8 @@
 
 <p>E.g. If we chose action 1 in our forward propagation pass, the update rule will update the weights of the neural network so that action 1 can be more/less likely to be chosen in the next iteration. This is dependent on our reward. If reward (V<sub>t</sub>) is high, the update value (∇) will increase, and vice versa. See the formal update rule below:</p>
 
-<p><img src="/blog/assets/images/rl/reinforce_pseudocode.png" width="400" /></p>
-<h5 id="reference-httpwww0csuclacukstaffdsilverwebteaching_filespgpdf">Reference: http://www0.cs.ucl.ac.uk/staff/d.silver/web/Teaching_files/pg.pdf</h5>
+<p><img src="/blog/assets/images/rl/reinforce_pseudocode.png" width="400" />
+<strong>Reference:</strong> http://www0.cs.ucl.ac.uk/staff/d.silver/web/Teaching_files/pg.pdf</p>
 
 <h3 id="key-considerations">Key Considerations</h3>
 
@@ -489,7 +512,7 @@ Therefore, the discount factor should be \(1 - 4.6 \times 10^{-8} = 0.999999954\
 
 <p><img src="/blog/assets/images/rl/elu_graph.png" width="300" /></p>
 
-<h6 id="source-httpsmediumcomtinyminda-practical-guide-to-relu-b83ca804f1f7">Source: https://medium.com/tinymind/a-practical-guide-to-relu-b83ca804f1f7</h6>
+<p><strong>Source:</strong> https://medium.com/tinymind/a-practical-guide-to-relu-b83ca804f1f7</p>
 
 <blockquote>
   <p>A “dead” ReLU always outputs the same value (zero as it happens, but that is not important) for any input. Probably this is arrived at by learning a large negative bias term for its weights.</p>
@@ -503,7 +526,7 @@ Therefore, the discount factor should be \(1 - 4.6 \times 10^{-8} = 0.999999954\
   <p>Once a ReLU ends up in this state, it is unlikely to recover, because the function gradient at 0 is also 0, so gradient descent learning will not alter the weights. “Leaky” ReLUs with a small positive gradient for negative inputs (y=0.01x when x &lt; 0 say) are one attempt to address this issue and give a chance to recover.</p>
 </blockquote>
 
-<h6 id="reference-httpsdatasciencestackexchangecomquestions5706what-is-the-dying-relu-problem-in-neural-networks">Reference: https://datascience.stackexchange.com/questions/5706/what-is-the-dying-relu-problem-in-neural-networks</h6>
+<p><strong>Reference:</strong> https://datascience.stackexchange.com/questions/5706/what-is-the-dying-relu-problem-in-neural-networks</p>
 
 <h4 id="challenge-2">Challenge 2</h4>
 

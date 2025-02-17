@@ -15,7 +15,7 @@
   <meta name="author" content="Henry Pan">
   
 
-  <meta name="description" content="Brawlstars: https://supercell.com/en/games/brawlstars/ 1. Motivation I’ve personally being playing Brawlstars for over 3 months, and it’s a simple game to start considering the limited key combinations that it has. However, it’s fairly hard to master, considering the different mechanics each character has and the different maps in which each character’s play...">
+  <meta name="description" content="1. Motivation 2. Goals 3. Starting Point 3. Related Work 4. Project Focus/Scope 5. Showcase 6. Supervised Learning 6.1 Creating training data 6.2 Features 6.2.1 Raw Pixels as Features 6.2.2 Using MobileNet as the feature extractor 6.3 Action Determination 6.3.1 AlexNet (Convolutional Neural Network) 6.3.2 Long short-term memory 7. Challenges...">
 
   
 
@@ -90,7 +90,7 @@
   
   <meta property="og:site_name" content="Henry's Blog">
   <meta property="og:title" content="BrawlStars AI Series (Part 1)">
-  <meta property="og:description" content="Brawlstars: https://supercell.com/en/games/brawlstars/ 1. Motivation I’ve personally being playing Brawlstars for over 3 months, and it’s a simple game to start considering the limited key combinations that it has. However, it’s fairly hard to master, considering the different mechanics each character has and the different maps in which each character’s play...">
+  <meta property="og:description" content="1. Motivation 2. Goals 3. Starting Point 3. Related Work 4. Project Focus/Scope 5. Showcase 6. Supervised Learning 6.1 Creating training data 6.2 Features 6.2.1 Raw Pixels as Features 6.2.2 Using MobileNet as the feature extractor 6.3 Action Determination 6.3.1 AlexNet (Convolutional Neural Network) 6.3.2 Long short-term memory 7. Challenges...">
 
   
 
@@ -109,7 +109,7 @@
   <meta name="twitter:creator" content="@">
 
   <meta property="twitter:title" content="BrawlStars AI Series (Part 1)">
-  <meta property="twitter:description" content="Brawlstars: https://supercell.com/en/games/brawlstars/ 1. Motivation I’ve personally being playing Brawlstars for over 3 months, and it’s a simple game to start considering the limited key combinations that it has. However, it’s fairly hard to master, considering the different mechanics each character has and the different maps in which each character’s play...">
+  <meta property="twitter:description" content="1. Motivation 2. Goals 3. Starting Point 3. Related Work 4. Project Focus/Scope 5. Showcase 6. Supervised Learning 6.1 Creating training data 6.2 Features 6.2.1 Raw Pixels as Features 6.2.2 Using MobileNet as the feature extractor 6.3 Action Determination 6.3.1 AlexNet (Convolutional Neural Network) 6.3.2 Long short-term memory 7. Challenges...">
 
   
 
@@ -428,7 +428,37 @@
       
 
       <article role="main" class="blog-post">
-        <p>Brawlstars: <a href="https://supercell.com/en/games/brawlstars/">https://supercell.com/en/games/brawlstars/</a></p>
+        <ul id="markdown-toc">
+  <li><a href="#1-motivation" id="markdown-toc-1-motivation">1. Motivation</a></li>
+  <li><a href="#2-goals" id="markdown-toc-2-goals">2. Goals</a></li>
+  <li><a href="#3-starting-point" id="markdown-toc-3-starting-point">3. Starting Point</a></li>
+  <li><a href="#3-related-work" id="markdown-toc-3-related-work">3. Related Work</a></li>
+  <li><a href="#4-project-focusscope" id="markdown-toc-4-project-focusscope">4. Project Focus/Scope</a></li>
+  <li><a href="#5-showcase" id="markdown-toc-5-showcase">5. Showcase</a></li>
+  <li><a href="#6-supervised-learning" id="markdown-toc-6-supervised-learning">6. Supervised Learning</a>    <ul>
+      <li><a href="#61-creating-training-data" id="markdown-toc-61-creating-training-data">6.1 Creating training data</a></li>
+      <li><a href="#62-features" id="markdown-toc-62-features">6.2 Features</a>        <ul>
+          <li><a href="#621-raw-pixels-as-features" id="markdown-toc-621-raw-pixels-as-features">6.2.1 Raw Pixels as Features</a></li>
+          <li><a href="#622-using-mobilenet-as-the-feature-extractor" id="markdown-toc-622-using-mobilenet-as-the-feature-extractor">6.2.2 Using MobileNet as the feature extractor</a></li>
+        </ul>
+      </li>
+      <li><a href="#63-action-determination" id="markdown-toc-63-action-determination">6.3 Action Determination</a>        <ul>
+          <li><a href="#631-alexnet-convolutional-neural-network" id="markdown-toc-631-alexnet-convolutional-neural-network">6.3.1 AlexNet (Convolutional Neural Network)</a></li>
+          <li><a href="#632-long-short-term-memory" id="markdown-toc-632-long-short-term-memory">6.3.2 Long short-term memory</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><a href="#7-challenges" id="markdown-toc-7-challenges">7. Challenges</a>    <ul>
+      <li><a href="#71-data" id="markdown-toc-71-data">7.1 Data</a></li>
+      <li><a href="#72-features" id="markdown-toc-72-features">7.2 Features</a></li>
+    </ul>
+  </li>
+  <li><a href="#8-statistics-and-performance" id="markdown-toc-8-statistics-and-performance">8. Statistics and Performance</a></li>
+  <li><a href="#9-error-analysis--future-steps" id="markdown-toc-9-error-analysis--future-steps">9. Error Analysis + Future Steps</a></li>
+</ul>
+
+<p>Brawlstars: <a href="https://supercell.com/en/games/brawlstars/">https://supercell.com/en/games/brawlstars/</a></p>
 
 <h2 id="1-motivation">1. Motivation</h2>
 <p>I’ve personally being playing Brawlstars for over 3 months, and it’s a simple game to start considering the limited key combinations that it has. However, it’s fairly hard to master, considering the different mechanics each character has and the different maps in which each character’s play style can be affected by.</p>

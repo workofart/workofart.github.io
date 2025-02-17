@@ -15,7 +15,7 @@
   <meta name="author" content="Henry Pan">
   
 
-  <meta name="description" content="Code Here 1. Goal The problem setting is to solve the Continuous MountainCar problem in OpenAI gym. 2. Environment The mountain car follows a continuous state space as follows(copied from wiki): The acceleration of the car is controlled via the application of a force which takes values in the range...">
+  <meta name="description" content="Code 1. Goal 2. Environment State Actions Reward Starting State Episode Termination Solved Requirements 3. Approach 3.1 Discretization 3.2 Exploration vs Exploitation 3.3 Training 3.4 Hyperparameters 4. Experiment &amp;amp; Findings 4.1 Introducing baseline to reduce variance 4.2 Discrete vs Continuous Actions 4.3 Performance 5. Next Steps Code Here 1. Goal...">
 
   
 
@@ -90,7 +90,7 @@
   
   <meta property="og:site_name" content="Henry's Blog">
   <meta property="og:title" content="OpenAI Gym - MountainCar-v0">
-  <meta property="og:description" content="Code Here 1. Goal The problem setting is to solve the Continuous MountainCar problem in OpenAI gym. 2. Environment The mountain car follows a continuous state space as follows(copied from wiki): The acceleration of the car is controlled via the application of a force which takes values in the range...">
+  <meta property="og:description" content="Code 1. Goal 2. Environment State Actions Reward Starting State Episode Termination Solved Requirements 3. Approach 3.1 Discretization 3.2 Exploration vs Exploitation 3.3 Training 3.4 Hyperparameters 4. Experiment &amp;amp; Findings 4.1 Introducing baseline to reduce variance 4.2 Discrete vs Continuous Actions 4.3 Performance 5. Next Steps Code Here 1. Goal...">
 
   
 
@@ -109,7 +109,7 @@
   <meta name="twitter:creator" content="@">
 
   <meta property="twitter:title" content="OpenAI Gym - MountainCar-v0">
-  <meta property="twitter:description" content="Code Here 1. Goal The problem setting is to solve the Continuous MountainCar problem in OpenAI gym. 2. Environment The mountain car follows a continuous state space as follows(copied from wiki): The acceleration of the car is controlled via the application of a force which takes values in the range...">
+  <meta property="twitter:description" content="Code 1. Goal 2. Environment State Actions Reward Starting State Episode Termination Solved Requirements 3. Approach 3.1 Discretization 3.2 Exploration vs Exploitation 3.3 Training 3.4 Hyperparameters 4. Experiment &amp;amp; Findings 4.1 Introducing baseline to reduce variance 4.2 Discrete vs Continuous Actions 4.3 Performance 5. Next Steps Code Here 1. Goal...">
 
   
 
@@ -428,7 +428,35 @@
       
 
       <article role="main" class="blog-post">
-        <h2 id="code">Code</h2>
+        <ul id="markdown-toc">
+  <li><a href="#code" id="markdown-toc-code">Code</a></li>
+  <li><a href="#1-goal" id="markdown-toc-1-goal">1. Goal</a></li>
+  <li><a href="#2-environment" id="markdown-toc-2-environment">2. Environment</a>    <ul>
+      <li><a href="#state" id="markdown-toc-state">State</a></li>
+      <li><a href="#actions" id="markdown-toc-actions">Actions</a></li>
+      <li><a href="#reward" id="markdown-toc-reward">Reward</a></li>
+      <li><a href="#starting-state" id="markdown-toc-starting-state">Starting State</a></li>
+      <li><a href="#episode-termination" id="markdown-toc-episode-termination">Episode Termination</a></li>
+      <li><a href="#solved-requirements" id="markdown-toc-solved-requirements">Solved Requirements</a></li>
+    </ul>
+  </li>
+  <li><a href="#3-approach" id="markdown-toc-3-approach">3. Approach</a>    <ul>
+      <li><a href="#31-discretization" id="markdown-toc-31-discretization">3.1 Discretization</a></li>
+      <li><a href="#32-exploration-vs-exploitation" id="markdown-toc-32-exploration-vs-exploitation">3.2 Exploration vs Exploitation</a></li>
+      <li><a href="#33-training" id="markdown-toc-33-training">3.3 Training</a></li>
+      <li><a href="#34-hyperparameters" id="markdown-toc-34-hyperparameters">3.4 Hyperparameters</a></li>
+    </ul>
+  </li>
+  <li><a href="#4-experiment--findings" id="markdown-toc-4-experiment--findings">4. Experiment &amp; Findings</a>    <ul>
+      <li><a href="#41-introducing-baseline-to-reduce-variance" id="markdown-toc-41-introducing-baseline-to-reduce-variance">4.1 Introducing baseline to reduce variance</a></li>
+      <li><a href="#42-discrete-vs-continuous-actions" id="markdown-toc-42-discrete-vs-continuous-actions">4.2 Discrete vs Continuous Actions</a></li>
+      <li><a href="#43-performance" id="markdown-toc-43-performance">4.3 Performance</a></li>
+    </ul>
+  </li>
+  <li><a href="#5-next-steps" id="markdown-toc-5-next-steps">5. Next Steps</a></li>
+</ul>
+
+<h2 id="code">Code</h2>
 
 <p><a href="https://github.com/workofart/openai-gym-baselines/tree/master/MountainCarContinuous-v0">Here</a></p>
 

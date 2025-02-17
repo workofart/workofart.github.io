@@ -15,7 +15,7 @@
   <meta name="author" content="Henry Pan">
   
 
-  <meta name="description" content="Code Here 1. Goal The problem setting is to solve the Acrobot problem in OpenAI gym. The acrobot system includes two joints and two links, where the joint between the two links is actuated. Initially, the links are hanging downwards, and the goal is to swing the end of the...">
+  <meta name="description" content="Code 1. Goal 2. Environment State: Action: Reward: Terminal Condition: Solved Condition: 3. Approach 3.1 Algorithm Comparison 3.2 Problem Parameterization 3.3 Policy Key consideration: 3.4 Neural Network Architecture 3.5 Hyperparameters 4. Experiment &amp;amp; Findings 4.1 Performance 4.2 Training Duration 4.3 Neural Network Complexity 4.4 Discount Rate 5. Next Steps Code...">
 
   
 
@@ -90,7 +90,7 @@
   
   <meta property="og:site_name" content="Henry's Blog">
   <meta property="og:title" content="OpenAI Gym - Acrobot-v1">
-  <meta property="og:description" content="Code Here 1. Goal The problem setting is to solve the Acrobot problem in OpenAI gym. The acrobot system includes two joints and two links, where the joint between the two links is actuated. Initially, the links are hanging downwards, and the goal is to swing the end of the...">
+  <meta property="og:description" content="Code 1. Goal 2. Environment State: Action: Reward: Terminal Condition: Solved Condition: 3. Approach 3.1 Algorithm Comparison 3.2 Problem Parameterization 3.3 Policy Key consideration: 3.4 Neural Network Architecture 3.5 Hyperparameters 4. Experiment &amp;amp; Findings 4.1 Performance 4.2 Training Duration 4.3 Neural Network Complexity 4.4 Discount Rate 5. Next Steps Code...">
 
   
 
@@ -109,7 +109,7 @@
   <meta name="twitter:creator" content="@">
 
   <meta property="twitter:title" content="OpenAI Gym - Acrobot-v1">
-  <meta property="twitter:description" content="Code Here 1. Goal The problem setting is to solve the Acrobot problem in OpenAI gym. The acrobot system includes two joints and two links, where the joint between the two links is actuated. Initially, the links are hanging downwards, and the goal is to swing the end of the...">
+  <meta property="twitter:description" content="Code 1. Goal 2. Environment State: Action: Reward: Terminal Condition: Solved Condition: 3. Approach 3.1 Algorithm Comparison 3.2 Problem Parameterization 3.3 Policy Key consideration: 3.4 Neural Network Architecture 3.5 Hyperparameters 4. Experiment &amp;amp; Findings 4.1 Performance 4.2 Training Duration 4.3 Neural Network Complexity 4.4 Discount Rate 5. Next Steps Code...">
 
   
 
@@ -428,7 +428,39 @@
       
 
       <article role="main" class="blog-post">
-        <h2 id="code">Code</h2>
+        <ul id="markdown-toc">
+  <li><a href="#code" id="markdown-toc-code">Code</a></li>
+  <li><a href="#1-goal" id="markdown-toc-1-goal">1. Goal</a></li>
+  <li><a href="#2-environment" id="markdown-toc-2-environment">2. Environment</a>    <ul>
+      <li><a href="#state" id="markdown-toc-state">State:</a></li>
+      <li><a href="#action" id="markdown-toc-action">Action:</a></li>
+      <li><a href="#reward" id="markdown-toc-reward">Reward:</a></li>
+      <li><a href="#terminal-condition" id="markdown-toc-terminal-condition">Terminal Condition:</a></li>
+      <li><a href="#solved-condition" id="markdown-toc-solved-condition">Solved Condition:</a></li>
+    </ul>
+  </li>
+  <li><a href="#3-approach" id="markdown-toc-3-approach">3. Approach</a>    <ul>
+      <li><a href="#31-algorithm-comparison" id="markdown-toc-31-algorithm-comparison">3.1 Algorithm Comparison</a></li>
+      <li><a href="#32-problem-parameterization" id="markdown-toc-32-problem-parameterization">3.2 Problem Parameterization</a></li>
+      <li><a href="#33-policy" id="markdown-toc-33-policy">3.3 Policy</a>        <ul>
+          <li><a href="#key-consideration" id="markdown-toc-key-consideration">Key consideration:</a></li>
+        </ul>
+      </li>
+      <li><a href="#34-neural-network-architecture" id="markdown-toc-34-neural-network-architecture">3.4 Neural Network Architecture</a></li>
+      <li><a href="#35-hyperparameters" id="markdown-toc-35-hyperparameters">3.5 Hyperparameters</a></li>
+    </ul>
+  </li>
+  <li><a href="#4-experiment--findings" id="markdown-toc-4-experiment--findings">4. Experiment &amp; Findings</a>    <ul>
+      <li><a href="#41-performance" id="markdown-toc-41-performance">4.1 Performance</a></li>
+      <li><a href="#42-training-duration" id="markdown-toc-42-training-duration">4.2 Training Duration</a></li>
+      <li><a href="#43-neural-network-complexity" id="markdown-toc-43-neural-network-complexity">4.3 Neural Network Complexity</a></li>
+      <li><a href="#44-discount-rate" id="markdown-toc-44-discount-rate">4.4 Discount Rate</a></li>
+    </ul>
+  </li>
+  <li><a href="#5-next-steps" id="markdown-toc-5-next-steps">5. Next Steps</a></li>
+</ul>
+
+<h2 id="code">Code</h2>
 
 <p><a href="https://github.com/workofart/openai-gym-baselines/tree/master/Acrobot-v1">Here</a></p>
 

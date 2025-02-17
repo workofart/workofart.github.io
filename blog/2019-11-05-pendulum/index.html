@@ -15,7 +15,7 @@
   <meta name="author" content="Henry Pan">
   
 
-  <meta name="description" content="Code Here 1. Goal The problem setting is to solve the Inverted Pendulum problem in OpenAI gym. Try to keep a frictionless pendulum standing up. 2. Environment The pendulum environment has a continuous state space as follows (copied from wiki): State Type: Box(3) Num State Observation Min Max 0 Angle1...">
+  <meta name="description" content="Code 1. Goal 2. Environment State Actions Reward Starting State Episode Termination Solved Condition 3. Approach 3.1 Discretization 3.2 Exploration vs Exploitation 3.3 Gaussian Policy 3.4 Linear Value Function 3.5 Training 3.6 Hyperparameters 4. Experiment &amp;amp; Findings 5. Next Steps Code Here 1. Goal The problem setting is to solve...">
 
   
 
@@ -90,7 +90,7 @@
   
   <meta property="og:site_name" content="Henry's Blog">
   <meta property="og:title" content="OpenAI Gym - Pendulum-v0">
-  <meta property="og:description" content="Code Here 1. Goal The problem setting is to solve the Inverted Pendulum problem in OpenAI gym. Try to keep a frictionless pendulum standing up. 2. Environment The pendulum environment has a continuous state space as follows (copied from wiki): State Type: Box(3) Num State Observation Min Max 0 Angle1...">
+  <meta property="og:description" content="Code 1. Goal 2. Environment State Actions Reward Starting State Episode Termination Solved Condition 3. Approach 3.1 Discretization 3.2 Exploration vs Exploitation 3.3 Gaussian Policy 3.4 Linear Value Function 3.5 Training 3.6 Hyperparameters 4. Experiment &amp;amp; Findings 5. Next Steps Code Here 1. Goal The problem setting is to solve...">
 
   
 
@@ -109,7 +109,7 @@
   <meta name="twitter:creator" content="@">
 
   <meta property="twitter:title" content="OpenAI Gym - Pendulum-v0">
-  <meta property="twitter:description" content="Code Here 1. Goal The problem setting is to solve the Inverted Pendulum problem in OpenAI gym. Try to keep a frictionless pendulum standing up. 2. Environment The pendulum environment has a continuous state space as follows (copied from wiki): State Type: Box(3) Num State Observation Min Max 0 Angle1...">
+  <meta property="twitter:description" content="Code 1. Goal 2. Environment State Actions Reward Starting State Episode Termination Solved Condition 3. Approach 3.1 Discretization 3.2 Exploration vs Exploitation 3.3 Gaussian Policy 3.4 Linear Value Function 3.5 Training 3.6 Hyperparameters 4. Experiment &amp;amp; Findings 5. Next Steps Code Here 1. Goal The problem setting is to solve...">
 
   
 
@@ -428,7 +428,32 @@
       
 
       <article role="main" class="blog-post">
-        <h2 id="code">Code</h2>
+        <ul id="markdown-toc">
+  <li><a href="#code" id="markdown-toc-code">Code</a></li>
+  <li><a href="#1-goal" id="markdown-toc-1-goal">1. Goal</a></li>
+  <li><a href="#2-environment" id="markdown-toc-2-environment">2. Environment</a>    <ul>
+      <li><a href="#state" id="markdown-toc-state">State</a></li>
+      <li><a href="#actions" id="markdown-toc-actions">Actions</a></li>
+      <li><a href="#reward" id="markdown-toc-reward">Reward</a></li>
+      <li><a href="#starting-state" id="markdown-toc-starting-state">Starting State</a></li>
+      <li><a href="#episode-termination" id="markdown-toc-episode-termination">Episode Termination</a></li>
+      <li><a href="#solved-condition" id="markdown-toc-solved-condition">Solved Condition</a></li>
+    </ul>
+  </li>
+  <li><a href="#3-approach" id="markdown-toc-3-approach">3. Approach</a>    <ul>
+      <li><a href="#31-discretization" id="markdown-toc-31-discretization">3.1 Discretization</a></li>
+      <li><a href="#32-exploration-vs-exploitation" id="markdown-toc-32-exploration-vs-exploitation">3.2 Exploration vs Exploitation</a></li>
+      <li><a href="#33-gaussian-policy" id="markdown-toc-33-gaussian-policy">3.3 Gaussian Policy</a></li>
+      <li><a href="#34-linear-value-function" id="markdown-toc-34-linear-value-function">3.4 Linear Value Function</a></li>
+      <li><a href="#35-training" id="markdown-toc-35-training">3.5 Training</a></li>
+      <li><a href="#36-hyperparameters" id="markdown-toc-36-hyperparameters">3.6 Hyperparameters</a></li>
+    </ul>
+  </li>
+  <li><a href="#4-experiment--findings" id="markdown-toc-4-experiment--findings">4. Experiment &amp; Findings</a></li>
+  <li><a href="#5-next-steps" id="markdown-toc-5-next-steps">5. Next Steps</a></li>
+</ul>
+
+<h2 id="code">Code</h2>
 
 <p><a href="https://github.com/workofart/openai-gym-baselines/tree/master/Pendulum-v0">Here</a></p>
 

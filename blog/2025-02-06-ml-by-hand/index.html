@@ -15,7 +15,7 @@
   <meta name="author" content="Henry Pan">
   
 
-  <meta name="description" content="Project link: https://github.com/workofart/ml-by-hand I recently started working on a project called ML by Hand, which is a machine learning library that I built using just Python and NumPy. Afterwards, I trained various models (classical ones like CNN, ResNet, RNN, LSTM, and more modern architectures like Transformers and GPT) using this...">
+  <meta name="description" content="Motivation and Goals Abstraction layers of Machine Learning Libraries Comparing this project to PyTorch for the same functionality Efficiency vs Learning Technical Design Tensor Class Tensor-level Operations Function class Computational Graph Tensor.backward() NN Module Functional Module Optimizer Additional Thoughts Project link: https://github.com/workofart/ml-by-hand I recently started working on a project called...">
 
   
 
@@ -90,7 +90,7 @@
   
   <meta property="og:site_name" content="Henry's Blog">
   <meta property="og:title" content="How I Built a Deep Learning Library from Scratch Using Only Python, NumPy &amp; Math">
-  <meta property="og:description" content="Project link: https://github.com/workofart/ml-by-hand I recently started working on a project called ML by Hand, which is a machine learning library that I built using just Python and NumPy. Afterwards, I trained various models (classical ones like CNN, ResNet, RNN, LSTM, and more modern architectures like Transformers and GPT) using this...">
+  <meta property="og:description" content="Motivation and Goals Abstraction layers of Machine Learning Libraries Comparing this project to PyTorch for the same functionality Efficiency vs Learning Technical Design Tensor Class Tensor-level Operations Function class Computational Graph Tensor.backward() NN Module Functional Module Optimizer Additional Thoughts Project link: https://github.com/workofart/ml-by-hand I recently started working on a project called...">
 
   
 
@@ -109,7 +109,7 @@
   <meta name="twitter:creator" content="@">
 
   <meta property="twitter:title" content="How I Built a Deep Learning Library from Scratch Using Only Python, NumPy &amp; Math">
-  <meta property="twitter:description" content="Project link: https://github.com/workofart/ml-by-hand I recently started working on a project called ML by Hand, which is a machine learning library that I built using just Python and NumPy. Afterwards, I trained various models (classical ones like CNN, ResNet, RNN, LSTM, and more modern architectures like Transformers and GPT) using this...">
+  <meta property="twitter:description" content="Motivation and Goals Abstraction layers of Machine Learning Libraries Comparing this project to PyTorch for the same functionality Efficiency vs Learning Technical Design Tensor Class Tensor-level Operations Function class Computational Graph Tensor.backward() NN Module Functional Module Optimizer Additional Thoughts Project link: https://github.com/workofart/ml-by-hand I recently started working on a project called...">
 
   
 
@@ -428,7 +428,30 @@
       
 
       <article role="main" class="blog-post">
-        <p>Project link: <a href="https://github.com/workofart/ml-by-hand">https://github.com/workofart/ml-by-hand</a></p>
+        <ul id="markdown-toc">
+  <li><a href="#motivation-and-goals" id="markdown-toc-motivation-and-goals">Motivation and Goals</a></li>
+  <li><a href="#abstraction-layers-of-machine-learning-libraries" id="markdown-toc-abstraction-layers-of-machine-learning-libraries">Abstraction layers of Machine Learning Libraries</a></li>
+  <li><a href="#comparing-this-project-to-pytorch-for-the-same-functionality" id="markdown-toc-comparing-this-project-to-pytorch-for-the-same-functionality">Comparing this project to PyTorch for the same functionality</a></li>
+  <li><a href="#efficiency-vs-learning" id="markdown-toc-efficiency-vs-learning">Efficiency vs Learning</a></li>
+  <li><a href="#technical-design" id="markdown-toc-technical-design">Technical Design</a>    <ul>
+      <li><a href="#tensor-class" id="markdown-toc-tensor-class">Tensor Class</a>        <ul>
+          <li><a href="#tensor-level-operations" id="markdown-toc-tensor-level-operations">Tensor-level Operations</a></li>
+          <li><a href="#function-class" id="markdown-toc-function-class">Function class</a></li>
+        </ul>
+      </li>
+      <li><a href="#computational-graph" id="markdown-toc-computational-graph">Computational Graph</a>        <ul>
+          <li><a href="#tensorbackward" id="markdown-toc-tensorbackward">Tensor.backward()</a></li>
+        </ul>
+      </li>
+      <li><a href="#nn-module" id="markdown-toc-nn-module">NN Module</a></li>
+      <li><a href="#functional-module" id="markdown-toc-functional-module">Functional Module</a></li>
+      <li><a href="#optimizer" id="markdown-toc-optimizer">Optimizer</a></li>
+    </ul>
+  </li>
+  <li><a href="#additional-thoughts" id="markdown-toc-additional-thoughts">Additional Thoughts</a></li>
+</ul>
+
+<p>Project link: <a href="https://github.com/workofart/ml-by-hand">https://github.com/workofart/ml-by-hand</a></p>
 
 <p>I recently started working on a project called ML by Hand, which is a machine learning library that I built using just Python and NumPy. Afterwards, I trained various models (classical ones like CNN, ResNet, RNN, LSTM, and more modern architectures like Transformers and GPT) using this library. The motivation came from my curiosity about how to build deep learning models from scratch, like literally from mathematical formulas. The purpose of this project is definitely not to replace the machine learning libraries out there (e.g. PyTorch, TensorFlow), but rather to provide educational material to develop a deeper understanding of how models and libraries are created from scratch. Therefore, our top priority is not to develop the most efficient library, but still good enough to train <a href="https://github.com/workofart/ml-by-hand/blob/main/examples/gpt-2.py">GPT models locally</a>. The library implementation ensures that code and documentation are explicit enough to illustrate mathematical formulas in its rawest form. This project took inspiration from <a href="https://github.com/karpathy/micrograd">Micrograd</a> by Andrej Karpathy. I was initially interested in creating just an autograd engine (<a href="https://en.wikipedia.org/wiki/Automatic_differentiation">wikipedia</a>) but this project slowly evolved into a full-fledged machine learning library. Oh well, here we go. 😁</p>
 
