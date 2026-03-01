@@ -10,10 +10,14 @@ var BeautifulJekyllJS = {
 
     // Shorten the navbar after scrolling a little bit down
     $(window).scroll(function() {
-        if ($(".navbar").offset().top > 50) {
-            $(".navbar").addClass("top-nav-short");
+        // Only apply the "short navbar" behavior for fixed-top navbars.
+        // The integrated app/blog shell uses a sticky navbar and should not shrink on scroll.
+        var $fixedNav = $(".navbar.fixed-top");
+        if ($fixedNav.length === 0) return;
+        if ($fixedNav.offset().top > 50) {
+            $fixedNav.addClass("top-nav-short");
         } else {
-            $(".navbar").removeClass("top-nav-short");
+            $fixedNav.removeClass("top-nav-short");
         }
     });
 
