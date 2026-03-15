@@ -10,6 +10,17 @@
     
     
       <item>
+        <title>How a Deep Learning Library Enables Learning</title>
+        <description>
+          
+          1. The Familiar Training Step 2. Why Call loss.backward() At All 3. Why An Update Actually Helps 4. Values Remember Where They Came From 5. What One Operation Does During Backward 6. How loss.backward() Walks the Whole Graph 7. So We Have All the Gradients in the Graph. What’s Next?...
+        </description>
+        <pubDate>Sat, 14 Mar 2026 18:32:00 -0400</pubDate>
+        <link>/blog/2026-03-14-how-deep-learning-library-enables-learning/</link>
+        <guid isPermaLink="true">/blog/2026-03-14-how-deep-learning-library-enables-learning/</guid>
+      </item>
+    
+      <item>
         <title>How I Built a Deep Learning Library from Scratch Using Only Python, NumPy &amp; Math</title>
         <description>
           
@@ -216,17 +227,6 @@
         <pubDate>Thu, 18 Jul 2013 18:36:00 -0400</pubDate>
         <link>/blog/2013-07-18-one-sentence-summary-books/</link>
         <guid isPermaLink="true">/blog/2013-07-18-one-sentence-summary-books/</guid>
-      </item>
-    
-      <item>
-        <title>1st day at McKinsey</title>
-        <description>
-          
-          My first day at McKinsey was a blast for myself. Simply because there were so much to see and so much to learn at this firm. I got access to lots of resources in its intranet and I was amazed by how much content is available to the employees regardless...
-        </description>
-        <pubDate>Wed, 15 May 2013 17:28:00 -0400</pubDate>
-        <link>/blog/2013-05-15-first-day-at-mckinsey/</link>
-        <guid isPermaLink="true">/blog/2013-05-15-first-day-at-mckinsey/</guid>
       </item>
     
   </channel>

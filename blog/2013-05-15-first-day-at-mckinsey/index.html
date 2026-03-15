@@ -76,7 +76,10 @@
 
   
 
-  <link rel="stylesheet" href="/blog/assets/css/app-shell.css">
+  <link rel="stylesheet" href="/blog/assets/css/app-shell.css?v=20260314-mermaid-style">
+  
+  <link rel="stylesheet" href="/blog/assets/css/post-toc.css?v=20260314-toc-nav">
+  
 
   
   
@@ -160,6 +163,13 @@
   <script src="https://unpkg.com/simple-jekyll-search@latest/dest/simple-jekyll-search.min.js"></script>
   <script>
     var searchjson = '[ \
+       \
+        { \
+          "title"    : "How a Deep Learning Library Enables Learning", \
+          "category" : "machine-learningresearchpythondeep-learningeducationframework", \
+          "url"      : "/blog/2026-03-14-how-deep-learning-library-enables-learning/", \
+          "date"     : "March 14, 2026" \
+        }, \
        \
         { \
           "title"    : "How I Built a Deep Learning Library from Scratch Using Only Python, NumPy &amp; Math", \
@@ -416,7 +426,10 @@
 
 <div class=" container-md ">
   <div class="row">
-    <div class=" col-xl-8 offset-xl-2 col-lg-10 offset-lg-1 ">
+    <div class=" col-12 ">
+      <div class="post-shell">
+        <aside class="post-toc-shell" aria-label="Table of contents" hidden></aside>
+        <div class="post-main">
 
       
 
@@ -454,13 +467,15 @@
           <a class="page-link" href="/blog/2013-03-30-dinner-talk/" data-toggle="tooltip" data-placement="top" title="Dinner Talk">&larr; Previous Post</a>
         </li>
         
-        
+      
         <li class="page-item next">
           <a class="page-link" href="/blog/2013-07-18-one-sentence-summary-books/" data-toggle="tooltip" data-placement="top" title="One Sentence Summary of Books">Next Post &rarr;</a>
         </li>
         
       </ul>
       
+      
+          
   
   
   
@@ -472,6 +487,9 @@
 
 
 
+        </div>
+      </div>
+      <script type="module" src="/blog/assets/js/post-toc.js?v=20260314-toc-nav"></script>
     </div>
   </div>
 </div>

@@ -1,0 +1,30 @@
+{
+  "pyodideVersion": "0.29.3",
+  "pyodideBaseUrl": "/blog/assets/vendor/pyodide/0.29.3/",
+  "packages": ["numpy"],
+  "runRequiresProjectSource": true,
+  "projectSource": {
+    "files": [
+      {
+        "path": "autograd/backend.py",
+        "url": "/blog/assets/repls/ml-by-hand-snapshot/autograd/backend.py"
+      },
+      {
+        "path": "autograd/logger.py",
+        "url": "/blog/assets/repls/ml-by-hand-snapshot/autograd/logger.py"
+      },
+      {
+        "path": "autograd/tensor.py",
+        "url": "/blog/assets/repls/ml-by-hand-snapshot/autograd/tensor.py"
+      },
+      {
+        "path": "autograd/playground_helpers.py",
+        "url": "/blog/assets/repls/ml-by-hand-snapshot/autograd/playground_helpers.py"
+      },
+      {
+        "path": "autograd/optim.py",
+        "url": "/blog/assets/repls/ml-by-hand-snapshot/autograd/optim.py"
+      }
+    ]
+  }
+}
